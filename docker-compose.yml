@@ -1,0 +1,13 @@
+services:
+  database:
+    image: postgres:18.4
+    container_name: database
+    env_file: 
+      - ./server/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
