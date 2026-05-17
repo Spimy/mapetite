@@ -41,11 +41,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
     # Third-party apps
     "rest_framework",
     # Local apps
     "apps.users",
 ]
+
+AUTH_USER_MODEL = "users.User"
+AUTHENTICATION_BACKENDS = ["apps.users.backends.EmailOrUsernameBackend"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
