@@ -42,6 +42,12 @@
 
             <a href="{% url 'users:sign-in' %}"
                class="signin__link signin__link--forgot">Forgot your Password?</a>
+
+            {% comment %} Temporary: For testing only. To be removed later. {% endcomment %}
+            {% if user.is_authenticated %}
+                <a href="{% url 'users:sign-out' %}">Sign Out</a>
+            {% endif %}
+
         </form>
 
     </section>
