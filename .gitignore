@@ -12,7 +12,6 @@ __pycache__/
 
 # OS / IDE
 .DS_Store
-.vscode/
 
 # Mobile (assuming it's a Flutter project)
 mobile-client/build/
