@@ -1,7 +1,7 @@
 ---
-name: "[Server/Mobile][Module] Enhancement"
+name: Bug Report
 about: 'Describe the bug you found. Modules for title: Core | API | Dashboard | <Mobile_Module>'
-title: ''
+title: "[Server/Mobile][Module] Enhancement - "
 labels: bug
 assignees: ''
 
