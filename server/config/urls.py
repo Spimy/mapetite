@@ -19,6 +19,12 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+
+# Customise the admin site headers and titles
+admin.site.site_header = "Mapetite Admin"
+admin.site.site_title = "Mapetite Admin Portal"
+admin.site.index_title = "Welcome to the Mapetite Admin Portal"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
