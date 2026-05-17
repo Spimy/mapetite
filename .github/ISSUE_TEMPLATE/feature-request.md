@@ -1,8 +1,8 @@
 ---
-name: "[Server/Mobile][Module] Enhancement - "
+name: Feature Request
 about: 'Feature to be added to the project. Modules for title: Core | API | Dashboard
   | <Mobile_Module>'
-title: ''
+title: "[Server/Mobile][Module] Enhancement - "
 labels: enhancement
 assignees: ''
 
