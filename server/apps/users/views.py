@@ -5,6 +5,8 @@ from .mixins import SuccessUrlMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import RedirectView
 from django.urls import reverse_lazy
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from dj_rest_auth.registration.views import SocialLoginView
 
 
 # Create your views here.
@@ -25,3 +27,7 @@ class SignOutView(LoginRequiredMixin, RedirectView):
     def get(self, request, *args, **kwargs):
         logout(request)
         return super(SignOutView, self).get(request, *args, **kwargs)
+
+
+class GoogleLoginView(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter

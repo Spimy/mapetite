@@ -46,13 +46,30 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "drf_spectacular",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
     # Local apps
     "apps.users",
 ]
 
+
 AUTH_USER_MODEL = "users.User"
-AUTHENTICATION_BACKENDS = ["apps.users.backends.EmailOrUsernameBackend"]
 LOGIN_URL = "users:sign_in"
+
+AUTHENTICATION_BACKENDS = [
+    "apps.users.backends.EmailOrUsernameBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_COOKIE": None,
+    "TOKEN_MODEL": None,
+}
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -77,6 +94,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
