@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.postgres",
+    "django.contrib.sites",
     # Third-party apps
     "rest_framework",
     "rest_framework_simplejwt",
@@ -56,7 +57,7 @@ INSTALLED_APPS = [
     "apps.users",
 ]
 
-
+SITE_ID = 1
 AUTH_USER_MODEL = "users.User"
 LOGIN_URL = "users:sign_in"
 
