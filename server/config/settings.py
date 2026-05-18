@@ -44,12 +44,21 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     # Third-party apps
     "rest_framework",
+    "rest_framework_simplejwt",
     # Local apps
     "apps.users",
 ]
 
 AUTH_USER_MODEL = "users.User"
 AUTHENTICATION_BACKENDS = ["apps.users.backends.EmailOrUsernameBackend"]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ]
+}
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
