@@ -44,5 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Design system reference (local only — not for shared repo)
+# Local reference files — not for shared repo
 DESIGN_SYSTEM.md
+DAILY_DEV.md
