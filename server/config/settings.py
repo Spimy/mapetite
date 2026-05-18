@@ -51,6 +51,7 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = "users.User"
 AUTHENTICATION_BACKENDS = ["apps.users.backends.EmailOrUsernameBackend"]
+LOGIN_URL = "users:sign_in"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
