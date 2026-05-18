@@ -30,4 +30,6 @@ class SignOutView(LoginRequiredMixin, RedirectView):
 
 
 class GoogleLoginView(SocialLoginView):
+    """Takes the access token from the frontend provided by Google and uses it to log in the user via Google OAuth2"""
+
     adapter_class = GoogleOAuth2Adapter
