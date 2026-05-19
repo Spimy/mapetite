@@ -6,7 +6,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-from dj_rest_auth.registration.views import RegisterView, VerifyEmailView
+from dj_rest_auth.registration.views import RegisterView, ResendEmailVerificationView, VerifyEmailView
 
 app_name = "users"
 
@@ -66,9 +66,13 @@ urlpatterns = [
     path("api/auth/register/", RegisterView.as_view(), name="rest_register"),
     path("api/auth/verify-email/", VerifyEmailView.as_view(),
          name="rest_verify_email"),
+    path("api/auth/resend-email/", ResendEmailVerificationView.as_view(),
+         name="rest_resend_email"),
+
+    # The dummy route that exists purely so `allauth` doesn't crash. Please don't use this for anything.
     path(
         "api/auth/account-email-verification-sent/",
-        VerifyEmailView.as_view(),
+        views.HiddenDummyVerifyView.as_view(),
         name="account_email_verification_sent",
     ),
 ]

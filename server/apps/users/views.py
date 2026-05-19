@@ -8,8 +8,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import RedirectView
 from django.urls import reverse_lazy
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from dj_rest_auth.registration.views import SocialLoginView
+from dj_rest_auth.registration.views import SocialLoginView, VerifyEmailView
 from allauth.account.models import EmailConfirmationHMAC, EmailConfirmation
+from drf_spectacular.utils import extend_schema_view, extend_schema
 
 
 # Create your views here.
@@ -59,3 +60,15 @@ class ConfirmEmailView(View):
                 return EmailConfirmation.objects.get(key=key.lower())
             except EmailConfirmation.DoesNotExist:
                 return None
+
+
+@extend_schema_view(
+    post=extend_schema(
+        exclude=True  # This hides the dummy route entirely from Swagger/ReDoc
+    )
+)
+class HiddenDummyVerifyView(VerifyEmailView):
+    """
+    Used for the allauth dummy route. We hide it so it doesn't clutter the API docs.
+    """
+    pass
