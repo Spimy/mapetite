@@ -75,7 +75,7 @@ REST_AUTH = {
 }
 
 # Allauth and dj-rest-auth settings
-ACCOUNT_ADAPTER = "apps.users.adapter.CustomAccountAdapter"
+ACCOUNT_ADAPTER = "apps.users.adapter.AccountAdapter"
 ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_LOGIN_METHODS = {"username", "email"}
