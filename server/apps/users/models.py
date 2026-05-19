@@ -22,6 +22,7 @@ class CaseInsensitiveUserManager(UserManager):
 class User(AbstractUser):
     slug = models.SlugField(max_length=255, blank=True, unique=True)
     email = models.EmailField(unique=True)
+    is_merchant = models.BooleanField(default=False)
 
     objects = CaseInsensitiveUserManager()
 
@@ -77,7 +78,8 @@ class StoreProfile(models.Model):
     owner = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name="owned_stores"
     )
-    staff = models.ManyToManyField(User, related_name="managed_stores", blank=True)
+    staff = models.ManyToManyField(
+        User, related_name="managed_stores", blank=True)
 
     merchant_type = models.CharField(
         max_length=20, choices=MerchantType.choices, default=MerchantType.RESTAURANT
