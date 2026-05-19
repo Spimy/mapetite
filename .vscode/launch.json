@@ -22,7 +22,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/server/manage.py",
             "args": [
-                "test"
+                "test",
+                "${input:appName}"
             ],
             "django": true,
             "justMyCode": false
@@ -37,6 +38,14 @@
             ],
             "django": true,
             "console": "integratedTerminal"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "appName",
+            "type": "promptString",
+            "description": "Enter the app to test (e.g., 'apps' for all, 'apps.users' for specific app):",
+            "default": "apps"
         }
     ]
 }
