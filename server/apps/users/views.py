@@ -46,9 +46,9 @@ class ConfirmEmailView(View):
 
         if confirmation:
             confirmation.confirm(self.request)
-            return render(request, "users/email_verification_success.html")
+            return render(request, "users/email_verification/email_verification_success.html")
         else:
-            return render(request, "users/email_verification_failed.html")
+            return render(request, "users/email_verification/email_verification_failed.html")
 
     def get_confirmation(self, key):
         """Helper method to extract the confirmation object from the key"""
