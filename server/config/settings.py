@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.postgres",
     "django.contrib.sites",
+
     # Third-party apps
     "rest_framework",
     "rest_framework_simplejwt",
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "dj_rest_auth",
     "dj_rest_auth.registration",
+
     # Local apps
     "apps.users",
 ]
@@ -71,6 +73,14 @@ REST_AUTH = {
     "JWT_AUTH_COOKIE": None,
     "TOKEN_MODEL": None,
 }
+
+# Allauth and dj-rest-auth settings
+ACCOUNT_ADAPTER = "apps.users.adapter.CustomAccountAdapter"
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
+ACCOUNT_UNIQUE_EMAIL = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
