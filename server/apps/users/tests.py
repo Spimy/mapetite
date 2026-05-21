@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from .models import User, UserProfile, StoreProfile
+from .models import User, UserProfile
 from allauth.account.models import EmailAddress, EmailConfirmationHMAC
 
 
@@ -63,17 +63,6 @@ class ProfileModelTests(TestCase):
         profile.refresh_from_db()
         self.assertEqual(profile.city, "Paris")
         self.assertTrue(profile.is_halal)
-
-    def test_store_profile_creation(self):
-        """Test creation of a StoreProfile under a merchant user."""
-        store = StoreProfile.objects.create(
-            owner=self.merchant_user,
-            business_name="Test Restaurant",
-            merchant_type=StoreProfile.MerchantType.RESTAURANT
-        )
-        self.assertEqual(store.business_name, "Test Restaurant")
-        self.assertEqual(store.merchant_type, "RESTAURANT")
-        self.assertEqual(store.owner, self.merchant_user)
 
 
 class ViewTests(TestCase):
