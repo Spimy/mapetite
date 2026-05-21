@@ -1,11 +1,11 @@
-from rest_framework import generics
 from .models import StoreOperatingHour, StoreProfile
 from .serializers import StoreOperatingHourSerializer, StoreProfileSerializer
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here.
-class StoreListAPIView(generics.ListAPIView):
+class StoreListAPIView(ListAPIView):
     """Fetches all stores and their grouped operating hours"""
 
     queryset = StoreProfile.objects.prefetch_related("operating_hours").all()
@@ -13,7 +13,7 @@ class StoreListAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class StoreAPIView(generics.RetrieveAPIView):
+class StoreAPIView(RetrieveAPIView):
     """Fetches a single store and its grouped operating hours"""
 
     queryset = StoreProfile.objects.prefetch_related("operating_hours").all()
@@ -23,11 +23,13 @@ class StoreAPIView(generics.RetrieveAPIView):
     lookup_url_kwarg = "store_id"
 
 
-class StoreOperatingHoursAPIView(generics.ListAPIView):
+class StoreOperatingHoursAPIView(ListAPIView):
     """Fetches only the operating hours for a store"""
 
     queryset = StoreOperatingHour.objects.all()
     serializer_class = StoreOperatingHourSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = "store_id"
-    lookup_url_kwarg = "store_id"
+
+    def get_queryset(self):
+        store_id = self.kwargs.get("store_id")
+        return super().get_queryset().filter(store_id=store_id)
