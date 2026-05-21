@@ -1,6 +1,6 @@
 # apps/merchants/serializers.py
 from rest_framework import serializers
-from .models import StoreProfile
+from .models import StoreProfile, StoreOperatingHour
 
 
 class StoreProfileSerializer(serializers.ModelSerializer):
@@ -20,8 +20,7 @@ class StoreProfileSerializer(serializers.ModelSerializer):
     def get_operating_hours(self, obj):
         """Formats the DB records into a guaranteed 7-day array for the frontend."""
 
-        existing_hours = {
-            hour.day_of_week: hour for hour in obj.operating_hours.all()}
+        existing_hours = {hour.day_of_week: hour for hour in obj.operating_hours.all()}
 
         day_names = [
             "Monday",
@@ -34,10 +33,8 @@ class StoreProfileSerializer(serializers.ModelSerializer):
         ]
         schedule = []
 
-        # 2. Loop through all 7 days (0 to 6)
         for i in range(7):
             if i in existing_hours:
-                # Store is open: send the times
                 hour = existing_hours[i]
                 schedule.append(
                     {
@@ -48,7 +45,6 @@ class StoreProfileSerializer(serializers.ModelSerializer):
                     }
                 )
             else:
-                # Store is closed: inject the fake "Closed" object for the frontend
                 schedule.append(
                     {
                         "day": day_names[i],
@@ -59,3 +55,11 @@ class StoreProfileSerializer(serializers.ModelSerializer):
                 )
 
         return schedule
+
+
+class StoreOperatingHourSerializer(serializers.ModelSerializer):
+    day_name = serializers.CharField(source="get_day_of_week_display", read_only=True)
+
+    class Meta:
+        model = StoreOperatingHour
+        fields = ["day_of_week", "day_name", "open_time", "close_time"]
