@@ -14,7 +14,8 @@ class StoreProfile(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="owned_stores"
     )
     staff = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, related_name="managed_stores", blank=True)
+        settings.AUTH_USER_MODEL, related_name="managed_stores", blank=True
+    )
 
     merchant_type = models.CharField(
         max_length=20, choices=MerchantType.choices, default=MerchantType.RESTAURANT
@@ -55,6 +56,9 @@ class StoreOperatingHour(models.Model):
     )
     open_time = models.TimeField()
     close_time = models.TimeField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ("store", "day_of_week")
