@@ -1,6 +1,6 @@
 from .models import StoreOperatingHour, StoreProfile
 from .serializers import StoreOperatingHourSerializer, StoreProfileSerializer
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -32,4 +32,5 @@ class StoreOperatingHoursAPIView(ListAPIView):
 
     def get_queryset(self):
         store_id = self.kwargs.get("store_id")
+        get_object_or_404(StoreProfile, id=store_id)
         return super().get_queryset().filter(store_id=store_id).order_by("day_of_week")
