@@ -14,6 +14,8 @@
     "ms-python.vscode-python-envs",
     "kevinrose.vsc-python-indent",
     "britesnow.vscode-toggle-quotes",
-    "ms-vscode-remote.remote-wsl"
+    "ms-vscode-remote.remote-wsl",
+    "monosans.djlint",
+    "cweijan.vscode-database-client2"
   ]
 }

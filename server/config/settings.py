@@ -41,11 +41,61 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
+    "django.contrib.sites",
+
     # Third-party apps
     "rest_framework",
+    "rest_framework_simplejwt",
+    "drf_spectacular",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
+
     # Local apps
     "apps.users",
 ]
+
+SITE_ID = 1
+AUTH_USER_MODEL = "users.User"
+LOGIN_URL = "users:sign_in"
+
+AUTHENTICATION_BACKENDS = [
+    "apps.users.backends.EmailOrUsernameBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_COOKIE": None,
+    "TOKEN_MODEL": None,
+}
+
+# Allauth and dj-rest-auth settings
+ACCOUNT_ADAPTER = "apps.users.adapter.AccountAdapter"
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
+ACCOUNT_UNIQUE_EMAIL = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Mapetite API",
+    "DESCRIPTION": "API Documentation for Mapetite",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -55,6 +105,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -134,3 +185,12 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_ROOT = BASE_DIR / "media"
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
+# SMTP Email Configuration
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_PORT = env("EMAIL_PORT")
+EMAIL_USE_TLS = env("EMAIL_USE_TLS")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")

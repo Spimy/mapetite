@@ -16,13 +16,47 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, reverse_lazy
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.admin.views.decorators import staff_member_required
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
+
+# Customise the admin site headers and titles
+admin.site.site_header = "Mapetite Admin"
+admin.site.site_title = "Mapetite Admin Portal"
+admin.site.index_title = "Welcome to the Mapetite Admin Portal"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("users/", include("apps.users.urls", namespace="users")),
+    path("", include("apps.users.urls", namespace="users")),
+    path(
+        "api/schema/",
+        staff_member_required(
+            SpectacularAPIView.as_view(), login_url=reverse_lazy("users:sign_in")
+        ),
+        name="schema",
+    ),
+    path(
+        "api/schema/swagger-ui/",
+        staff_member_required(
+            SpectacularSwaggerView.as_view(url_name="schema"),
+            login_url=reverse_lazy("users:sign_in"),
+        ),
+        name="swagger-ui",
+    ),
+    path(
+        "api/schema/redoc/",
+        staff_member_required(
+            SpectacularRedocView.as_view(url_name="schema"),
+            login_url=reverse_lazy("users:sign_in"),
+        ),
+        name="redoc",
+    ),
 ]
 
 if settings.DEBUG:

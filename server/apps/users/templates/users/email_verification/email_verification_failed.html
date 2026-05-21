@@ -1,0 +1,29 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'users/css/auth.css' %}" />
+{% endblock styles %}
+
+{% block title %}
+  Email Verification Failed
+{% endblock title %}
+
+{% block description %}
+  This email verification link is invalid, has already been used, or has expired.
+{% endblock description %}
+
+{% block keywords %}
+  email verification failed, Mapetite
+{% endblock keywords %}
+
+{% block content %}
+  <section class="auth">
+    <div class="auth__form">
+      <h2 class="auth__title">Email Verification Failed</h2>
+      <p class="auth__text">
+        This verification link is invalid, has already been used, or has expired. Please request a new link from the application.
+      </p>
+    </div>
+  </section>
+{% endblock content %}
