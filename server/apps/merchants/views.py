@@ -24,7 +24,7 @@ class StoreAPIView(RetrieveAPIView):
 
 
 class StoreOperatingHoursAPIView(ListAPIView):
-    """Fetches only the operating hours for a store"""
+    """Fetches and pads the operating hours for a specific store"""
 
     queryset = StoreOperatingHour.objects.all()
     serializer_class = StoreOperatingHourSerializer
@@ -32,4 +32,4 @@ class StoreOperatingHoursAPIView(ListAPIView):
 
     def get_queryset(self):
         store_id = self.kwargs.get("store_id")
-        return super().get_queryset().filter(store_id=store_id)
+        return super().get_queryset().filter(store_id=store_id).order_by("day_of_week")
