@@ -36,3 +36,37 @@ class StoreProfile(models.Model):
     def __str__(self):
         display_name = self.MerchantType(self.merchant_type).label
         return f"{self.business_name} ({display_name})"
+
+
+class StoreOperatingHour(models.Model):
+    store = models.ForeignKey(
+        StoreProfile, on_delete=models.CASCADE, related_name="operating_hours"
+    )
+    day_of_week = models.IntegerField(
+        choices=[
+            (0, "Monday"),
+            (1, "Tuesday"),
+            (2, "Wednesday"),
+            (3, "Thursday"),
+            (4, "Friday"),
+            (5, "Saturday"),
+            (6, "Sunday"),
+        ]
+    )
+    open_time = models.TimeField()
+    close_time = models.TimeField()
+
+    class Meta:
+        unique_together = ("store", "day_of_week")
+
+    def __str__(self):
+        days = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ]
+        return f"{self.store.business_name} - {days[self.day_of_week]}: {self.open_time} to {self.close_time}"
