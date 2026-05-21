@@ -1,5 +1,6 @@
 # apps/merchants/serializers.py
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import StoreProfile, StoreOperatingHour
 
 
@@ -43,11 +44,17 @@ class PaddedOperatingHoursListSerializer(serializers.ListSerializer):
 
 class StoreOperatingHourSerializer(serializers.ModelSerializer):
     day_name = serializers.CharField(source="get_day_of_week_display", read_only=True)
+    is_closed = serializers.SerializerMethodField()
 
     class Meta:
         model = StoreOperatingHour
-        fields = ["day_of_week", "day_name", "open_time", "close_time"]
+        fields = ["day_of_week", "day_name", "open_time", "close_time", "is_closed"]
         list_serializer_class = PaddedOperatingHoursListSerializer
+        is_closed = serializers.SerializerMethodField()
+
+    @extend_schema_field(serializers.BooleanField)
+    def get_is_closed(self, obj):
+        return False  # This field is added in the list serializer, not here
 
 
 class StoreProfileSerializer(serializers.ModelSerializer):
