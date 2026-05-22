@@ -7,15 +7,21 @@ from django.utils import timezone
 from django.shortcuts import redirect
 from django.views import View
 from django.shortcuts import render
-from .forms import SignInForm
-from .mixins import SuccessUrlMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import RedirectView
 from django.urls import reverse_lazy
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from dj_rest_auth.registration.views import SocialLoginView, VerifyEmailView
+from dj_rest_auth.registration.views import (
+    IsAuthenticated,
+    SocialLoginView,
+    VerifyEmailView,
+)
 from allauth.account.models import EmailConfirmationHMAC, EmailConfirmation
 from drf_spectacular.utils import extend_schema_view, extend_schema
+from rest_framework.generics import RetrieveAPIView
+from .forms import SignInForm
+from .mixins import SuccessUrlMixin
+from .serializers import UserDetailSerializer
 
 
 # Create your views here.
@@ -38,6 +44,21 @@ class SignOutView(LoginRequiredMixin, RedirectView):
     def get(self, request, *args, **kwargs):
         logout(request)
         return super(SignOutView, self).get(request, *args, **kwargs)
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+
+class UserDetailView(APIView):
+    """API view to get details of the currently authenticated user"""
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(responses={200: UserDetailSerializer})
+    def get(self, request, *args, **kwargs):
+        serializer = UserDetailSerializer(request.user)
+        return Response(serializer.data)
 
 
 class PasswordResetView(auth_views.PasswordResetView):
