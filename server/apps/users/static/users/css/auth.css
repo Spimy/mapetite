@@ -44,7 +44,7 @@
   display: grid;
   gap: 0.25rem;
 
-  .auth__email-icon {
+  .auth__form-icon {
     color: var(--color-primary);
     background-color: var(--color-tertiary);
     border-radius: 50%;
@@ -52,9 +52,14 @@
     aspect-ratio: 1 / 1;
     display: grid;
     place-items: center;
+
+    &.auth__form-icon--error {
+      color: var(--color-error);
+      background-color: color-mix(in srgb, var(--color-error) 10%);
+    }
   }
 
-  .auth__email-icon svg {
+  .auth__form-icon svg {
     width: 2rem;
     height: 2rem;
   }
@@ -121,7 +126,7 @@
   width: 100%;
 }
 
-.auth__password-wrapper input[name="password"] {
+.auth__password-wrapper input {
   width: 100%;
   padding-right: 2.5rem; /* Space for the toggle button */
 }
