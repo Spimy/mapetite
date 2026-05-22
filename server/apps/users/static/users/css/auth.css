@@ -44,9 +44,34 @@
   display: grid;
   gap: 0.25rem;
 
+  .auth__email-icon {
+    color: var(--color-primary);
+    background-color: var(--color-tertiary);
+    border-radius: 50%;
+    padding: 0.75rem;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    place-items: center;
+  }
+
+  .auth__email-icon svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
   .auth__form-subtitle {
     font-size: 0.875rem;
     color: var(--color-grey-600);
+
+    span {
+      font-weight: var(--font-weight-label);
+      color: var(--color-neutral);
+    }
+  }
+
+  &.auth__form-header--center {
+    justify-items: center;
+    text-align: center;
   }
 }
 
