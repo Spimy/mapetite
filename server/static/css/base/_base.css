@@ -69,3 +69,14 @@ a {
 .btn:hover {
   background-color: color-mix(in srgb, var(--color-primary) 80%, black);
 }
+
+.btn--invert {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 0.125rem solid var(--color-primary);
+}
+
+.btn--invert:hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
