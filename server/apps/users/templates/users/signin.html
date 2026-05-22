@@ -49,6 +49,16 @@
                                      width="20"
                                      height="20" />
                             </button>
+                            <noscript>
+                                <style type="text/css">
+                                    .auth__password-toggle {
+                                        display: none !important;
+                                    }
+                                    .auth__password-wrapper input[name="password"] {
+                                        padding-right: 0.75rem !important; 
+                                    }
+                                </style>
+                            </noscript>
                         </div>
                         <a href="{% url 'users:password_reset' %}"
                            class="auth__link auth__link--forgot">Forgot your Password?</a>
