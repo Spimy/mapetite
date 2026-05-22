@@ -98,15 +98,6 @@
   margin: 0;
 }
 
-.auth__password-toggle:hover {
-  color: var(--color-grey-600);
-}
-
-.auth__password-toggle:focus {
-  outline: none;
-  color: var(--color-primary);
-}
-
 .auth__password-toggle .icon-eye-off {
   display: none;
 }
