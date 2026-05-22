@@ -139,6 +139,11 @@
   &.auth__link--forgot {
     justify-self: end;
   }
+
+  &.auth__link--center {
+    margin-top: 1rem;
+    justify-self: center;
+  }
 }
 
 .auth__contact {
