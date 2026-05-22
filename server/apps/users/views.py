@@ -101,6 +101,18 @@ class PasswordResetDoneView(auth_views.PasswordResetDoneView):
         return context
 
 
+class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    success_url = reverse_lazy("users:password_reset_complete")
+    template_name = "users/password_reset/password_reset_confirm.html"
+
+    def get(self, request, *args, **kwargs):
+        # Unset the reset email from the session if it exists once user opens the link
+        if "reset_email" in self.request.session:
+            del self.request.session["reset_email"]
+
+        return super().get(request, *args, **kwargs)
+
+
 class GoogleLoginView(SocialLoginView):
     """Takes the access token from the frontend provided by Google and uses it to log in the user via Google OAuth2"""
 
