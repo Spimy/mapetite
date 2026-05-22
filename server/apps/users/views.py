@@ -1,3 +1,4 @@
+import time
 from django.views.generic import FormView
 from django.conf import settings
 from django.contrib.auth import views as auth_views, login, logout
@@ -48,6 +49,10 @@ class PasswordResetView(auth_views.PasswordResetView):
     cooldown_seconds = 60
 
     def form_valid(self, form):
+        # Used for mitigating timing attack
+        # Normally, this would be done by offloading the email sending to a background task queue, but this is a simpler solution for now to ensure consistent response times regardless of whether the email exists or not
+        start_time = time.time()
+
         # Check if the user is spamming the request
         last_request_time_str = self.request.session.get("last_password_reset_request")
         if last_request_time_str:
@@ -75,7 +80,17 @@ class PasswordResetView(auth_views.PasswordResetView):
         # Save the submitted email in the session for the next step
         self.request.session["reset_email"] = form.cleaned_data["email"]
 
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        elapsed_time = time.time() - start_time
+        target_delay = 2.0
+
+        # Ensure a minimum delay to mitigate timing attacks
+        # If the email exists, the process will take around 1-2 seconds due to email sending. If it doesn't exist, it will be much faster.
+        # By enforcing a minimum response time, we can prevent attackers from inferring whether an email exists based on how quickly they get a response.
+        if elapsed_time < target_delay:
+            time.sleep(target_delay - elapsed_time)
+
+        return response
 
 
 class PasswordResetDoneView(auth_views.PasswordResetDoneView):
