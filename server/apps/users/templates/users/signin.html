@@ -26,7 +26,7 @@
 
         <div class="auth__fields">
             {% for field in form.visible_fields %}
-                <div class="auth__field">
+                <div class="auth__field {% if form.non_field_errors %}auth__field--error{% endif %}">
                     {{ field.label_tag }}
 
                     {% if field.name == 'password' %}
@@ -60,13 +60,19 @@
                                 </style>
                             </noscript>
                         </div>
-                        <a href="{% url 'users:password_reset' %}"
-                           class="auth__link auth__link--forgot">Forgot your Password?</a>
+                        {% if form.non_field_errors %}
+                            <small class="auth__error">
+                                {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                            </small>
+                        {% endif %}
                     {% else %}
                         {{ field }}
                     {% endif %}
                 </div>
             {% endfor %}
+
+            <a href="{% url 'users:password_reset' %}"
+               class="auth__link auth__link--forgot">Forgot your Password?</a>
         </div>
 
         <button type="submit" class="btn auth__button">Sign In</button>
