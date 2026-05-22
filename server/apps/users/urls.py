@@ -6,7 +6,11 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-from dj_rest_auth.registration.views import RegisterView, ResendEmailVerificationView, VerifyEmailView
+from dj_rest_auth.registration.views import (
+    RegisterView,
+    ResendEmailVerificationView,
+    VerifyEmailView,
+)
 
 app_name = "users"
 
@@ -19,18 +23,12 @@ urlpatterns = [
     # --- Password reset URLs ---
     path(
         "reset-password/",
-        auth_views.PasswordResetView.as_view(
-            success_url=reverse_lazy("users:password_reset_done"),
-            email_template_name="users/password_reset/password_reset_email.txt",
-            template_name="users/password_reset/password_reset_form.html",
-        ),
+        views.PasswordResetView.as_view(),
         name="password_reset",
     ),
     path(
         "reset-password/sent/",
-        auth_views.PasswordResetDoneView.as_view(
-            template_name="users/password_reset/password_reset_done.html"
-        ),
+        views.PasswordResetDoneView.as_view(),
         name="password_reset_done",
     ),
     path(
@@ -64,11 +62,12 @@ urlpatterns = [
 
     # --- Registration API URLs ---
     path("api/auth/register/", RegisterView.as_view(), name="rest_register"),
-    path("api/auth/verify-email/", VerifyEmailView.as_view(),
-         name="rest_verify_email"),
-    path("api/auth/resend-email/", ResendEmailVerificationView.as_view(),
-         name="rest_resend_email"),
-
+    path("api/auth/verify-email/", VerifyEmailView.as_view(), name="rest_verify_email"),
+    path(
+        "api/auth/resend-email/",
+        ResendEmailVerificationView.as_view(),
+        name="rest_resend_email",
+    ),
     # The dummy route that exists purely so `allauth` doesn't crash. Please don't use this for anything.
     path(
         "api/auth/account-email-verification-sent/",
