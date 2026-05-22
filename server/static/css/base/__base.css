@@ -1,0 +1,71 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  --color-primary: hsl(163, 88%, 20%);
+  --color-primary-light: hsl(149, 80%, 90%);
+  --color-secondary: hsl(193, 82%, 31%);
+  --color-secondary-light: hsl(185, 96%, 90%);
+  --color-tertiary: hsl(138, 76%, 97%);
+  --color-neutral: hsl(215, 28%, 17%);
+  --color-grey-100: hsl(220, 14%, 96%);
+  --color-grey-400: hsl(218, 11%, 65%);
+  --color-grey-600: hsl(220, 9%, 46%);
+  --color-border: hsl(220, 13%, 91%);
+  --color-white: hsl(0, 0%, 100%);
+  --color-error: hsl(0, 84%, 60%);
+  --color-warning: hsl(38, 92%, 50%);
+  --color-success: hsl(160, 84%, 39%);
+
+  --font-family: "Inter", sans-serif;
+  --font-weight-body: 400;
+  --font-weight-label: 500;
+  --font-weight-heading: 600;
+  --font-weight-heading-bold: 700;
+}
+
+body {
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: var(--font-weight-heading-bold);
+}
+
+p {
+  font-weight: var(--font-weight-body);
+}
+
+a,
+label {
+  font-weight: var(--font-weight-label);
+}
+
+a {
+  color: var(--color-secondary);
+}
+
+button,
+a {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn {
+  display: inline-block;
+  color: var(--color-white);
+  background-color: var(--color-primary);
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: var(--font-weight-label);
+}
+
+.btn:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 80%, black);
+}
