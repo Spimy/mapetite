@@ -20,5 +20,5 @@ class SignInForm(AuthenticationForm):
 
     password = forms.CharField(
         label="Password",
-        widget=forms.widgets.PasswordInput(attrs={"placeholder": "Password"}),
+        widget=forms.widgets.PasswordInput(attrs={"placeholder": "••••••••"}),
     )
