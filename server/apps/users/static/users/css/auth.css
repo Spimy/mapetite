@@ -40,6 +40,16 @@
   gap: 1rem;
 }
 
+.auth__form-header {
+  display: grid;
+  gap: 0.25rem;
+
+  .auth__form-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-grey-600);
+  }
+}
+
 .auth__fields,
 .auth__field {
   display: grid;
