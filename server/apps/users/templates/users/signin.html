@@ -37,17 +37,8 @@
                                     id="toggle-password-btn"
                                     aria-label="Toggle password visibility">
 
-                                <img src="{% static 'img/eye-on.svg' %}"
-                                     alt="Show password"
-                                     class="icon-eye"
-                                     width="20"
-                                     height="20" />
-
-                                <img src="{% static 'img/eye-off.svg' %}"
-                                     alt="Hide password"
-                                     class="icon-eye-off"
-                                     width="20"
-                                     height="20" />
+                                <span class="icon-eye">{% include "icons/eye-on.html" %}</span>
+                                <span class="icon-eye-off">{% include "icons/eye-off.html" %}</span>
                             </button>
                             <noscript>
                                 <style type="text/css">
