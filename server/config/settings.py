@@ -63,6 +63,7 @@ INSTALLED_APPS = [
 SITE_ID = 1
 AUTH_USER_MODEL = "users.User"
 LOGIN_URL = "users:sign_in"
+PASSWORD_RESET_TIMEOUT = 30 * 60  # 30 minutes in seconds
 
 AUTHENTICATION_BACKENDS = [
     "apps.users.backends.EmailOrUsernameBackend",

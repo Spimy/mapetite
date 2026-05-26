@@ -1,9 +1,4 @@
-{% extends "main/base.html" %}
-{% load static %}
-
-{% block styles %}
-  <link rel="stylesheet" href="{% static 'users/css/auth.css' %}" />
-{% endblock styles %}
+{% extends "users/auth.html" %}
 
 {% block title %}
   Email Verification Successful
@@ -17,13 +12,14 @@
   email verification successful, Mapetite
 {% endblock keywords %}
 
-{% block content %}
-  <section class="auth">
-    <div class="auth__form">
-      <h2 class="auth__title">Email Verified</h2>
-      <p class="auth__text">
+{% block auth_content %}
+  <div class="auth__form">
+    <div class="auth__form-header auth__form-header--center">
+      <span class="auth__form-icon">{% include "icons/check.html" %}</span>
+      <h2 class="auth__form-title">Email Verified</h2>
+      <p class="auth__form-subtitle">
         Your email has been successfully verified. You can now safely close this window and return to the app.
       </p>
     </div>
-  </section>
-{% endblock content %}
+  </div>
+{% endblock auth_content %}

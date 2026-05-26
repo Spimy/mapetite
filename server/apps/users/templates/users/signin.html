@@ -1,9 +1,5 @@
-{% extends "main/base.html" %}
+{% extends "users/auth.html" %}
 {% load static %}
-
-{% block styles %}
-    <link rel="stylesheet" href="{% static 'users/css/auth.css' %}" />
-{% endblock styles %}
 
 {% comment %} Page Meta {% endcomment %}
 {% block title %}
@@ -19,36 +15,82 @@
 {% endblock keywords %}
 {% comment %} End Page Meta {% endcomment %}
 
-{% block content %}
-    <section class="auth">
+{% block auth_content %}
+    <form method="post" class="auth__form">
+        {% csrf_token %}
 
-        <form method="post" class="auth__form">
-            {% csrf_token %}
+        <div class="auth__form-header">
+            <h2 class="auth__form-title">Welcome back</h2>
+            <p class="auth__form-subtitle">Sign in to your merchant account.</p>
+        </div>
 
-            <div class="auth__fields">
-                {% for field in form.visible_fields %}
-                    <div class="auth__field">
-                        {{ field.label_tag }}
+        <div class="auth__fields">
+            {% for field in form.visible_fields %}
+                <div class="auth__field {% if form.non_field_errors %}auth__field--error{% endif %}">
+                    {{ field.label_tag }}
+
+                    {% if field.name == 'password' %}
+                        <div class="auth__password-wrapper">
+                            {{ field }}
+                            <button type="button"
+                                    class="auth__password-toggle"
+                                    id="toggle-password-btn"
+                                    aria-label="Toggle password visibility">
+
+                                <span class="icon-eye">{% include "icons/eye-on.html" %}</span>
+                                <span class="icon-eye-off">{% include "icons/eye-off.html" %}</span>
+                            </button>
+                            <noscript>
+                                <style type="text/css">
+                                    .auth__password-toggle {
+                                        display: none !important;
+                                    }
+                                    .auth__password-wrapper input[name="password"] {
+                                        padding-right: 0.75rem !important; 
+                                    }
+                                </style>
+                            </noscript>
+                        </div>
+                        {% if form.non_field_errors %}
+                            <small class="auth__error">
+                                {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                            </small>
+                        {% endif %}
+                    {% else %}
                         {{ field }}
-                    </div>
-                {% endfor %}
-            </div>
-
-            <button type="submit" class="auth__button">Sign In</button>
-
-            {% comment %} Temporary: Should be changed to marketing/landing page contact form {% endcomment %}
-            <a href="{% url 'users:sign_in' %}"
-               class="auth__link auth__link--contact">Interested in joining? Contact us for a demo!</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
 
             <a href="{% url 'users:password_reset' %}"
                class="auth__link auth__link--forgot">Forgot your Password?</a>
+        </div>
 
-            {% comment %} Temporary: For testing only. To be removed later. {% endcomment %}
-            {% if user.is_authenticated %}
-                <a href="{% url 'users:sign_out' %}">Sign Out</a>
-            {% endif %}
+        <button type="submit" class="btn auth__button">Sign In</button>
 
-        </form>
+        {% comment %} Temporary: Should be changed to marketing/landing page contact form {% endcomment %}
+        <p class="auth__contact">
+            <span class="auth__contact-text">Don't have an account?</span>
+            <a href="{% url 'users:sign_in' %}"
+               class="auth__link auth__link--contact">Contact us for a demo!</a>
+        </p>
+    </form>
 
-    </section>
-{% endblock content %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('toggle-password-btn');
+            const passwordInput = document.querySelector('.auth__password-wrapper input[name="password"]');
+
+            if (toggleBtn && passwordInput) {
+                toggleBtn.addEventListener('click', function() {
+                    // Toggle the type attribute
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    // Toggle the active class on the button to switch icons
+                    this.classList.toggle('is-visible');
+                });
+            }
+        });
+    </script>
+{% endblock auth_content %}

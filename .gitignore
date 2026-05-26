@@ -16,3 +16,8 @@ __pycache__/
 # Mobile (assuming it's a Flutter project)
 mobile-client/build/
 mobile-client/.dart_tool/
+
+# Media files from Django
+/server/media/*
+/server/media/**/*
+!/server/media/.gitkeep

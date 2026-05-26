@@ -1,1 +1,201 @@
-/* TODO: Add authentication styles. Currently waiting for design specifications. */
+.auth {
+  min-height: 100dvh;
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+  }
+}
+
+.auth__banner {
+  min-height: 100dvh;
+  background-color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--color-white);
+  padding: calc(2rem + 3.5vw);
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.auth__content {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background-color: var(--color-tertiary);
+}
+
+.auth__form {
+  background-color: var(--color-white);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 30rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.auth__form-header {
+  display: grid;
+  gap: 0.25rem;
+
+  .auth__form-icon {
+    color: var(--color-primary);
+    background-color: var(--color-tertiary);
+    border-radius: 50%;
+    padding: 0.75rem;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    place-items: center;
+
+    &.auth__form-icon--error {
+      color: var(--color-error);
+      background-color: color-mix(in srgb, var(--color-error) 10%);
+    }
+  }
+
+  .auth__form-icon svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .auth__form-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-grey-600);
+
+    span {
+      font-weight: var(--font-weight-label);
+      color: var(--color-neutral);
+    }
+  }
+
+  &.auth__form-header--center {
+    justify-items: center;
+    text-align: center;
+  }
+}
+
+.auth__fields,
+.auth__field {
+  display: grid;
+}
+
+.auth__fields {
+  gap: 1rem;
+}
+
+.auth__field {
+  gap: 0.25rem;
+}
+
+.auth__field label {
+  font-weight: var(--font-weight-label);
+  font-size: 0.875rem;
+}
+
+.auth__field input {
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-tertiary);
+}
+
+.auth__field input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.auth__field--error input {
+  border-color: var(--color-error);
+}
+
+.auth__field--error input:focus {
+  border-color: var(--color-error);
+  outline-color: var(--color-error);
+}
+
+.auth__password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.auth__password-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem; /* Space for the toggle button */
+}
+
+.auth__password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-grey-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+.auth__password-toggle:hover {
+  color: var(--color-grey-600);
+}
+
+.auth__password-toggle:focus {
+  outline: none;
+  color: var(--color-primary);
+}
+
+.auth__password-toggle .icon-eye-off {
+  display: none;
+}
+
+.auth__password-toggle.is-visible .icon-eye {
+  display: none;
+}
+
+.auth__password-toggle.is-visible .icon-eye-off {
+  display: flex;
+}
+
+.auth__password-toggle:not(.is-visible) .icon-eye {
+  display: flex;
+}
+
+.auth__error {
+  color: var(--color-error);
+}
+
+.auth__link {
+  font-size: 0.875rem;
+
+  &.auth__link--forgot {
+    justify-self: end;
+  }
+
+  &.auth__link--center {
+    margin-top: 1rem;
+    justify-self: center;
+  }
+}
+
+.auth__contact {
+  justify-self: center;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.auth__contact-text {
+  color: var(--color-grey-600);
+}

@@ -5,7 +5,7 @@ from .models import User, UserProfile
 
 class SignInForm(AuthenticationForm):
     error_messages = {
-        "invalid_login": ("The username or password you have entered is invalid."),
+        "invalid_login": ("Incorrect email/username or password."),
         "inactive": ("This account is inactive."),
     }
 
@@ -20,5 +20,5 @@ class SignInForm(AuthenticationForm):
 
     password = forms.CharField(
         label="Password",
-        widget=forms.widgets.PasswordInput(attrs={"placeholder": "Password"}),
+        widget=forms.widgets.PasswordInput(attrs={"placeholder": "••••••••"}),
     )
