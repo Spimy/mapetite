@@ -2,6 +2,21 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Flutter: Debug",
+            "type": "dart",
+            "request": "launch",
+            "program": "mobile-client/lib/main.dart",
+            "cwd": "${workspaceFolder}/mobile-client"
+        },
+        {
+            "name": "Flutter: Debug (Chrome)",
+            "type": "dart",
+            "request": "launch",
+            "program": "mobile-client/lib/main.dart",
+            "cwd": "${workspaceFolder}/mobile-client",
+            "deviceId": "chrome"
+        },
+        {
             "name": "Django: Debug Server",
             "type": "debugpy",
             "request": "launch",
