@@ -8,5 +8,8 @@ void main() {
       const ProviderScope(child: MapetiteApp()),
     );
     expect(find.text('Mapetite'), findsOneWidget);
+    // Advance past the splash screen timer to prevent pending timer assertion
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
   });
 }
