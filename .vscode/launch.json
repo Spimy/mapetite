@@ -2,6 +2,39 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Flutter: Debug",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "cwd": "${workspaceFolder}/mobile-client",
+            "flutterMode": "debug",
+            "debugSdkLibraries": false,
+            "debugExternalPackageLibraries": false,
+            "evaluateGettersInDebugViews": true
+        },
+        {
+            "name": "Flutter: Debug (Chrome)",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "cwd": "${workspaceFolder}/mobile-client",
+            "deviceId": "chrome",
+            "flutterMode": "debug",
+            "debugSdkLibraries": false,
+            "debugExternalPackageLibraries": false,
+            "evaluateGettersInDebugViews": true
+        },
+        {
+            "name": "Flutter: Attach",
+            "type": "dart",
+            "request": "attach",
+            "program": "lib/main.dart",
+            "cwd": "${workspaceFolder}/mobile-client",
+            "debugSdkLibraries": false,
+            "debugExternalPackageLibraries": false,
+            "evaluateGettersInDebugViews": true
+        },
+        {
             "name": "Django: Debug Server",
             "type": "debugpy",
             "request": "launch",
