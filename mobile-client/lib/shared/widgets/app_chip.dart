@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_spacing.dart';
-import '../constants/app_typography.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/constants/app_spacing.dart';
+import '../../core/constants/app_typography.dart';
 
 enum AppChipStyle { dietary, category, filter }
 

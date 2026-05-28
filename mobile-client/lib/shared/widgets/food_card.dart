@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_spacing.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/constants/app_spacing.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;

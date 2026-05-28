@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_spacing.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/constants/app_spacing.dart';
 
 class ShimmerLoader extends StatelessWidget {
   final double width;

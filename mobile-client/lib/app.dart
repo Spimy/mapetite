@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'core/constants/app_colors.dart';
+import 'core/theme/app_colors.dart';
 import 'core/constants/app_typography.dart';
 import 'core/theme/app_theme.dart';
 

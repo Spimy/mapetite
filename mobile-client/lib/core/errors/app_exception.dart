@@ -1,0 +1,31 @@
+import 'package:dio/dio.dart';
+
+class AppException implements Exception {
+  final String message;
+  final int? statusCode;
+
+  const AppException({required this.message, this.statusCode});
+
+  factory AppException.fromDio(DioException e) {
+    final statusCode = e.response?.statusCode;
+    final message = switch (e.type) {
+      DioExceptionType.connectionTimeout ||
+      DioExceptionType.sendTimeout ||
+      DioExceptionType.receiveTimeout =>
+        'Connection timed out. Please try again.',
+      DioExceptionType.connectionError =>
+        'No internet connection.',
+      _ => e.response?.data?['detail'] as String? ?? 'Something went wrong.',
+    };
+    return AppException(message: message, statusCode: statusCode);
+  }
+
+  factory AppException.unauthorised() =>
+      const AppException(message: 'Session expired. Please log in again.', statusCode: 401);
+
+  factory AppException.notFound(String resource) =>
+      AppException(message: '$resource not found.', statusCode: 404);
+
+  @override
+  String toString() => 'AppException($statusCode): $message';
+}
