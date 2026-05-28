@@ -35,4 +35,14 @@ abstract class Validators {
     if (parsed == null || parsed <= 0) return '$field must be a positive number.';
     return null;
   }
+
+  static int calculatePasswordStrength(String password) {
+    if (password.isEmpty) return 0;
+    int strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.contains(RegExp(r'[A-Z]'))) strength++;
+    if (password.contains(RegExp(r'[0-9]'))) strength++;
+    if (password.contains(RegExp(r'[^A-Za-z0-9]'))) strength++;
+    return strength;
+  }
 }

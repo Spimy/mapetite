@@ -14,8 +14,10 @@ class AppTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final String? Function(String?)? validator;
   final bool readOnly;
+  final bool enabled;
   final int maxLines;
   final TextInputAction textInputAction;
+  final TextCapitalization textCapitalization;
 
   const AppTextField({
     super.key,
@@ -30,8 +32,10 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.validator,
     this.readOnly = false,
+    this.enabled = true,
     this.maxLines = 1,
     this.textInputAction = TextInputAction.next,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   @override
@@ -56,8 +60,10 @@ class _AppTextFieldState extends State<AppTextField> {
       onChanged: widget.onChanged,
       validator: widget.validator,
       readOnly: widget.readOnly,
+      enabled: widget.enabled,
       maxLines: widget.obscureText ? 1 : widget.maxLines,
       textInputAction: widget.textInputAction,
+      textCapitalization: widget.textCapitalization,
       style: AppTypography.body1,
       decoration: InputDecoration(
         labelText: widget.label,
