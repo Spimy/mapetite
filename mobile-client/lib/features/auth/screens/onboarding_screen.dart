@@ -111,20 +111,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 AppSpacing.screenHorizontalPadding,
                 AppSpacing.xxl,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column(
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       _slides.length,
                       (i) => _buildDot(i),
                     ),
                   ),
+                  const SizedBox(height: AppSpacing.lg),
                   AppButton(
                     label: isLast ? 'Get started' : 'Next',
-                    isFullWidth: false,
-                    width: 130,
                     onPressed: _onNext,
                   ),
                 ],

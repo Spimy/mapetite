@@ -17,6 +17,11 @@ abstract class Validators {
     return null;
   }
 
+  static String? loginPassword(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required.';
+    return null;
+  }
+
   static String? confirmPassword(String? value, String original) {
     if (value != original) return 'Passwords do not match.';
     return null;
