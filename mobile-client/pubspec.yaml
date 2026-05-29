@@ -24,6 +24,9 @@ dependencies:
   flutter_svg: ^2.0.10+1
   fl_chart: ^0.68.0
 
+  # Navigation
+  go_router: ^14.0.0
+
   # State
   flutter_riverpod: ^2.5.1
 

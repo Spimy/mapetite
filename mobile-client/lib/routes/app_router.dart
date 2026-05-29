@@ -1,29 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../features/auth/screens/splash_screen.dart';
+import '../features/auth/screens/onboarding_screen.dart';
+import '../features/auth/screens/login_screen.dart';
+import '../features/auth/screens/register_screen.dart';
+import '../features/auth/screens/forgot_password_screen.dart';
 
 abstract class AppRoutes {
-  static const String discovery = '/';
+  static const String splash = '/';
+  static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String register = '/register';
-  static const String profile = '/profile';
-  static const String restaurants = '/restaurants';
-  static const String groceries = '/groceries';
-  static const String recipes = '/recipes';
-  static const String groceryList = '/grocery-list';
-  static const String budget = '/budget';
-  static const String routing = '/routing';
-  static const String notifications = '/notifications';
-  static const String settings = '/settings';
+  static const String forgotPassword = '/forgot-password';
+  static const String home = '/home';
 }
 
-class AppRouter {
-  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
-    switch (settings.name) {
-      default:
-        return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(child: Text('Route not found')),
-          ),
-        );
-    }
+final GoRouter appRouter = GoRouter(
+  initialLocation: AppRoutes.splash,
+  routes: [
+    GoRoute(
+      path: AppRoutes.splash,
+      builder: (context, state) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.onboarding,
+      builder: (context, state) => const OnboardingScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.login,
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.register,
+      builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.forgotPassword,
+      builder: (context, state) => const ForgotPasswordScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.home,
+      builder: (context, state) => const _HomePlaceholderScreen(),
+    ),
+  ],
+);
+
+class _HomePlaceholderScreen extends StatelessWidget {
+  const _HomePlaceholderScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: Text('Home — coming soon')),
+    );
   }
 }
