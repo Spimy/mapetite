@@ -13,5 +13,10 @@ urlpatterns = [
         name="store_operating_hours",
     ),
     # --- Dashboard URLs ---
-    path("dashboard/", view=views.DashboardView.as_view(), name="dashboard"),
+    path("dashboard/", view=views.DashboardRedirectView.as_view(), name="dashboard"),
+    path(
+        "dashboard/<int:store_index>/", views.DashboardView.as_view(), name="dashboard"
+    ),
+    path("onboarding/", views.OnboardingView.as_view(), name="onboarding"),
+    path("store/<int:store_id>/mark-location/", views.MarkLocationView.as_view(), name="mark_location"),
 ]
