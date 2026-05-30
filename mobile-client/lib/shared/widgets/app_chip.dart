@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_typography.dart';
@@ -12,6 +13,7 @@ class AppChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback? onTap;
   final AppChipStyle style;
+  final Widget? leadingIcon;
 
   const AppChip({
     super.key,
@@ -21,6 +23,7 @@ class AppChip extends StatelessWidget {
     this.isSelected = false,
     this.onTap,
     this.style = AppChipStyle.filter,
+    this.leadingIcon,
   });
 
   factory AppChip.halal({VoidCallback? onTap}) => AppChip(
@@ -28,6 +31,12 @@ class AppChip extends StatelessWidget {
         backgroundColor: AppColors.tagHalal,
         textColor: AppColors.white,
         style: AppChipStyle.dietary,
+        leadingIcon: SvgPicture.asset(
+          'assets/icons/dietary/halal-icon.svg',
+          width: 14,
+          height: 14,
+          colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+        ),
         onTap: onTap,
       );
 
@@ -36,6 +45,7 @@ class AppChip extends StatelessWidget {
         backgroundColor: AppColors.tagVegan,
         textColor: AppColors.white,
         style: AppChipStyle.dietary,
+        leadingIcon: const Icon(Icons.eco, size: 11, color: AppColors.white),
         onTap: onTap,
       );
 
@@ -44,6 +54,7 @@ class AppChip extends StatelessWidget {
         backgroundColor: AppColors.tagVegetarian,
         textColor: AppColors.white,
         style: AppChipStyle.dietary,
+        leadingIcon: const Icon(Icons.spa, size: 11, color: AppColors.white),
         onTap: onTap,
       );
 
@@ -52,6 +63,7 @@ class AppChip extends StatelessWidget {
         backgroundColor: AppColors.tagAllergen,
         textColor: AppColors.white,
         style: AppChipStyle.dietary,
+        leadingIcon: const Icon(Icons.warning_amber, size: 11, color: AppColors.white),
         onTap: onTap,
       );
 
@@ -73,7 +85,16 @@ class AppChip extends StatelessWidget {
           color: bg,
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         ),
-        child: Text(label, style: AppTypography.label.copyWith(color: fg)),
+        child: leadingIcon != null
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  leadingIcon!,
+                  const SizedBox(width: 3),
+                  Text(label, style: AppTypography.label.copyWith(color: fg)),
+                ],
+              )
+            : Text(label, style: AppTypography.label.copyWith(color: fg)),
       ),
     );
   }
