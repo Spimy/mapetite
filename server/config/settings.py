@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # Third-party apps
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "allauth",
     "allauth.account",
@@ -69,6 +70,11 @@ AUTHENTICATION_BACKENDS = [
     "apps.users.backends.EmailOrUsernameBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
+
+SIMPLE_JWT = {
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
 
 REST_AUTH = {
     "USE_JWT": True,
