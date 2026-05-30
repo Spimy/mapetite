@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import Point
 from django.conf import settings
 
 
@@ -11,7 +13,7 @@ class StoreProfile(models.Model):
 
     # Merchant staff and ownership
     owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="owned_stores"
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, related_name="owned_stores"
     )
     staff = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name="managed_stores", blank=True
@@ -24,15 +26,24 @@ class StoreProfile(models.Model):
     business_name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
-    latitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    longitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
+    location = gis_models.PointField(geography=True, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def latitude(self):
+        return self.location.y if self.location else None
+
+    @property
+    def longitude(self):
+        return self.location.x if self.location else None
+
+    def set_coordinates(self, lat, lon):
+        if lat and lon:
+            self.location = Point(float(lon), float(lat))
+        else:
+            self.location = None
 
     def __str__(self):
         display_name = self.MerchantType(self.merchant_type).label
