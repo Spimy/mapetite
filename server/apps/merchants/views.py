@@ -1,3 +1,6 @@
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView
+from apps.users.mixins import MerchantRequiredMixin
 from .models import StoreOperatingHour, StoreProfile
 from .serializers import StoreOperatingHourSerializer, StoreProfileSerializer
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
@@ -5,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here.
+# API views for merchants app
 class StoreListAPIView(ListAPIView):
     """Fetches all stores and their grouped operating hours"""
 
@@ -34,3 +38,9 @@ class StoreOperatingHoursAPIView(ListAPIView):
         store_id = self.kwargs.get("store_id")
         get_object_or_404(StoreProfile, id=store_id)
         return super().get_queryset().filter(store_id=store_id).order_by("day_of_week")
+
+
+# Django views for merchants app
+class DashboardView(MerchantRequiredMixin, TemplateView):
+    template_name = "merchants/dashboard.html"
+    login_url = reverse_lazy("users:sign_in")
