@@ -40,7 +40,7 @@ class SignOutView(LoginRequiredMixin, RedirectView):
     url = reverse_lazy("users:sign_in")
     redirect_field_name = None
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         logout(request)
         return super(SignOutView, self).get(request, *args, **kwargs)
 
