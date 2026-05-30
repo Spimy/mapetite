@@ -7,6 +7,9 @@ import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/discovery/screens/home_feed_screen.dart';
+import '../features/profile/screens/dietary_preferences_screen.dart';
+import '../features/profile/screens/budget_setup_screen.dart';
+import '../features/profile/screens/health_goals_screen.dart';
 
 abstract class AppRoutes {
   static const String splash = '/';
@@ -23,6 +26,12 @@ abstract class AppRoutes {
   static const String directions = '/directions';
   static const String myList = '/my-list';
   static const String settings = '/settings';
+
+  // Profile setup wizard — outside the shell (no bottom nav)
+  static const String profileSetup = '/profile/setup';
+  static const String profileDietary = '/profile/dietary';
+  static const String profileBudgetSetup = '/profile/budget-setup';
+  static const String profileHealthGoals = '/profile/health-goals';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -48,6 +57,25 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.forgotPassword,
       builder: (context, state) => const ForgotPasswordScreen(),
     ),
+
+    // ── Profile setup wizard (no shell / bottom nav) ──────────────────────
+    GoRoute(
+      path: AppRoutes.profileSetup,
+      redirect: (_, _) => AppRoutes.profileDietary,
+    ),
+    GoRoute(
+      path: AppRoutes.profileDietary,
+      builder: (context, state) => const DietaryPreferencesScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.profileBudgetSetup,
+      builder: (context, state) => const BudgetSetupScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.profileHealthGoals,
+      builder: (context, state) => const HealthGoalsScreen(),
+    ),
+
     GoRoute(
       path: AppRoutes.notifications,
       // TODO: Notifications list — deal alerts, order updates, nearby events
