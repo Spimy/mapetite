@@ -81,3 +81,21 @@ a {
   background-color: var(--color-primary);
   color: var(--color-white);
 }
+
+.error-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  text-align: center;
+}
+
+.error-page h1 {
+  font-size: 2.5rem;
+}
+
+.error-page p {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
