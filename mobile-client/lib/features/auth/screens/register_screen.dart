@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/utils/validators.dart';
+import '../../../shared/services/setup_service.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../widgets/password_strength_bar.dart';
@@ -42,6 +43,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
     // TODO: Replace with real auth service — send verification email
     await Future.delayed(const Duration(milliseconds: 1500));
+    // Persist so the profile wizard can pre-fill even after this screen is gone.
+    await SetupService.savePendingUserInfo(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+    );
     if (mounted) {
       setState(() {
         _isLoading = false;
