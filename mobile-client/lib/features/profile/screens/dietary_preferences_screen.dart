@@ -129,10 +129,11 @@ class DietaryPreferencesScreen extends ConsumerWidget {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           backgroundColor: AppColors.white,
-          foregroundColor: AppColors.neutral,
+          foregroundColor: AppColors.primary,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
+          titleTextStyle: AppTypography.headline2.copyWith(color: AppColors.primary),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
