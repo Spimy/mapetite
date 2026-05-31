@@ -234,7 +234,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => _onBackPressed(hasUnsaved),
         ),
-        title: const Text('Edit Profile'),
+        title: const Text('Account & Preferences'),
         centerTitle: true,
       ),
       body: Column(
