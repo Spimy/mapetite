@@ -7,7 +7,9 @@ import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../controllers/profile_setup_controller.dart';
+import '../models/profile_setup_data.dart';
 import '../widgets/selectable_chip.dart';
+import '../widgets/unsaved_changes_dialog.dart';
 import '../widgets/wizard_scaffold.dart';
 
 class BudgetSetupScreen extends ConsumerStatefulWidget {
@@ -22,6 +24,7 @@ class BudgetSetupScreen extends ConsumerStatefulWidget {
 class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
   static const List<int> _presets = [60, 70, 80, 90];
 
+  late ProfileSetupData _initial;
   late final TextEditingController _alertController;
   late final TextEditingController _budgetController;
   late final FocusNode _budgetFocusNode;
@@ -36,6 +39,7 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
   void initState() {
     super.initState();
     final data = ref.read(profileSetupControllerProvider);
+    _initial = data;
     final initial = data.alertThresholdPercent;
     _alertController = TextEditingController(text: initial.toString());
     _budgetController =
@@ -114,6 +118,32 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _alertFocusNode.requestFocus(),
     );
+  }
+
+  bool _hasUnsavedChanges(ProfileSetupData current) {
+    return current.monthlyBudget != _initial.monthlyBudget ||
+        current.diningBudget != _initial.diningBudget ||
+        current.groceriesBudget != _initial.groceriesBudget ||
+        current.alertThresholdPercent != _initial.alertThresholdPercent;
+  }
+
+  void _discardAndPop() {
+    ref.read(profileSetupControllerProvider.notifier).updateBudget(
+      monthly: _initial.monthlyBudget,
+      dining: _initial.diningBudget,
+      groceries: _initial.groceriesBudget,
+      alertThreshold: _initial.alertThresholdPercent,
+    );
+    context.pop();
+  }
+
+  void _handlePopAttempt(bool hasUnsaved) async {
+    if (!hasUnsaved) {
+      context.pop();
+      return;
+    }
+    final discard = await showUnsavedChangesDialog(context);
+    if (discard && mounted) _discardAndPop();
   }
 
   @override
@@ -337,49 +367,56 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
     );
 
     if (_isEditMode) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.white,
-          foregroundColor: AppColors.primary,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          titleTextStyle: AppTypography.headline2.copyWith(color: AppColors.primary),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
-          ),
-          title: const Text('Budget Settings'),
-          centerTitle: true,
-        ),
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.screenHorizontalPadding,
-                  ).copyWith(top: AppSpacing.xxl, bottom: AppSpacing.xl),
-                  child: body,
-                ),
-              ),
-            ],
-          ),
-        ),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: DecoratedBox(
-            decoration: const BoxDecoration(
-              color: AppColors.white,
-              border: Border(top: BorderSide(color: AppColors.border)),
+      final hasUnsaved = _hasUnsavedChanges(data);
+      return PopScope(
+        canPop: !hasUnsaved,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _handlePopAttempt(hasUnsaved);
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: AppColors.white,
+            foregroundColor: AppColors.primary,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            titleTextStyle: AppTypography.headline2.copyWith(color: AppColors.primary),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => _handlePopAttempt(hasUnsaved),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: AppButton(
-                label: 'Save',
-                onPressed: () => context.pop(),
+            title: const Text('Budget Settings'),
+            centerTitle: true,
+          ),
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.screenHorizontalPadding,
+                    ).copyWith(top: AppSpacing.xxl, bottom: AppSpacing.xl),
+                    child: body,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          bottomNavigationBar: SafeArea(
+            top: false,
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                color: AppColors.white,
+                border: Border(top: BorderSide(color: AppColors.border)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: AppButton(
+                  label: 'Save',
+                  onPressed: () => context.pop(),
+                ),
               ),
             ),
           ),

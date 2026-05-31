@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,23 +8,70 @@ import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../controllers/profile_setup_controller.dart';
+import '../models/profile_setup_data.dart';
 import '../widgets/selectable_chip.dart';
+import '../widgets/unsaved_changes_dialog.dart';
 import '../widgets/wizard_scaffold.dart';
 
-class DietaryPreferencesScreen extends ConsumerWidget {
+class DietaryPreferencesScreen extends ConsumerStatefulWidget {
   final bool isEditMode;
 
   const DietaryPreferencesScreen({super.key, this.isEditMode = false});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DietaryPreferencesScreen> createState() =>
+      _DietaryPreferencesScreenState();
+}
+
+class _DietaryPreferencesScreenState
+    extends ConsumerState<DietaryPreferencesScreen> {
+  late ProfileSetupData _initial;
+
+  @override
+  void initState() {
+    super.initState();
+    _initial = ref.read(profileSetupControllerProvider);
+  }
+
+  bool _hasUnsavedChanges(ProfileSetupData current) {
+    return current.isHalal != _initial.isHalal ||
+        current.isVegetarian != _initial.isVegetarian ||
+        current.isVegan != _initial.isVegan ||
+        !listEquals(current.allergens, _initial.allergens) ||
+        current.dailyCalorieTarget != _initial.dailyCalorieTarget ||
+        !listEquals(current.cuisinePreferences, _initial.cuisinePreferences);
+  }
+
+  void _discardAndPop() {
+    ref.read(profileSetupControllerProvider.notifier).updateDietary(
+      isHalal: _initial.isHalal,
+      isVegetarian: _initial.isVegetarian,
+      isVegan: _initial.isVegan,
+      allergens: List<String>.from(_initial.allergens),
+      dailyCalorieTarget: _initial.dailyCalorieTarget,
+      cuisinePreferences: List<String>.from(_initial.cuisinePreferences),
+    );
+    context.pop();
+  }
+
+  void _handlePopAttempt(bool hasUnsaved) async {
+    if (!hasUnsaved) {
+      context.pop();
+      return;
+    }
+    final discard = await showUnsavedChangesDialog(context);
+    if (discard && mounted) _discardAndPop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final data = ref.watch(profileSetupControllerProvider);
     final notifier = ref.read(profileSetupControllerProvider.notifier);
 
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!isEditMode) ...[
+        if (!widget.isEditMode) ...[
           Text("Let's get started.", style: AppTypography.display),
           const SizedBox(height: AppSpacing.sm),
           Text(
@@ -124,50 +172,57 @@ class DietaryPreferencesScreen extends ConsumerWidget {
       ],
     );
 
-    if (isEditMode) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.white,
-          foregroundColor: AppColors.primary,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          titleTextStyle: AppTypography.headline2.copyWith(color: AppColors.primary),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
-          ),
-          title: const Text('Dietary Preferences'),
-          centerTitle: true,
-        ),
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.screenHorizontalPadding,
-                  ).copyWith(top: AppSpacing.xxl, bottom: AppSpacing.xl),
-                  child: body,
-                ),
-              ),
-            ],
-          ),
-        ),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: DecoratedBox(
-            decoration: const BoxDecoration(
-              color: AppColors.white,
-              border: Border(top: BorderSide(color: AppColors.border)),
+    if (widget.isEditMode) {
+      final hasUnsaved = _hasUnsavedChanges(data);
+      return PopScope(
+        canPop: !hasUnsaved,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _handlePopAttempt(hasUnsaved);
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: AppColors.white,
+            foregroundColor: AppColors.primary,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            titleTextStyle: AppTypography.headline2.copyWith(color: AppColors.primary),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => _handlePopAttempt(hasUnsaved),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: AppButton(
-                label: 'Save',
-                onPressed: () => context.pop(),
+            title: const Text('Dietary Preferences'),
+            centerTitle: true,
+          ),
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.screenHorizontalPadding,
+                    ).copyWith(top: AppSpacing.xxl, bottom: AppSpacing.xl),
+                    child: body,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          bottomNavigationBar: SafeArea(
+            top: false,
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                color: AppColors.white,
+                border: Border(top: BorderSide(color: AppColors.border)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: AppButton(
+                  label: 'Save',
+                  onPressed: () => context.pop(),
+                ),
               ),
             ),
           ),

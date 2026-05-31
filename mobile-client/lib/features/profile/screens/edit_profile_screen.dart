@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +12,7 @@ import '../controllers/profile_setup_controller.dart';
 import '../models/user_profile.dart';
 import '../widgets/delete_account_dialog.dart';
 import '../widgets/photo_picker_sheet.dart';
+import '../widgets/unsaved_changes_dialog.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -24,19 +26,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _nameController;
   late TextEditingController _emailController;
   late TextEditingController _cityController;
+  late UserProfile _initialProfile;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
     final profile = ref.read(editProfileControllerProvider);
+    _initialProfile = profile;
     _nameController = TextEditingController(text: profile.displayName);
     _emailController = TextEditingController(text: profile.email);
     _cityController = TextEditingController(text: profile.city ?? '');
+    _nameController.addListener(_onFieldChanged);
+    _cityController.addListener(_onFieldChanged);
   }
+
+  void _onFieldChanged() => setState(() {});
 
   @override
   void dispose() {
+    _nameController.removeListener(_onFieldChanged);
+    _cityController.removeListener(_onFieldChanged);
     _nameController.dispose();
     _emailController.dispose();
     _cityController.dispose();
@@ -172,11 +182,46 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
+  bool _hasUnsavedChanges(UserProfile current) {
+    return _nameController.text.trim() != _initialProfile.displayName ||
+        _cityController.text.trim() != (_initialProfile.city ?? '') ||
+        current.isHalal != _initialProfile.isHalal ||
+        current.isVegetarian != _initialProfile.isVegetarian ||
+        current.isVegan != _initialProfile.isVegan ||
+        !listEquals(current.allergens, _initialProfile.allergens) ||
+        current.dailyCalorieTarget != _initialProfile.dailyCalorieTarget ||
+        !listEquals(current.cuisinePreferences, _initialProfile.cuisinePreferences) ||
+        current.monthlyBudget != _initialProfile.monthlyBudget ||
+        current.alertThresholdPercent != _initialProfile.alertThresholdPercent ||
+        current.healthGoal != _initialProfile.healthGoal ||
+        current.activityLevel != _initialProfile.activityLevel ||
+        current.weightKg != _initialProfile.weightKg;
+  }
+
+  void _handlePopAttempt() async {
+    final discard = await showUnsavedChangesDialog(context);
+    if (discard && mounted) context.pop();
+  }
+
+  void _onBackPressed(bool hasUnsaved) {
+    if (hasUnsaved) {
+      _handlePopAttempt();
+    } else {
+      context.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(editProfileControllerProvider);
+    final hasUnsaved = _hasUnsavedChanges(profile);
 
-    return Scaffold(
+    return PopScope(
+      canPop: !hasUnsaved,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handlePopAttempt();
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.white,
@@ -187,22 +232,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         titleTextStyle: AppTypography.headline2.copyWith(color: AppColors.primary),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => _onBackPressed(hasUnsaved),
         ),
         title: const Text('Edit Profile'),
         centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: _isSaving ? null : _save,
-            child: Text(
-              'Save',
-              style: AppTypography.body1.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -234,6 +267,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           ),
           _buildStickyFooter(),
         ],
+      ),
       ),
     );
   }

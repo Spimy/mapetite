@@ -8,15 +8,22 @@ import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/services/setup_service.dart';
 import '../controllers/profile_setup_controller.dart';
+import '../models/profile_setup_data.dart';
 import '../widgets/goal_card.dart';
 import '../widgets/selectable_chip.dart';
+import '../widgets/unsaved_changes_dialog.dart';
 import '../widgets/wizard_scaffold.dart';
 
-class HealthGoalsScreen extends ConsumerWidget {
+class HealthGoalsScreen extends ConsumerStatefulWidget {
   final bool isEditMode;
 
   const HealthGoalsScreen({super.key, this.isEditMode = false});
 
+  @override
+  ConsumerState<HealthGoalsScreen> createState() => _HealthGoalsScreenState();
+}
+
+class _HealthGoalsScreenState extends ConsumerState<HealthGoalsScreen> {
   static const List<({String key, String label, IconData icon})> _goals = [
     (
       key: 'maintain_weight',
@@ -43,16 +50,48 @@ class HealthGoalsScreen extends ConsumerWidget {
     'Active',
   ];
 
-  Future<void> _completeSetup(BuildContext context, WidgetRef ref) async {
+  late ProfileSetupData _initial;
+
+  @override
+  void initState() {
+    super.initState();
+    _initial = ref.read(profileSetupControllerProvider);
+  }
+
+  bool _hasUnsavedChanges(ProfileSetupData current) {
+    return current.healthGoal != _initial.healthGoal ||
+        current.activityLevel != _initial.activityLevel ||
+        current.weightKg != _initial.weightKg;
+  }
+
+  void _discardAndPop() {
+    ref.read(profileSetupControllerProvider.notifier).updateHealthGoals(
+      healthGoal: _initial.healthGoal,
+      activityLevel: _initial.activityLevel,
+      weightKg: _initial.weightKg,
+    );
+    context.pop();
+  }
+
+  void _handlePopAttempt(bool hasUnsaved) async {
+    if (!hasUnsaved) {
+      context.pop();
+      return;
+    }
+    final discard = await showUnsavedChangesDialog(context);
+    if (discard && mounted) _discardAndPop();
+  }
+
+  Future<void> _completeSetup() async {
     await SetupService.markSetupComplete();
     await SetupService.clearPendingUserInfo();
-    if (context.mounted) {
+    if (mounted) {
       context.go('/home');
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final data = ref.watch(profileSetupControllerProvider);
     final notifier = ref.read(profileSetupControllerProvider.notifier);
 
@@ -152,50 +191,57 @@ class HealthGoalsScreen extends ConsumerWidget {
       ],
     );
 
-    if (isEditMode) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.white,
-          foregroundColor: AppColors.primary,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          titleTextStyle: AppTypography.headline2.copyWith(color: AppColors.primary),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
-          ),
-          title: const Text('Health Goals'),
-          centerTitle: true,
-        ),
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.screenHorizontalPadding,
-                  ).copyWith(top: AppSpacing.xxl, bottom: AppSpacing.xl),
-                  child: body,
-                ),
-              ),
-            ],
-          ),
-        ),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: DecoratedBox(
-            decoration: const BoxDecoration(
-              color: AppColors.white,
-              border: Border(top: BorderSide(color: AppColors.border)),
+    if (widget.isEditMode) {
+      final hasUnsaved = _hasUnsavedChanges(data);
+      return PopScope(
+        canPop: !hasUnsaved,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _handlePopAttempt(hasUnsaved);
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: AppColors.white,
+            foregroundColor: AppColors.primary,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            titleTextStyle: AppTypography.headline2.copyWith(color: AppColors.primary),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => _handlePopAttempt(hasUnsaved),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: AppButton(
-                label: 'Save',
-                onPressed: () => context.pop(),
+            title: const Text('Health Goals'),
+            centerTitle: true,
+          ),
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.screenHorizontalPadding,
+                    ).copyWith(top: AppSpacing.xxl, bottom: AppSpacing.xl),
+                    child: body,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          bottomNavigationBar: SafeArea(
+            top: false,
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                color: AppColors.white,
+                border: Border(top: BorderSide(color: AppColors.border)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: AppButton(
+                  label: 'Save',
+                  onPressed: () => context.pop(),
+                ),
               ),
             ),
           ),
@@ -208,8 +254,8 @@ class HealthGoalsScreen extends ConsumerWidget {
       totalSteps: 3,
       stepLabel: 'Step 3 of 3',
       onBack: () => context.go('/profile/budget-setup'),
-      onNext: () => _completeSetup(context, ref),
-      onSkip: () => _completeSetup(context, ref),
+      onNext: _completeSetup,
+      onSkip: _completeSetup,
       nextLabel: 'Next',
       body: body,
     );
