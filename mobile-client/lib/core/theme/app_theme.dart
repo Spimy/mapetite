@@ -200,6 +200,11 @@ class AppTheme {
       appBarTheme: light.appBarTheme.copyWith(
         backgroundColor: AppColors.darkSurface,
         foregroundColor: AppColors.darkText,
+        titleTextStyle: GoogleFonts.inter(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: AppColors.darkText,
+        ),
       ),
       cardTheme: light.cardTheme.copyWith(
         color: AppColors.darkSurface,
