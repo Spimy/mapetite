@@ -18,8 +18,7 @@ class MapetiteApp extends StatelessWidget {
           title: 'Mapetite',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: ThemeMode.system,
+          themeMode: ThemeMode.light,
           routerConfig: appRouter,
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
