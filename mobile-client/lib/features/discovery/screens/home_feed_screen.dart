@@ -755,10 +755,9 @@ class _ProfileDrawer extends StatelessWidget {
           children: [
             // ── Header ──────────────────────────────────────────────────────
             GestureDetector(
-              // TODO: Navigate to /profile — full profile & account settings page
               onTap: () {
                 Navigator.of(context).pop();
-                context.push(AppRoutes.profile);
+                context.push(AppRoutes.profileEdit);
               },
               child: Container(
                 padding: const EdgeInsets.all(AppSpacing.lg),

@@ -5,12 +5,15 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/custom_button.dart';
 import '../controllers/profile_setup_controller.dart';
 import '../widgets/selectable_chip.dart';
 import '../widgets/wizard_scaffold.dart';
 
 class BudgetSetupScreen extends ConsumerStatefulWidget {
-  const BudgetSetupScreen({super.key});
+  final bool isEditMode;
+
+  const BudgetSetupScreen({super.key, this.isEditMode = false});
 
   @override
   ConsumerState<BudgetSetupScreen> createState() => _BudgetSetupScreenState();
@@ -26,6 +29,8 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
   bool _editingBudget = false;
   late int _alertPreset;
   late bool _isCustomAlert;
+
+  bool get _isEditMode => widget.isEditMode;
 
   @override
   void initState() {
@@ -121,15 +126,7 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
     final overBudget = totalAllocated > data.monthlyBudget;
     final safeMax = data.monthlyBudget > 0 ? data.monthlyBudget : 1.0;
 
-    return WizardScaffold(
-      currentStep: 2,
-      totalSteps: 3,
-      stepLabel: 'Step 2 of 3',
-      onBack: () => context.go('/profile/dietary'),
-      onNext: () => context.go('/profile/health-goals'),
-      onSkip: () => context.go('/profile/health-goals'),
-      nextLabel: 'Next',
-      body: Column(
+    final body = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
@@ -337,7 +334,62 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
             ),
           ),
         ],
-      ),
+    );
+
+    if (_isEditMode) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.pop(),
+          ),
+          title: const Text('Budget Settings'),
+          centerTitle: true,
+        ),
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screenHorizontalPadding,
+                  ).copyWith(top: AppSpacing.xxl, bottom: AppSpacing.xl),
+                  child: body,
+                ),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: DecoratedBox(
+            decoration: const BoxDecoration(
+              color: AppColors.white,
+              border: Border(top: BorderSide(color: AppColors.border)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: AppButton(
+                label: 'Save',
+                onPressed: () => context.pop(),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return WizardScaffold(
+      currentStep: 2,
+      totalSteps: 3,
+      stepLabel: 'Step 2 of 3',
+      onBack: () => context.go('/profile/dietary'),
+      onNext: () => context.go('/profile/health-goals'),
+      onSkip: () => context.go('/profile/health-goals'),
+      nextLabel: 'Next',
+      body: body,
     );
   }
 }

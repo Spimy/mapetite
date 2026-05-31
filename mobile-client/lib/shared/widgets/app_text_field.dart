@@ -18,6 +18,7 @@ class AppTextField extends StatefulWidget {
   final int maxLines;
   final TextInputAction textInputAction;
   final TextCapitalization textCapitalization;
+  final Color? fillColor;
 
   const AppTextField({
     super.key,
@@ -36,6 +37,7 @@ class AppTextField extends StatefulWidget {
     this.maxLines = 1,
     this.textInputAction = TextInputAction.next,
     this.textCapitalization = TextCapitalization.none,
+    this.fillColor,
   });
 
   @override
@@ -69,6 +71,8 @@ class _AppTextFieldState extends State<AppTextField> {
         labelText: widget.label,
         hintText: widget.hint,
         errorText: widget.errorText,
+        filled: widget.fillColor != null ? true : null,
+        fillColor: widget.fillColor,
         prefixIcon: widget.prefixIcon,
         suffixIcon: widget.obscureText
             ? IconButton(

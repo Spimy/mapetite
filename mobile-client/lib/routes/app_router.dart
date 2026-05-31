@@ -10,6 +10,7 @@ import '../features/discovery/screens/home_feed_screen.dart';
 import '../features/profile/screens/dietary_preferences_screen.dart';
 import '../features/profile/screens/budget_setup_screen.dart';
 import '../features/profile/screens/health_goals_screen.dart';
+import '../features/profile/screens/edit_profile_screen.dart';
 
 abstract class AppRoutes {
   static const String splash = '/';
@@ -32,6 +33,7 @@ abstract class AppRoutes {
   static const String profileDietary = '/profile/dietary';
   static const String profileBudgetSetup = '/profile/budget-setup';
   static const String profileHealthGoals = '/profile/health-goals';
+  static const String profileEdit = '/profile/edit';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -65,15 +67,25 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.profileDietary,
-      builder: (context, state) => const DietaryPreferencesScreen(),
+      builder: (context, state) => DietaryPreferencesScreen(
+        isEditMode: state.uri.queryParameters['mode'] == 'edit',
+      ),
     ),
     GoRoute(
       path: AppRoutes.profileBudgetSetup,
-      builder: (context, state) => const BudgetSetupScreen(),
+      builder: (context, state) => BudgetSetupScreen(
+        isEditMode: state.uri.queryParameters['mode'] == 'edit',
+      ),
     ),
     GoRoute(
       path: AppRoutes.profileHealthGoals,
-      builder: (context, state) => const HealthGoalsScreen(),
+      builder: (context, state) => HealthGoalsScreen(
+        isEditMode: state.uri.queryParameters['mode'] == 'edit',
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.profileEdit,
+      builder: (context, state) => const EditProfileScreen(),
     ),
 
     GoRoute(
