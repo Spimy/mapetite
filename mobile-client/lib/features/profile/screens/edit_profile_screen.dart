@@ -139,7 +139,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Profile updated'),
+          content: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Profile updated',
+                  style: AppTypography.body1.copyWith(color: AppColors.white),
+                ),
+              ),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check, color: AppColors.white, size: 14),
+              ),
+            ],
+          ),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
