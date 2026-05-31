@@ -239,7 +239,7 @@ class _HealthGoalsScreenState extends ConsumerState<HealthGoalsScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 child: AppButton(
-                  label: 'Save',
+                  label: 'Done',
                   onPressed: () => context.pop(),
                 ),
               ),

@@ -220,7 +220,7 @@ class _DietaryPreferencesScreenState
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 child: AppButton(
-                  label: 'Save',
+                  label: 'Done',
                   onPressed: () => context.pop(),
                 ),
               ),

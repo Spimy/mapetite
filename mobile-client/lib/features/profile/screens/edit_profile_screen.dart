@@ -265,7 +265,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ),
             ),
           ),
-          _buildStickyFooter(),
+          _buildStickyFooter(hasUnsaved),
         ],
       ),
       ),
@@ -463,7 +463,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildStickyFooter() {
+  Widget _buildStickyFooter(bool hasUnsaved) {
     return SafeArea(
       top: false,
       child: DecoratedBox(
@@ -476,7 +476,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           child: AppButton(
             label: _isSaving ? 'Saving...' : 'Save Changes',
             isLoading: _isSaving,
-            onPressed: _isSaving ? null : _save,
+            onPressed: (_isSaving || !hasUnsaved) ? null : _save,
           ),
         ),
       ),
