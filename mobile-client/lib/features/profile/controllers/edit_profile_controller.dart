@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_profile.dart';
 import '../models/mocks/profile_mocks.dart';
+import 'profile_setup_controller.dart';
 
 class EditProfileController extends StateNotifier<UserProfile> {
-  EditProfileController() : super(ProfileMocks.currentUser);
+  EditProfileController(super.initial);
 
   void updateDisplayName(String name) =>
       state = state.copyWith(displayName: name);
@@ -54,6 +55,26 @@ class EditProfileController extends StateNotifier<UserProfile> {
 }
 
 final editProfileControllerProvider =
-    StateNotifierProvider<EditProfileController, UserProfile>(
-  (ref) => EditProfileController(),
-);
+    StateNotifierProvider<EditProfileController, UserProfile>((ref) {
+  final setup = ref.read(profileSetupControllerProvider);
+  final base = ProfileMocks.currentUser;
+  return EditProfileController(UserProfile(
+    id: base.id,
+    displayName: setup.fullName ?? base.displayName,
+    email: setup.email ?? base.email,
+    phone: base.phone,
+    avatarUrl: base.avatarUrl,
+    city: base.city,
+    isHalal: setup.isHalal,
+    isVegetarian: setup.isVegetarian,
+    isVegan: setup.isVegan,
+    allergens: List<String>.from(setup.allergens),
+    dailyCalorieTarget: setup.dailyCalorieTarget,
+    cuisinePreferences: List<String>.from(setup.cuisinePreferences),
+    monthlyBudget: setup.monthlyBudget,
+    alertThresholdPercent: setup.alertThresholdPercent,
+    healthGoal: setup.healthGoal,
+    activityLevel: setup.activityLevel,
+    weightKg: setup.weightKg,
+  ));
+});

@@ -22,6 +22,7 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
+  late TextEditingController _emailController;
   late TextEditingController _cityController;
   bool _isSaving = false;
 
@@ -30,12 +31,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     super.initState();
     final profile = ref.read(editProfileControllerProvider);
     _nameController = TextEditingController(text: profile.displayName);
+    _emailController = TextEditingController(text: profile.email);
     _cityController = TextEditingController(text: profile.city ?? '');
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     _cityController.dispose();
     super.dispose();
   }
@@ -317,7 +320,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           textInputAction: TextInputAction.next,
         ),
         const SizedBox(height: AppSpacing.lg),
-        _buildEmailField(profile),
+        _buildEmailField(),
         const SizedBox(height: AppSpacing.lg),
         AppTextField(
           label: 'Home Location',
@@ -333,10 +336,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildEmailField(UserProfile profile) {
+  Widget _buildEmailField() {
     return AppTextField(
       label: 'Email',
-      controller: TextEditingController(text: profile.email),
+      controller: _emailController,
       readOnly: true,
       fillColor: AppColors.neutral100,
       suffixIcon: TextButton(
@@ -377,6 +380,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 value: _dietarySummary(profile),
                 onTap: _navigateToDietary,
                 showDivider: true,
+                isFirst: true,
               ),
               _PreferenceRow(
                 icon: Icons.account_balance_wallet_outlined,
@@ -452,6 +456,7 @@ class _PreferenceRow extends StatelessWidget {
   final String value;
   final VoidCallback onTap;
   final bool showDivider;
+  final bool isFirst;
 
   const _PreferenceRow({
     required this.icon,
@@ -459,6 +464,7 @@ class _PreferenceRow extends StatelessWidget {
     required this.value,
     required this.onTap,
     required this.showDivider,
+    this.isFirst = false,
   });
 
   @override
@@ -467,11 +473,15 @@ class _PreferenceRow extends StatelessWidget {
       children: [
         InkWell(
           onTap: onTap,
-          borderRadius: showDivider
-              ? BorderRadius.zero
-              : const BorderRadius.vertical(
-                  bottom: Radius.circular(AppSpacing.radiusLg),
-                ),
+          borderRadius: isFirst
+              ? const BorderRadius.vertical(
+                  top: Radius.circular(AppSpacing.radiusLg),
+                )
+              : showDivider
+                  ? BorderRadius.zero
+                  : const BorderRadius.vertical(
+                      bottom: Radius.circular(AppSpacing.radiusLg),
+                    ),
           child: SizedBox(
             height: 64,
             child: Padding(
