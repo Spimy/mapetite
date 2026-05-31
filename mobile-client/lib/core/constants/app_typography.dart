@@ -73,6 +73,14 @@ abstract class AppTypography {
         height: 1.2,
       );
 
+  // Budget hero amount — 48sp, used for the large RM display on Budget Setup.
+  static TextStyle get budgetHero => GoogleFonts.inter(
+        fontSize: 48,
+        fontWeight: FontWeight.w700,
+        color: AppColors.primary,
+        height: 1.1,
+      );
+
   static TextStyle get tag => GoogleFonts.inter(
         fontSize: 11,
         fontWeight: FontWeight.w500,

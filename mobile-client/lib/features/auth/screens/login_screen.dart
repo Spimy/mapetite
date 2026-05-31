@@ -36,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
     await Future.delayed(const Duration(milliseconds: 1500));
     if (mounted) {
       setState(() => _isLoading = false);
-      context.go('/home');
+      context.go('/profile/dietary');
     }
   }
 
