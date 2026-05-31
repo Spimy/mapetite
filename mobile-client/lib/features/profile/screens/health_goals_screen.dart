@@ -156,6 +156,11 @@ class HealthGoalsScreen extends ConsumerWidget {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
+          backgroundColor: AppColors.white,
+          foregroundColor: AppColors.neutral,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
