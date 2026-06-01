@@ -7,6 +7,7 @@ import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/transaction_detail_sheet.dart';
+import '../widgets/add_expense_sheet.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
@@ -131,6 +132,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      floatingActionButton: _AddFab(
+        onTap: () => showAddExpenseSheet(context),
+      ),
       appBar: AppBar(
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.primary,
@@ -334,6 +338,62 @@ class _FilterRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─── Levitating FAB ──────────────────────────────────────────────────────────
+
+class _AddFab extends StatefulWidget {
+  final VoidCallback onTap;
+
+  const _AddFab({required this.onTap});
+
+  @override
+  State<_AddFab> createState() => _AddFabState();
+}
+
+class _AddFabState extends State<_AddFab> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.90 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+            boxShadow: [
+              // Tight dark drop shadow — grounds the button
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.18),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+              // Wide green halo — the levitation glow
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.38),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+                spreadRadius: -2,
+              ),
+            ],
+          ),
+          child: const Icon(Icons.add, color: Colors.white, size: 28),
+        ),
+      ),
     );
   }
 }
