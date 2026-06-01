@@ -120,7 +120,7 @@ class BudgetOverviewScreen extends ConsumerWidget {
               Expanded(
                 child: AppButton(
                   label: 'Adjust Budget',
-                  onPressed: () => showAdjustBudgetSheet(context, ref),
+                  onPressed: () => showAdjustBudgetSheet(context),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -128,7 +128,7 @@ class BudgetOverviewScreen extends ConsumerWidget {
                 child: AppButton(
                   label: 'Add Expense',
                   variant: AppButtonVariant.outlined,
-                  onPressed: () => showAddExpenseSheet(context, ref),
+                  onPressed: () => showAddExpenseSheet(context),
                 ),
               ),
             ],
