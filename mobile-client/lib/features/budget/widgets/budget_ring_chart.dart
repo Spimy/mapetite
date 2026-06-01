@@ -85,8 +85,19 @@ class _RingPainter extends CustomPainter {
 
     if (ratio <= 0) return;
 
+    final Color arcColor;
+    if (ratio >= 1.0) {
+      arcColor = AppColors.error;
+    } else if (ratio >= 0.75) {
+      arcColor = AppColors.warning;
+    } else if (ratio >= 0.5) {
+      arcColor = AppColors.secondary;
+    } else {
+      arcColor = AppColors.primary;
+    }
+
     final progressPaint = Paint()
-      ..color = AppColors.secondary
+      ..color = arcColor
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
