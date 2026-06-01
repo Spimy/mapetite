@@ -193,7 +193,7 @@ class _TransactionDetailSheet extends ConsumerWidget {
               ),
             ],
           ),
-          backgroundColor: AppColors.neutral,
+          backgroundColor: AppColors.secondary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
