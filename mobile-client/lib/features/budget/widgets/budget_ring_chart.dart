@@ -104,6 +104,25 @@ class _RingPainter extends CustomPainter {
 
     canvas.drawArc(
         rect, -math.pi / 2, ratio * 2 * math.pi, false, progressPaint);
+
+    // Thumb dot — white border circle then colored fill, sits at the arc tip
+    final endAngle = -math.pi / 2 + ratio * 2 * math.pi;
+    final tipCenter = Offset(
+      center.dx + radius * math.cos(endAngle),
+      center.dy + radius * math.sin(endAngle),
+    );
+    final thumbRadius = strokeWidth / 2;
+
+    canvas.drawCircle(
+      tipCenter,
+      thumbRadius + 2.5,
+      Paint()..color = Colors.white,
+    );
+    canvas.drawCircle(
+      tipCenter,
+      thumbRadius,
+      Paint()..color = arcColor,
+    );
   }
 
   @override
