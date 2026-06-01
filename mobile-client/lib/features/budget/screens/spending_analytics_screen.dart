@@ -182,7 +182,7 @@ class _SpendingAnalyticsScreenState
         centerTitle: true,
         titleTextStyle:
             AppTypography.headline2.copyWith(color: AppColors.primary),
-        title: const Text('Insights'),
+        title: const Text('Budget Analytics'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
