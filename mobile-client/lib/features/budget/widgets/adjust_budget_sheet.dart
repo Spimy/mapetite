@@ -95,8 +95,23 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Budget updated',
-              style: AppTypography.body1.copyWith(color: AppColors.white)),
+          content: Row(
+            children: [
+              Expanded(
+                child: Text('Budget updated',
+                    style: AppTypography.body1.copyWith(color: AppColors.white)),
+              ),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check, color: AppColors.white, size: 14),
+              ),
+            ],
+          ),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -171,9 +186,12 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
               controller: _monthlyCtrl,
               prefixIcon: const Padding(
                 padding: EdgeInsets.only(left: 12, right: 4),
-                child: Text('RM',
-                    style: TextStyle(
-                        color: AppColors.neutral600, fontWeight: FontWeight.w600)),
+                child: Align(
+                  widthFactor: 1.0,
+                  child: Text('RM',
+                      style: TextStyle(
+                          color: AppColors.neutral600, fontWeight: FontWeight.w600)),
+                ),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.next,
@@ -184,9 +202,12 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
               controller: _groceriesCtrl,
               prefixIcon: const Padding(
                 padding: EdgeInsets.only(left: 12, right: 4),
-                child: Text('RM',
-                    style: TextStyle(
-                        color: AppColors.neutral600, fontWeight: FontWeight.w600)),
+                child: Align(
+                  widthFactor: 1.0,
+                  child: Text('RM',
+                      style: TextStyle(
+                          color: AppColors.neutral600, fontWeight: FontWeight.w600)),
+                ),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.next,
@@ -197,9 +218,12 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
               controller: _diningCtrl,
               prefixIcon: const Padding(
                 padding: EdgeInsets.only(left: 12, right: 4),
-                child: Text('RM',
-                    style: TextStyle(
-                        color: AppColors.neutral600, fontWeight: FontWeight.w600)),
+                child: Align(
+                  widthFactor: 1.0,
+                  child: Text('RM',
+                      style: TextStyle(
+                          color: AppColors.neutral600, fontWeight: FontWeight.w600)),
+                ),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.done,

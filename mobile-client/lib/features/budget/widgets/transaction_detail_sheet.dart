@@ -176,8 +176,23 @@ class _TransactionDetailSheet extends ConsumerWidget {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Expense deleted',
-              style: AppTypography.body1.copyWith(color: AppColors.white)),
+          content: Row(
+            children: [
+              Expanded(
+                child: Text('Expense deleted',
+                    style: AppTypography.body1.copyWith(color: AppColors.white)),
+              ),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check, color: AppColors.white, size: 14),
+              ),
+            ],
+          ),
           backgroundColor: AppColors.neutral,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(

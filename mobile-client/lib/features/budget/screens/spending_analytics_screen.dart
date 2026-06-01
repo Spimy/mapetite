@@ -31,33 +31,114 @@ class _SpendingAnalyticsScreenState
 
   List<String> _barLabels() {
     final now = DateTime.now();
-    return List.generate(4, (i) {
-      final month = (now.month - 3 + i);
-      final adjustedMonth = ((month - 1) % 12 + 12) % 12 + 1;
-      return _monthAbbrs[adjustedMonth - 1];
-    });
+    switch (_period) {
+      case 'Week':
+        return List.generate(4, (i) {
+          final weekStart =
+              now.subtract(Duration(days: now.weekday - 1 + (3 - i) * 7));
+          return '${_monthAbbrs[weekStart.month - 1]} ${weekStart.day}';
+        });
+      case 'Year':
+        return List.generate(4, (i) => '${now.year - 3 + i}');
+      default: // Month
+        return List.generate(4, (i) {
+          var m = now.month - 3 + i;
+          while (m <= 0) { m += 12; }
+          return _monthAbbrs[m - 1];
+        });
+    }
   }
 
   List<double> _barAmounts(List<BudgetTransaction> transactions) {
     final now = DateTime.now();
-    return List.generate(4, (i) {
-      final monthOffset = i - 3;
-      var targetMonth = now.month + monthOffset;
-      var targetYear = now.year;
-      while (targetMonth <= 0) {
-        targetMonth += 12;
-        targetYear -= 1;
-      }
-      while (targetMonth > 12) {
-        targetMonth -= 12;
-        targetYear += 1;
-      }
-      return transactions
-          .where((t) =>
-              t.dateTime.year == targetYear &&
-              t.dateTime.month == targetMonth)
-          .fold(0.0, (s, t) => s + t.amount);
-    });
+    switch (_period) {
+      case 'Week':
+        return List.generate(4, (i) {
+          final weekMon = DateTime(now.year, now.month, now.day)
+              .subtract(Duration(days: now.weekday - 1 + (3 - i) * 7));
+          final weekSun = weekMon.add(const Duration(days: 6));
+          return transactions
+              .where((t) =>
+                  !t.dateTime.isBefore(weekMon) &&
+                  !t.dateTime.isAfter(
+                      DateTime(weekSun.year, weekSun.month, weekSun.day, 23, 59, 59)))
+              .fold(0.0, (s, t) => s + t.amount);
+        });
+      case 'Year':
+        return List.generate(4, (i) {
+          final y = now.year - 3 + i;
+          return transactions
+              .where((t) => t.dateTime.year == y)
+              .fold(0.0, (s, t) => s + t.amount);
+        });
+      default: // Month
+        return List.generate(4, (i) {
+          var m = now.month - 3 + i;
+          var y = now.year;
+          while (m <= 0) { m += 12; y--; }
+          return transactions
+              .where((t) => t.dateTime.year == y && t.dateTime.month == m)
+              .fold(0.0, (s, t) => s + t.amount);
+        });
+    }
+  }
+
+  List<double> _categoryBarAmounts(
+      List<BudgetTransaction> transactions, BudgetCategory category) {
+    final now = DateTime.now();
+    switch (_period) {
+      case 'Week':
+        return List.generate(4, (i) {
+          final weekMon = DateTime(now.year, now.month, now.day)
+              .subtract(Duration(days: now.weekday - 1 + (3 - i) * 7));
+          final weekSun = weekMon.add(const Duration(days: 6));
+          return transactions
+              .where((t) =>
+                  t.category == category &&
+                  !t.dateTime.isBefore(weekMon) &&
+                  !t.dateTime.isAfter(DateTime(
+                      weekSun.year, weekSun.month, weekSun.day, 23, 59, 59)))
+              .fold(0.0, (s, t) => s + t.amount);
+        });
+      case 'Year':
+        return List.generate(4, (i) {
+          final y = now.year - 3 + i;
+          return transactions
+              .where((t) => t.category == category && t.dateTime.year == y)
+              .fold(0.0, (s, t) => s + t.amount);
+        });
+      default: // Month
+        return List.generate(4, (i) {
+          var m = now.month - 3 + i;
+          var y = now.year;
+          while (m <= 0) {
+            m += 12;
+            y--;
+          }
+          return transactions
+              .where((t) =>
+                  t.category == category &&
+                  t.dateTime.year == y &&
+                  t.dateTime.month == m)
+              .fold(0.0, (s, t) => s + t.amount);
+        });
+    }
+  }
+
+  String _cardTitle() {
+    switch (_period) {
+      case 'Week': return 'Weekly Spending';
+      case 'Year': return 'Yearly Spending';
+      default: return 'Monthly Spending';
+    }
+  }
+
+  String _cardSubtitle() {
+    switch (_period) {
+      case 'Week': return 'Comparison to previous 3 weeks';
+      case 'Year': return 'Comparison to previous 3 years';
+      default: return 'Comparison to previous 3 months';
+    }
   }
 
   String _trendText(List<double> amounts) {
@@ -78,10 +159,14 @@ class _SpendingAnalyticsScreenState
   Widget build(BuildContext context) {
     final budget = ref.watch(budgetProvider);
     final transactions = budget.transactions;
-    final amounts = _barAmounts(transactions);
-    final currentSpent = amounts.last;
-    final trendText = _trendText(amounts);
-    final trendDown = _isDown(amounts);
+    final totalAmounts = _barAmounts(transactions);
+    final groceriesAmounts =
+        _categoryBarAmounts(transactions, BudgetCategory.groceries);
+    final diningAmounts =
+        _categoryBarAmounts(transactions, BudgetCategory.dining);
+    final currentSpent = totalAmounts.last;
+    final trendText = _trendText(totalAmounts);
+    final trendDown = _isDown(totalAmounts);
 
     // Category filter: if set, we highlight it in key discoveries
     final cat = widget.categoryFilter;
@@ -98,13 +183,6 @@ class _SpendingAnalyticsScreenState
         titleTextStyle:
             AppTypography.headline1.copyWith(color: AppColors.primary),
         title: const Text('Insights'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined,
-                color: AppColors.neutral),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -125,10 +203,16 @@ class _SpendingAnalyticsScreenState
               _buildPeriodToggle(),
               const SizedBox(height: AppSpacing.xxl),
 
-              // Monthly spending card
+              // Spending card (period-aware, dual-category bars)
               _buildSpendingCard(
-                  context, currentSpent, budget.monthlyBudget,
-                  trendText, trendDown, amounts),
+                context,
+                currentSpent,
+                budget.monthlyBudget,
+                trendText,
+                trendDown,
+                groceriesAmounts,
+                diningAmounts,
+              ),
               const SizedBox(height: AppSpacing.xxl),
 
               // Key discoveries
@@ -216,7 +300,8 @@ class _SpendingAnalyticsScreenState
     double goal,
     String trendText,
     bool trendDown,
-    List<double> amounts,
+    List<double> groceriesAmounts,
+    List<double> diningAmounts,
   ) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
@@ -235,8 +320,8 @@ class _SpendingAnalyticsScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Monthly Spending', style: AppTypography.headline3),
-                    Text('Comparison to previous 3 months',
+                    Text(_cardTitle(), style: AppTypography.headline3),
+                    Text(_cardSubtitle(),
                         style: AppTypography.caption),
                   ],
                 ),
@@ -274,8 +359,9 @@ class _SpendingAnalyticsScreenState
           ),
           const SizedBox(height: AppSpacing.lg),
           BudgetBarChart(
-            monthlyAmounts: amounts,
-            monthLabels: _barLabels(),
+            groceriesAmounts: groceriesAmounts,
+            diningAmounts: diningAmounts,
+            periodLabels: _barLabels(),
             goal: goal,
           ),
         ],

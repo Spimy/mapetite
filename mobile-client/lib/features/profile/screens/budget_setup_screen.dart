@@ -11,6 +11,7 @@ import '../models/profile_setup_data.dart';
 import '../widgets/selectable_chip.dart';
 import '../widgets/unsaved_changes_dialog.dart';
 import '../widgets/wizard_scaffold.dart';
+import '../../budget/providers/budget_provider.dart';
 
 class BudgetSetupScreen extends ConsumerStatefulWidget {
   final bool isEditMode;
@@ -415,7 +416,17 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 child: AppButton(
                   label: 'Done',
-                  onPressed: () => context.pop(),
+                  onPressed: () {
+                    // Sync any slider/budget changes back to the budget provider
+                    // so the Budget tab reflects the latest values immediately.
+                    final d = ref.read(profileSetupControllerProvider);
+                    ref.read(budgetProvider.notifier).adjustBudget(
+                          monthly: d.monthlyBudget,
+                          groceries: d.groceriesBudget,
+                          dining: d.diningBudget,
+                        );
+                    context.pop();
+                  },
                 ),
               ),
             ),

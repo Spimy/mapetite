@@ -6,6 +6,7 @@ import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../routes/app_router.dart';
+import '../../discovery/models/mocks/home_feed_mocks.dart';
 import '../providers/budget_provider.dart';
 import '../models/budget_transaction.dart';
 import '../widgets/budget_ring_chart.dart';
@@ -64,36 +65,68 @@ class BudgetOverviewScreen extends ConsumerWidget {
       title: Stack(
         alignment: Alignment.center,
         children: [
-          // Left: profile avatar (opens drawer)
+          // Left: profile avatar — matches home feed exactly
           Align(
             alignment: Alignment.centerLeft,
-            child: GestureDetector(
-              onTap: () => Scaffold.of(context).openDrawer(),
-              child: Container(
-                width: AppSpacing.avatarSm,
-                height: AppSpacing.avatarSm,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.border),
+            child: Builder(
+              builder: (drawerCtx) => GestureDetector(
+                onTap: () => Scaffold.of(drawerCtx).openDrawer(),
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primary,
+                    border:
+                        Border.all(color: AppColors.primaryLight, width: 2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      HomeFeedMocks.userName[0],
+                      style: AppTypography.body1.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                 ),
-                child: const Icon(Icons.person,
-                    size: 18, color: AppColors.primary),
               ),
             ),
           ),
           // Centre: title
           Text('Budget',
-              style: AppTypography.headline2.copyWith(color: AppColors.neutral)),
-          // Right: bell
+              style: AppTypography.headline2
+                  .copyWith(color: AppColors.primary)),
+          // Right: notification bell with badge
           Align(
             alignment: Alignment.centerRight,
-            child: IconButton(
-              icon: const Icon(Icons.notifications_outlined,
-                  color: AppColors.neutral),
-              onPressed: () => context.push(AppRoutes.notifications),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
+            child: GestureDetector(
+              onTap: () => context.push(AppRoutes.notifications),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(
+                    Icons.notifications_outlined,
+                    size: AppSpacing.iconMd,
+                    color: AppColors.neutral,
+                  ),
+                  if (HomeFeedMocks.notificationCount > 0)
+                    Positioned(
+                      top: -2,
+                      right: -2,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          shape: BoxShape.circle,
+                          border:
+                              Border.all(color: AppColors.white, width: 1),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ],

@@ -18,8 +18,23 @@ class TransactionsScreen extends ConsumerStatefulWidget {
 
 class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   final _searchCtrl = TextEditingController();
+
+  // Mutually exclusive period filters
   String _periodFilter = 'This Month';
+
+  // Multi-select category filters
   final Set<BudgetCategory> _categoryFilters = {};
+
+  static const List<String> _periods = ['All', 'This Month', 'This Week'];
+
+  static const List<String> _monthAbbrs = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+
+  static const List<String> _weekdays = [
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+  ];
 
   @override
   void initState() {
@@ -37,10 +52,17 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final now = DateTime.now();
     return all.where((t) {
       // Period filter
-      if (_periodFilter == 'This Month') {
-        if (t.dateTime.year != now.year || t.dateTime.month != now.month) {
-          return false;
-        }
+      switch (_periodFilter) {
+        case 'This Month':
+          if (t.dateTime.year != now.year || t.dateTime.month != now.month) {
+            return false;
+          }
+        case 'This Week':
+          final weekStart = DateTime(now.year, now.month, now.day)
+              .subtract(Duration(days: now.weekday - 1));
+          if (t.dateTime.isBefore(weekStart)) return false;
+        default:
+          break; // All — no date restriction
       }
 
       // Category filter
@@ -61,29 +83,32 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     }).toList();
   }
 
-  /// Groups a sorted list of transactions by date label.
-  Map<String, List<BudgetTransaction>> _grouped(
-      List<BudgetTransaction> sorted) {
-    final map = <String, List<BudgetTransaction>>{};
-    for (final t in sorted) {
-      final label = _dateLabel(t.dateTime);
-      map.putIfAbsent(label, () => []).add(t);
-    }
-    return map;
-  }
-
-  String _dateLabel(DateTime dt) {
+  /// Maybank-style progressive date grouping.
+  String _groupLabel(DateTime dt) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final txDay = DateTime(dt.year, dt.month, dt.day);
     final diff = today.difference(txDay).inDays;
+
     if (diff == 0) return 'Today';
     if (diff == 1) return 'Yesterday';
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${months[dt.month - 1]} ${dt.day}';
+    if (diff < 7) {
+      return '${_weekdays[dt.weekday - 1]}, ${_monthAbbrs[dt.month - 1]} ${dt.day}';
+    }
+    if (diff < 14) return 'Last Week';
+    if (dt.year == now.year && dt.month == now.month) {
+      return 'Earlier this Month';
+    }
+    return '${_monthAbbrs[dt.month - 1]} ${dt.year}';
+  }
+
+  Map<String, List<BudgetTransaction>> _grouped(
+      List<BudgetTransaction> sorted) {
+    final map = <String, List<BudgetTransaction>>{};
+    for (final t in sorted) {
+      map.putIfAbsent(_groupLabel(t.dateTime), () => []).add(t);
+    }
+    return map;
   }
 
   void _toggleCategory(BudgetCategory cat) {
@@ -116,19 +141,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         titleTextStyle:
             AppTypography.headline1.copyWith(color: AppColors.primary),
         title: const Text('Transactions'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined,
-                color: AppColors.neutral),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Search + filters (sticky above the list)
-            _buildSearchAndFilters(),
+            _buildFilters(),
             Expanded(
               child: filtered.isEmpty
                   ? _buildEmptyState()
@@ -151,7 +168,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     );
   }
 
-  Widget _buildSearchAndFilters() {
+  Widget _buildFilters() {
     return Container(
       color: AppColors.white,
       padding: const EdgeInsets.fromLTRB(
@@ -169,62 +186,63 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             style: AppTypography.body1,
             decoration: InputDecoration(
               hintText: 'Search transactions...',
-              hintStyle: AppTypography.body1
-                  .copyWith(color: AppColors.neutral400),
+              hintStyle:
+                  AppTypography.body1.copyWith(color: AppColors.neutral400),
               prefixIcon: const Icon(Icons.search,
                   color: AppColors.neutral400, size: AppSpacing.iconSm),
               filled: true,
               fillColor: AppColors.neutral100,
-              contentPadding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.md),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: AppSpacing.md),
               border: OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(AppSpacing.radiusFull),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                 borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(AppSpacing.radiusFull),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                 borderSide: BorderSide.none,
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(AppSpacing.radiusFull),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                 borderSide:
                     const BorderSide(color: AppColors.primary, width: 1.5),
               ),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          // Filter chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _FilterChip(
-                  label: 'This Month',
-                  selected: _periodFilter == 'This Month',
-                  onTap: () => setState(() => _periodFilter =
-                      _periodFilter == 'This Month' ? 'All' : 'This Month'),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _FilterChip(
-                  label: 'Groceries',
-                  selected:
-                      _categoryFilters.contains(BudgetCategory.groceries),
-                  onTap: () =>
-                      _toggleCategory(BudgetCategory.groceries),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _FilterChip(
-                  label: 'Dining Out',
-                  selected:
-                      _categoryFilters.contains(BudgetCategory.dining),
-                  onTap: () =>
-                      _toggleCategory(BudgetCategory.dining),
-                ),
-              ],
-            ),
+
+          // Period — mutually exclusive
+          _FilterRow(
+            label: 'Period',
+            children: _periods.map((p) {
+              return _Chip(
+                label: p,
+                selected: _periodFilter == p,
+                onTap: () => setState(() => _periodFilter = p),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // Category — multi-select
+          _FilterRow(
+            label: 'Category',
+            children: [
+              _Chip(
+                label: 'Groceries',
+                selected:
+                    _categoryFilters.contains(BudgetCategory.groceries),
+                onTap: () => _toggleCategory(BudgetCategory.groceries),
+                activeColor: AppColors.primary,
+              ),
+              _Chip(
+                label: 'Dining Out',
+                selected:
+                    _categoryFilters.contains(BudgetCategory.dining),
+                onTap: () => _toggleCategory(BudgetCategory.dining),
+                activeColor: AppColors.warning,
+              ),
+            ],
           ),
         ],
       ),
@@ -236,11 +254,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(
-              top: AppSpacing.lg, bottom: AppSpacing.sm),
+          padding:
+              const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm),
           child: Text(label,
-              style:
-                  AppTypography.label.copyWith(color: AppColors.neutral600)),
+              style: AppTypography.label.copyWith(color: AppColors.neutral600)),
         ),
         Container(
           decoration: BoxDecoration(
@@ -256,8 +273,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   TransactionTile(
                     transaction: txs[i],
                     showDivider: i < txs.length - 1,
-                    onTap: () =>
-                        showTransactionDetailSheet(context, txs[i]),
+                    onTap: () => showTransactionDetailSheet(context, txs[i]),
                   ),
               ],
             ),
@@ -276,26 +292,65 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               size: 48, color: AppColors.neutral400),
           const SizedBox(height: AppSpacing.md),
           Text('No transactions found',
-              style: AppTypography.body1
-                  .copyWith(color: AppColors.neutral600)),
+              style:
+                  AppTypography.body1.copyWith(color: AppColors.neutral600)),
           const SizedBox(height: AppSpacing.xs),
-          Text('Try adjusting your filters',
-              style: AppTypography.body2),
+          Text('Try adjusting your filters', style: AppTypography.body2),
         ],
       ),
     );
   }
 }
 
-class _FilterChip extends StatelessWidget {
+// ─── Filter row with a small label ───────────────────────────────────────────
+
+class _FilterRow extends StatelessWidget {
+  final String label;
+  final List<Widget> children;
+
+  const _FilterRow({required this.label, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 64,
+          child: Text(label,
+              style: AppTypography.caption.copyWith(color: AppColors.neutral600)),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (int i = 0; i < children.length; i++) ...[
+                  children[i],
+                  if (i < children.length - 1)
+                    const SizedBox(width: AppSpacing.sm),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Individual filter chip ───────────────────────────────────────────────────
+
+class _Chip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final Color activeColor;
 
-  const _FilterChip({
+  const _Chip({
     required this.label,
     required this.selected,
     required this.onTap,
+    this.activeColor = AppColors.primary,
   });
 
   @override
@@ -305,13 +360,13 @@ class _FilterChip extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
+          horizontal: AppSpacing.md,
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.white,
+          color: selected ? activeColor : AppColors.white,
           border: Border.all(
-            color: selected ? AppColors.primary : AppColors.border,
+            color: selected ? activeColor : AppColors.border,
           ),
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),

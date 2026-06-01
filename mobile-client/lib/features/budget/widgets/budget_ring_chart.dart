@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
@@ -45,8 +46,7 @@ class BudgetRingChart extends StatelessWidget {
                     ),
                     TextSpan(
                       text: spent.toStringAsFixed(0),
-                      style: AppTypography.budgetHero
-                          .copyWith(fontSize: 36),
+                      style: AppTypography.budgetHero.copyWith(fontSize: 36),
                     ),
                   ],
                 ),
@@ -86,24 +86,23 @@ class _RingPainter extends CustomPainter {
 
     if (ratio <= 0) return;
 
-    // Progress arc with gradient from primary → warning
-    final gradient = SweepGradient(
-      startAngle: -math.pi / 2,
-      endAngle: -math.pi / 2 + 2 * math.pi,
-      colors: const [
-        AppColors.primary,
-        AppColors.secondary,
-        AppColors.warning,
-        AppColors.warning,
-      ],
-      stops: const [0.0, 0.45, 0.85, 1.0],
+    // ui.Gradient.sweep uses the same radian convention as canvas.drawArc
+    // (0 rad = 3 o'clock, positive = clockwise), so -π/2 = 12 o'clock.
+    // Arc start = green, midpoint = teal, near-full = amber — no hard seams.
+    final shader = ui.Gradient.sweep(
+      center,
+      [AppColors.primary, AppColors.secondary, AppColors.warning],
+      [0.0, 0.5, 1.0],
+      TileMode.clamp,
+      -math.pi / 2,
+      -math.pi / 2 + 2 * math.pi,
     );
 
     final progressPaint = Paint()
-      ..shader = gradient.createShader(rect)
+      ..shader = shader
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round; // ignore: prefer_const_constructors
+      ..strokeCap = StrokeCap.round;
 
     canvas.drawArc(
         rect, -math.pi / 2, ratio * 2 * math.pi, false, progressPaint);
