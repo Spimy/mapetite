@@ -135,7 +135,10 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) {
           final ok = await _confirmDiscard();
-          if (ok && mounted) Navigator.of(context).pop();
+          if (ok && mounted) {
+            // ignore: use_build_context_synchronously
+            Navigator.of(context).pop();
+          }
         }
       },
       child: Container(
