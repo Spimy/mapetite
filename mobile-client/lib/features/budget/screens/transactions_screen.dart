@@ -140,7 +140,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         scrolledUnderElevation: 0,
         centerTitle: true,
         titleTextStyle:
-            AppTypography.headline1.copyWith(color: AppColors.primary),
+            AppTypography.headline2.copyWith(color: AppColors.primary),
         title: const Text('Transactions'),
       ),
       body: SafeArea(
