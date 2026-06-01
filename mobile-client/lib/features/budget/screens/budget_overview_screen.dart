@@ -96,7 +96,7 @@ class BudgetOverviewScreen extends ConsumerWidget {
             ),
           ),
           // Centre: title
-          Text('Budget',
+          Text('Budget Analytics',
               style: AppTypography.headline2
                   .copyWith(color: AppColors.primary)),
           // Right: notification bell with badge
