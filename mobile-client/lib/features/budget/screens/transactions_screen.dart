@@ -132,9 +132,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      floatingActionButton: _AddFab(
-        onTap: () => showAddExpenseSheet(context),
-      ),
       appBar: AppBar(
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.primary,
@@ -151,22 +148,75 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           children: [
             _buildFilters(),
             Expanded(
-              child: filtered.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.screenHorizontalPadding,
-                        vertical: AppSpacing.lg,
-                      ),
-                      itemCount: dateKeys.length,
-                      itemBuilder: (context, i) {
-                        final label = dateKeys[i];
-                        final txs = grouped[label]!;
-                        return _buildGroup(label, txs);
-                      },
-                    ),
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screenHorizontalPadding,
+                  vertical: AppSpacing.lg,
+                ),
+                // +1 for the inline add-transaction card at index 0
+                itemCount: dateKeys.length + 1,
+                itemBuilder: (context, i) {
+                  if (i == 0) return _buildAddButton(context);
+                  final label = dateKeys[i - 1];
+                  final txs = grouped[label]!;
+                  return _buildGroup(label, txs);
+                },
+              ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: GestureDetector(
+        onTap: () => showAddExpenseSheet(context),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.md,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: AppColors.primaryLight,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.add,
+                    size: 20, color: AppColors.primary),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  'Add Transaction',
+                  style: AppTypography.body1.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const Icon(Icons.chevron_right,
+                  size: 20, color: AppColors.neutral400),
+            ],
+          ),
         ),
       ),
     );
@@ -287,23 +337,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.receipt_long_outlined,
-              size: 48, color: AppColors.neutral400),
-          const SizedBox(height: AppSpacing.md),
-          Text('No transactions found',
-              style:
-                  AppTypography.body1.copyWith(color: AppColors.neutral600)),
-          const SizedBox(height: AppSpacing.xs),
-          Text('Try adjusting your filters', style: AppTypography.body2),
-        ],
-      ),
-    );
-  }
 }
 
 // ─── Filter row with a small label ───────────────────────────────────────────
@@ -338,62 +371,6 @@ class _FilterRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// ─── Levitating FAB ──────────────────────────────────────────────────────────
-
-class _AddFab extends StatefulWidget {
-  final VoidCallback onTap;
-
-  const _AddFab({required this.onTap});
-
-  @override
-  State<_AddFab> createState() => _AddFabState();
-}
-
-class _AddFabState extends State<_AddFab> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) {
-        setState(() => _pressed = false);
-        widget.onTap();
-      },
-      onTapCancel: () => setState(() => _pressed = false),
-      child: AnimatedScale(
-        scale: _pressed ? 0.90 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.easeOut,
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-            boxShadow: [
-              // Tight dark drop shadow — grounds the button
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-              // Wide green halo — the levitation glow
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.38),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-                spreadRadius: -2,
-              ),
-            ],
-          ),
-          child: const Icon(Icons.add, color: Colors.white, size: 28),
-        ),
-      ),
     );
   }
 }
