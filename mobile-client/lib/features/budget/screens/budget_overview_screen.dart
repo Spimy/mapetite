@@ -5,6 +5,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../../shared/widgets/profile_drawer.dart';
 import '../../../routes/app_router.dart';
 import '../../discovery/models/mocks/home_feed_mocks.dart';
 import '../providers/budget_provider.dart';
@@ -25,6 +26,7 @@ class BudgetOverviewScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      drawer: const ProfileDrawer(),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [

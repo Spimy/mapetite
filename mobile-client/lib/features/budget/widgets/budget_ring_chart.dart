@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
@@ -86,20 +85,8 @@ class _RingPainter extends CustomPainter {
 
     if (ratio <= 0) return;
 
-    // ui.Gradient.sweep uses the same radian convention as canvas.drawArc
-    // (0 rad = 3 o'clock, positive = clockwise), so -π/2 = 12 o'clock.
-    // Arc start = green, midpoint = teal, near-full = amber — no hard seams.
-    final shader = ui.Gradient.sweep(
-      center,
-      [AppColors.primary, AppColors.secondary, AppColors.warning],
-      [0.0, 0.5, 1.0],
-      TileMode.clamp,
-      -math.pi / 2,
-      -math.pi / 2 + 2 * math.pi,
-    );
-
     final progressPaint = Paint()
-      ..shader = shader
+      ..color = AppColors.secondary
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
