@@ -137,7 +137,6 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
       description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
       authorName: 'Aisha',
       authorInitial: 'A',
-      postedAgo: 'Just now',
       cookMinutes: cookMins,
       calories: calories,
       servings: servings,

@@ -327,7 +327,7 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
                   style: AppTypography.body2.copyWith(color: AppColors.neutral),
                 ),
                 Text(
-                  'Posted ${recipe.postedAgo}',
+                  'Posted ${recipe.timeAgo}',
                   style: AppTypography.caption,
                 ),
               ],
