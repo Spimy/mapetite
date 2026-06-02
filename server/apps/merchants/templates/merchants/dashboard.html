@@ -33,8 +33,8 @@
         <ul class="sidebar__nav-list" role="list">
           <li class="sidebar__nav-item">
             <a class="sidebar__nav-link"
-               href="{% url 'merchants:dashboard' %}"
-               {% if request.resolver_match.view_name == 'merchants:dashboard' %}aria-current="page"{% endif %}>
+               href="{% url 'merchants:dashboard_home' current_index %}"
+               {% if request.resolver_match.view_name == 'merchants:dashboard_home' %}aria-current="page"{% endif %}>
               <span class="sidebar__nav-icon">{% include "icons/dashboard.html" %}</span>
               <span class="sidebar__nav-text">Dashboard</span>
             </a>
@@ -43,8 +43,8 @@
           {% if store.merchant_type == store.MerchantType.RESTAURANT %}
             <li class="sidebar__nav-item">
               <a class="sidebar__nav-link"
-                 href="{% url 'merchants:dashboard' %}"
-                 {% if request.resolver_match.view_name == 'users:sign_in' %}aria-current="page"{% endif %}>
+                 href="{% url 'merchants:dashboard_menu' current_index %}"
+                 {% if request.resolver_match.view_name == 'merchants:dashboard_menu' %}aria-current="page"{% endif %}>
                 <span class="sidebar__nav-icon">{% include "icons/list.html" %}</span>
                 <span class="sidebar__nav-text">Menu</span>
               </a>
@@ -52,8 +52,8 @@
           {% elif store.merchant_type == store.MerchantType.GROCERY %}
             <li class="sidebar__nav-item">
               <a class="sidebar__nav-link"
-                 href="{% url 'merchants:dashboard' %}"
-                 {% if request.resolver_match.view_name == 'users:sign_in' %}aria-current="page"{% endif %}>
+                 href="{% url 'merchants:dashboard_inventory' current_index %}"
+                 {% if request.resolver_match.view_name == 'merchants:dashboard_inventory' %}aria-current="page"{% endif %}>
                 <span class="sidebar__nav-icon">{% include "icons/list.html" %}</span>
                 <span class="sidebar__nav-text">Inventory</span>
               </a>
@@ -62,16 +62,16 @@
 
           <li class="sidebar__nav-item">
             <a class="sidebar__nav-link"
-               href="{% url 'merchants:dashboard' %}"
-               {% if request.resolver_match.view_name == 'users:sign_in' %}aria-current="page"{% endif %}>
+               href="{% url 'merchants:dashboard_promotions' current_index %}"
+               {% if request.resolver_match.view_name == 'merchants:dashboard_promotions' %}aria-current="page"{% endif %}>
               <span class="sidebar__nav-icon">{% include "icons/tag.html" %}</span>
               <span class="sidebar__nav-text">Promotions</span>
             </a>
           </li>
           <li class="sidebar__nav-item">
             <a class="sidebar__nav-link"
-               href="{% url 'merchants:dashboard' %}"
-               {% if request.resolver_match.view_name == 'users:sign_in' %}aria-current="page"{% endif %}>
+               href="{% url 'merchants:dashboard_locations_and_hours' current_index %}"
+               {% if request.resolver_match.view_name == 'merchants:dashboard_locations_and_hours' %}aria-current="page"{% endif %}>
               <span class="sidebar__nav-icon">{% include "icons/location.html" %}</span>
               <span class="sidebar__nav-text">Location &amp; Hours</span>
             </a>
@@ -81,8 +81,8 @@
           {% if store.owner == user %}
             <li class="sidebar__nav-item">
               <a class="sidebar__nav-link"
-                 href="{% url 'merchants:dashboard' %}"
-                 {% if request.resolver_match.view_name == 'users:sign_in' %}aria-current="page"{% endif %}>
+                 href="{% url 'merchants:dashboard_staff' current_index %}"
+                 {% if request.resolver_match.view_name == 'merchants:dashboard_staff' %}aria-current="page"{% endif %}>
                 <span class="sidebar__nav-icon">{% include "icons/users.html" %}</span>
                 <span class="sidebar__nav-text">Staff Management</span>
               </a>
@@ -91,8 +91,8 @@
 
           <li class="sidebar__nav-item">
             <a class="sidebar__nav-link"
-               href="{% url 'merchants:dashboard' %}"
-               {% if request.resolver_match.view_name == 'users:sign_in' %}aria-current="page"{% endif %}>
+               href="{% url 'merchants:dashboard_settings' current_index %}"
+               {% if request.resolver_match.view_name == 'merchants:dashboard_settings' %}aria-current="page"{% endif %}>
               <span class="sidebar__nav-icon">{% include "icons/settings.html" %}</span>
               <span class="sidebar__nav-text">Account Settings</span>
             </a>

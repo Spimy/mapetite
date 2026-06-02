@@ -15,7 +15,25 @@ urlpatterns = [
     # --- Dashboard URLs ---
     path("dashboard/", view=views.DashboardRedirectView.as_view(), name="dashboard"),
     path(
-        "dashboard/<int:store_index>/", views.DashboardView.as_view(), name="dashboard"
+        "dashboard/<int:store_index>/", views.DashboardView.as_view(), name="dashboard_home"
+    ),
+    path(
+        "dashboard/<int:store_index>/menu/", views.DashboardView.as_view(), name="dashboard_menu"
+    ),
+    path(
+        "dashboard/<int:store_index>/inventory/", views.DashboardView.as_view(), name="dashboard_inventory"
+    ),
+    path(
+        "dashboard/<int:store_index>/promotions/", views.DashboardView.as_view(), name="dashboard_promotions"
+    ),
+    path(
+        "dashboard/<int:store_index>/locations-and-hours/", views.DashboardView.as_view(), name="dashboard_locations_and_hours"
+    ),
+    path(
+        "dashboard/<int:store_index>/staff/", views.DashboardView.as_view(), name="dashboard_staff"
+    ),
+    path(
+        "dashboard/<int:store_index>/settings/", views.DashboardView.as_view(), name="dashboard_settings"
     ),
     path("onboarding/", views.OnboardingView.as_view(), name="onboarding"),
     path("store/<int:store_id>/mark-location/", views.MarkLocationView.as_view(), name="mark_location"),
