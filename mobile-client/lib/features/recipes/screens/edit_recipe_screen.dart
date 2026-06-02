@@ -8,6 +8,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/app_chip.dart';
 import '../models/recipe_model.dart';
 import '../providers/recipe_provider.dart';
+import '../../profile/widgets/unsaved_changes_dialog.dart';
 
 class _IngredientEntry {
   final TextEditingController nameCtrl;
@@ -184,6 +185,15 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
     });
   }
 
+  void _handlePopAttempt() async {
+    if (!_hasChanges) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final discard = await showUnsavedChangesDialog(context);
+    if (discard && mounted) Navigator.of(context).pop();
+  }
+
   void _save() {
     final cookMins = int.tryParse(_cookTimeCtrl.text.trim()) ?? widget.recipe.cookMinutes;
     final servings = int.tryParse(_servingsCtrl.text.trim()) ?? widget.recipe.servings;
@@ -263,7 +273,12 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: !_hasChanges,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handlePopAttempt();
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
@@ -276,7 +291,7 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
             scrolledUnderElevation: 2,
             leading: IconButton(
               icon: const Icon(Icons.close, color: AppColors.neutral),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: _handlePopAttempt,
             ),
             title: Text('Edit Recipe', style: AppTypography.headline2),
           ),
@@ -619,6 +634,7 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 }
