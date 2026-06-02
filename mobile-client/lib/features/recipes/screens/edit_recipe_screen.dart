@@ -29,6 +29,13 @@ class _IngredientEntry {
           text: ing.estimatedCost != null ? ing.estimatedCost!.toStringAsFixed(2) : '',
         );
 
+  void addListener(VoidCallback listener) {
+    nameCtrl.addListener(listener);
+    quantityCtrl.addListener(listener);
+    storeCtrl.addListener(listener);
+    priceCtrl.addListener(listener);
+  }
+
   void dispose() {
     nameCtrl.dispose();
     quantityCtrl.dispose();
@@ -63,7 +70,46 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
   late Set<String> _selectedAllergens;
   late RecipeVisibility _visibility;
 
-  bool get _canSave => _titleCtrl.text.trim().isNotEmpty;
+  bool get _hasChanges {
+    final r = widget.recipe;
+
+    if (_titleCtrl.text.trim() != r.title) return true;
+    if (_descCtrl.text.trim() != (r.description ?? '')) return true;
+    if (_cookTimeCtrl.text.trim() != r.cookMinutes.toString()) return true;
+    if (_servingsCtrl.text.trim() != r.servings.toString()) return true;
+    if (_caloriesCtrl.text.trim() != (r.calories > 0 ? r.calories.toString() : '')) return true;
+
+    if (_isHalal != r.isHalal) return true;
+    if (_isVegan != r.isVegan) return true;
+    if (_isVegetarian != r.isVegetarian) return true;
+    if (_cuisine != r.cuisine) return true;
+    if (_visibility != r.visibility) return true;
+
+    final origAllergens = Set<String>.from(r.allergens);
+    if (!_selectedAllergens.containsAll(origAllergens) ||
+        !origAllergens.containsAll(_selectedAllergens)) return true;
+
+    if (_ingredients.length != r.ingredients.length) return true;
+    for (int i = 0; i < _ingredients.length; i++) {
+      final orig = r.ingredients[i];
+      final curr = _ingredients[i];
+      if (curr.nameCtrl.text.trim() != orig.name) return true;
+      if (curr.quantityCtrl.text.trim() != orig.quantity) return true;
+      if (curr.storeCtrl.text.trim() != (orig.storeName ?? '')) return true;
+      if (curr.priceCtrl.text.trim() != (orig.estimatedCost?.toStringAsFixed(2) ?? '')) return true;
+    }
+
+    if (_stepControllers.length != r.steps.length) return true;
+    for (int i = 0; i < _stepControllers.length; i++) {
+      if (_stepControllers[i].text.trim() != r.steps[i].description) return true;
+    }
+
+    return false;
+  }
+
+  bool get _canSave => _hasChanges && _titleCtrl.text.trim().isNotEmpty;
+
+  void _onChanged() => setState(() {});
 
   @override
   void initState() {
@@ -91,7 +137,11 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
     _selectedAllergens = Set<String>.from(r.allergens);
     _visibility = r.visibility;
 
-    _titleCtrl.addListener(() => setState(() {}));
+    for (final ctrl in [_titleCtrl, _descCtrl, _cookTimeCtrl, _servingsCtrl, _caloriesCtrl]) {
+      ctrl.addListener(_onChanged);
+    }
+    for (final e in _ingredients) e.addListener(_onChanged);
+    for (final c in _stepControllers) c.addListener(_onChanged);
   }
 
   @override
@@ -106,7 +156,11 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
     super.dispose();
   }
 
-  void _addIngredient() => setState(() => _ingredients.add(_IngredientEntry()));
+  void _addIngredient() {
+    final entry = _IngredientEntry();
+    entry.addListener(_onChanged);
+    setState(() => _ingredients.add(entry));
+  }
 
   void _removeIngredient(int index) {
     if (_ingredients.length <= 1) return;
@@ -116,7 +170,11 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
     });
   }
 
-  void _addStep() => setState(() => _stepControllers.add(TextEditingController()));
+  void _addStep() {
+    final ctrl = TextEditingController();
+    ctrl.addListener(_onChanged);
+    setState(() => _stepControllers.add(ctrl));
+  }
 
   void _removeStep(int index) {
     if (_stepControllers.length <= 1) return;
@@ -221,18 +279,6 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
               onPressed: () => Navigator.of(context).pop(),
             ),
             title: Text('Edit Recipe', style: AppTypography.headline2),
-            actions: [
-              TextButton(
-                onPressed: _canSave ? _save : null,
-                child: Text(
-                  'Save',
-                  style: AppTypography.button.copyWith(
-                    color: _canSave ? AppColors.primary : AppColors.neutral400,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-            ],
           ),
           SliverToBoxAdapter(
             child: Padding(
