@@ -285,8 +285,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
         // Trending Recipes
         _buildSection(
           title: 'Trending Recipes',
-          // TODO: Pass recipes filter to Explore when it supports deep-linking
-          onSeeAll: () => context.go(AppRoutes.explore),
+          onSeeAll: () => context.push(AppRoutes.recipes),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: ListView.separated(
@@ -296,7 +295,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
               separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
               itemBuilder: (_, i) => RecipeMiniCard(
                 recipe: HomeFeedMocks.trendingRecipes[i],
-                onTap: () {},
+                onTap: () => context.push('/recipes/${HomeFeedMocks.trendingRecipes[i].id}'),
               ),
             ),
           ),
