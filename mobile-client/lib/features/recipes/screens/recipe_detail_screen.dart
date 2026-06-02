@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../shared/widgets/app_chip.dart';
@@ -359,7 +360,7 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
         ),
         if (recipe.cuisine != null)
           _StatChip(
-            icon: _cuisineIcon(recipe.cuisine!),
+            icon: AppConstants.cuisineIcons[recipe.cuisine!] ?? Icons.restaurant_menu,
             label: recipe.cuisine!,
           ),
       ],
@@ -696,22 +697,6 @@ class _ShareOption extends StatelessWidget {
       ),
     );
   }
-}
-
-// ─── Cuisine icon helper ──────────────────────────────────────────────────────
-
-IconData _cuisineIcon(String cuisine) {
-  const map = <String, IconData>{
-    'Malaysian': Icons.rice_bowl,
-    'Chinese': Icons.ramen_dining,
-    'Indian': Icons.soup_kitchen,
-    'Japanese': Icons.set_meal,
-    'Western': Icons.lunch_dining,
-    'Thai': Icons.local_fire_department,
-    'Korean': Icons.outdoor_grill,
-    'Middle Eastern': Icons.kebab_dining,
-  };
-  return map[cuisine] ?? Icons.restaurant_menu;
 }
 
 // ─── Stat Chip ────────────────────────────────────────────────────────────────

@@ -347,7 +347,7 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      _kCuisineIcons[c] ?? Icons.restaurant_menu,
+                                      AppConstants.cuisineIcons[c] ?? Icons.restaurant_menu,
                                       size: 13,
                                       color: isSelected ? AppColors.white : AppColors.neutral600,
                                     ),
@@ -589,17 +589,6 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
     );
   }
 }
-
-const _kCuisineIcons = <String, IconData>{
-  'Malaysian': Icons.rice_bowl,
-  'Chinese': Icons.ramen_dining,
-  'Indian': Icons.soup_kitchen,
-  'Japanese': Icons.set_meal,
-  'Western': Icons.lunch_dining,
-  'Thai': Icons.local_fire_department,
-  'Korean': Icons.outdoor_grill,
-  'Middle Eastern': Icons.kebab_dining,
-};
 
 class _ImageUploadArea extends StatefulWidget {
   @override

@@ -684,17 +684,6 @@ class _CuisineIconGrid extends StatelessWidget {
   final Set<String> activeOptions;
   final ValueChanged<String> onToggle;
 
-  static const Map<String, IconData> _icons = {
-    'Malaysian': Icons.rice_bowl,
-    'Chinese': Icons.ramen_dining,
-    'Indian': Icons.soup_kitchen,
-    'Japanese': Icons.set_meal,
-    'Western': Icons.lunch_dining,
-    'Thai': Icons.local_fire_department,
-    'Korean': Icons.outdoor_grill,
-    'Middle Eastern': Icons.kebab_dining,
-  };
-
   const _CuisineIconGrid({
     required this.activeOptions,
     required this.onToggle,
@@ -712,7 +701,7 @@ class _CuisineIconGrid extends StatelessWidget {
           runSpacing: AppSpacing.sm,
           children: AppConstants.cuisineCategories.map((cuisine) {
             final isActive = activeOptions.contains(cuisine);
-            final icon = _icons[cuisine] ?? Icons.restaurant;
+            final icon = AppConstants.cuisineIcons[cuisine] ?? Icons.restaurant;
             return GestureDetector(
               onTap: () => onToggle(cuisine),
               child: AnimatedContainer(
