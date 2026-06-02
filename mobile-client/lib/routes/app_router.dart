@@ -11,6 +11,9 @@ import '../features/profile/screens/dietary_preferences_screen.dart';
 import '../features/profile/screens/budget_setup_screen.dart';
 import '../features/profile/screens/health_goals_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
+import '../features/budget/screens/budget_overview_screen.dart';
+import '../features/budget/screens/spending_analytics_screen.dart';
+import '../features/budget/screens/transactions_screen.dart';
 
 abstract class AppRoutes {
   static const String splash = '/';
@@ -34,6 +37,10 @@ abstract class AppRoutes {
   static const String profileBudgetSetup = '/profile/budget-setup';
   static const String profileHealthGoals = '/profile/health-goals';
   static const String profileEdit = '/profile/edit';
+
+  // Budget sub-screens (pushed over shell)
+  static const String budgetAnalytics = '/budget/analytics';
+  static const String budgetTransactions = '/budget/transactions';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -148,8 +155,20 @@ final GoRouter appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.budget,
-              builder: (context, state) =>
-                  const _PlaceholderScreen(label: 'Budget'),
+              builder: (context, state) => const BudgetOverviewScreen(),
+              routes: [
+                GoRoute(
+                  path: 'analytics',
+                  builder: (context, state) => SpendingAnalyticsScreen(
+                    categoryFilter:
+                        state.uri.queryParameters['category'],
+                  ),
+                ),
+                GoRoute(
+                  path: 'transactions',
+                  builder: (context, state) => const TransactionsScreen(),
+                ),
+              ],
             ),
           ],
         ),
