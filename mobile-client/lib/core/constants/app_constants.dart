@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 abstract class AppConstants {
   static const String appName = 'Mapetite';
   static const String appVersion = '1.0.0';
@@ -36,4 +38,16 @@ abstract class AppConstants {
   static const List<String> allergenOptions = [
     'Nuts', 'Dairy', 'Gluten', 'Shellfish', 'Eggs', 'Soy',
   ];
+
+  // Cuisine icons
+  static const Map<String, IconData> cuisineIcons = {
+    'Malaysian':      Icons.rice_bowl,
+    'Chinese':        Icons.ramen_dining,
+    'Indian':         Icons.soup_kitchen,
+    'Japanese':       Icons.set_meal,
+    'Western':        Icons.lunch_dining,
+    'Thai':           Icons.local_fire_department,
+    'Korean':         Icons.outdoor_grill,
+    'Middle Eastern': Icons.kebab_dining,
+  };
 }
