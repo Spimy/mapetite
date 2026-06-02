@@ -24,6 +24,9 @@
                 </option>
               {% endfor %}
             </select>
+            <input type="hidden"
+                   name="current_route"
+                   value="{{ request.resolver_match.view_name }}" />
             <noscript>
               <button type="submit" class="btn">Switch Store</button>
             </noscript>
@@ -40,25 +43,20 @@
             </a>
           </li>
 
-          {% if store.merchant_type == store.MerchantType.RESTAURANT %}
-            <li class="sidebar__nav-item">
-              <a class="sidebar__nav-link"
-                 href="{% url 'merchants:dashboard_menu' current_index %}"
-                 {% if request.resolver_match.view_name == 'merchants:dashboard_menu' %}aria-current="page"{% endif %}>
-                <span class="sidebar__nav-icon">{% include "icons/list.html" %}</span>
-                <span class="sidebar__nav-text">Menu</span>
-              </a>
-            </li>
-          {% elif store.merchant_type == store.MerchantType.GROCERY %}
-            <li class="sidebar__nav-item">
-              <a class="sidebar__nav-link"
-                 href="{% url 'merchants:dashboard_inventory' current_index %}"
-                 {% if request.resolver_match.view_name == 'merchants:dashboard_inventory' %}aria-current="page"{% endif %}>
-                <span class="sidebar__nav-icon">{% include "icons/list.html" %}</span>
-                <span class="sidebar__nav-text">Inventory</span>
-              </a>
-            </li>
-          {% endif %}
+          <li class="sidebar__nav-item">
+            <a class="sidebar__nav-link"
+               href="{% url 'merchants:dashboard_items' current_index %}"
+               {% if request.resolver_match.view_name == 'merchants:dashboard_items' %}aria-current="page"{% endif %}>
+              <span class="sidebar__nav-icon">{% include "icons/list.html" %}</span>
+              <span class="sidebar__nav-text">
+                {% if store.merchant_type == store.MerchantType.RESTAURANT %}
+                  Menu
+                {% elif store.merchant_type == store.MerchantType.GROCERY %}
+                  Products
+                {% endif %}
+              </span>
+            </a>
+          </li>
 
           <li class="sidebar__nav-item">
             <a class="sidebar__nav-link"

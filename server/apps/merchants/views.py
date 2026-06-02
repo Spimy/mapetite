@@ -57,13 +57,16 @@ class DashboardRedirectView(MerchantRequiredMixin, RedirectView):
     
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         store_index = request.POST.get("store_index")
+
+        current_route = request.POST.get("current_route", "merchants:dashboard_home")
         if store_index is not None and store_index.isdigit():
-            return redirect("merchants:dashboard", store_index=int(store_index))
+            return redirect(current_route, store_index=int(store_index))
+            
         return super().post(request, *args, **kwargs)
 
 
 class DashboardView(MerchantRequiredMixin, TemplateView):
-    template_name = "merchants/dashboard.html"
+    template_name = "merchants/pages/main-dashboard.html"
 
     def get(self, request, *args, **kwargs):
         has_store = StoreProfile.objects.filter(
