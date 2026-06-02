@@ -36,7 +36,6 @@ class SignInView(SuccessUrlMixin, FormView):
 
 
 class SignOutView(LoginRequiredMixin, RedirectView):
-    # TODO: To update to marketing/landing page
     url = reverse_lazy("users:sign_in")
     redirect_field_name = None
 
