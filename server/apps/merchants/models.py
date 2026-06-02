@@ -85,3 +85,84 @@ class StoreOperatingHour(models.Model):
             "Sunday",
         ]
         return f"{self.store.business_name} - {days[self.day_of_week]}: {self.open_time} to {self.close_time}"
+
+class ItemCategory(models.Model):
+    """
+    Allows merchants to organise their offerings.
+    Restaurant examples: 'Starters', 'Mains', 'Drinks'
+    Grocery examples: 'Fresh Produce', 'Dairy', 'Snacks'
+    """
+    store = models.ForeignKey(
+        StoreProfile, on_delete=models.CASCADE, related_name="categories"
+    )
+    name = models.CharField(max_length=100)
+    display_order = models.PositiveIntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Item Categories"
+        ordering = ["display_order", "name"]
+
+    def __str__(self):
+        return f"{self.store.business_name} - {self.name}"
+
+
+class StoreItem(models.Model):
+    class StockStatus(models.TextChoices):
+        IN_STOCK = "IN_STOCK", "In Stock"
+        LOW_STOCK = "LOW_STOCK", "Low Stock"
+        OUT_OF_STOCK = "OUT_OF_STOCK", "Out of Stock"
+
+    store = models.ForeignKey(
+        StoreProfile, on_delete=models.CASCADE, related_name="items"
+    )
+    category = models.ForeignKey(
+        ItemCategory, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name="items"
+    )
+    
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    
+    price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    
+    stock_status = models.CharField(
+        max_length=20, 
+        choices=StockStatus.choices, 
+        default=StockStatus.IN_STOCK
+    )
+    
+    # Nutritional information
+    calories = models.PositiveIntegerField(null=True, blank=True)
+
+    # Dietary attributes
+    halal = models.BooleanField(default=False)
+    vegan = models.BooleanField(default=False)
+    vegetarian = models.BooleanField(default=False)
+    organic = models.BooleanField(default=False)
+    gluten_free = models.BooleanField(default=False)
+    dairy_free = models.BooleanField(default=False)
+    contains_nuts = models.BooleanField(default=False)
+
+    # Sustainability attributes
+    eco_packaging = models.BooleanField(default=False)
+    locally_sourced = models.BooleanField(default=False)
+    
+    # Allows merchants to completely hide an item (e.g., seasonal) without deleting it
+    is_active = models.BooleanField(default=True)
+    
+    thumbnail = models.ImageField(upload_to="merchants/items", blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        status_label = self.StockStatus(self.stock_status).label
+        return f"{self.name} ({status_label})"
