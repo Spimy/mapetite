@@ -5,7 +5,7 @@ from django.conf import settings
 
 
 # Create your models here.
-class StoreProfile(models.Model):
+class StoreProfile(gis_models.Model):
     # The choices for the type of business
     class MerchantType(models.TextChoices):
         RESTAURANT = "RESTAURANT", "Restaurant"
