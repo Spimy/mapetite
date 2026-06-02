@@ -435,7 +435,8 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
             border: Border.all(color: AppColors.border),
           ),
           child: Column(
-            children: recipe.ingredients.map((ing) {
+            children: recipe.ingredients.indexed.map((entry) {
+              final (idx, ing) = entry;
               final key = '${recipe.id}_${ing.name}';
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -443,6 +444,7 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
                   ingredient: ing,
                   isChecked: _checkedIngredientKeys.contains(key),
                   onChanged: (_) => _toggleIngredient(key),
+                  isLast: idx == recipe.ingredients.length - 1,
                 ),
               );
             }).toList(),

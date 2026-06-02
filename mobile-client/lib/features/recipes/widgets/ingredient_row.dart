@@ -8,12 +8,14 @@ class IngredientRow extends StatelessWidget {
   final RecipeIngredient ingredient;
   final bool isChecked;
   final ValueChanged<bool> onChanged;
+  final bool isLast;
 
   const IngredientRow({
     super.key,
     required this.ingredient,
     required this.isChecked,
     required this.onChanged,
+    this.isLast = false,
   });
 
   @override
@@ -81,7 +83,8 @@ class IngredientRow extends StatelessWidget {
             ],
           ),
         ),
-        const Divider(color: AppColors.border, height: 1),
+        if (!isLast)
+          const Divider(color: AppColors.border, height: 1),
       ],
     );
   }
