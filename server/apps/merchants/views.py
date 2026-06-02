@@ -1,8 +1,10 @@
 import json
+from typing import Any
+from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse
 from django.views.generic import RedirectView, TemplateView, View
 from django.shortcuts import redirect, render
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
 from apps.users.mixins import MerchantRequiredMixin
 from .models import StoreOperatingHour, StoreProfile
@@ -52,6 +54,12 @@ class DashboardRedirectView(MerchantRequiredMixin, RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         return reverse("merchants:dashboard", kwargs={"store_index": 0})
+    
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        store_index = request.POST.get("store_index")
+        if store_index is not None and store_index.isdigit():
+            return redirect("merchants:dashboard", store_index=int(store_index))
+        return super().post(request, *args, **kwargs)
 
 
 class DashboardView(MerchantRequiredMixin, TemplateView):
@@ -84,6 +92,7 @@ class DashboardView(MerchantRequiredMixin, TemplateView):
 
         context.update({
             "store": active_store,
+            "stores": stores,
             "current_index": store_index,
             "total_stores": stores.count(),
             "has_next": (store_index + 1) < stores.count(),
