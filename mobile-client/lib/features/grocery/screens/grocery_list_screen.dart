@@ -16,27 +16,21 @@ class GroceryListScreen extends ConsumerStatefulWidget {
 }
 
 class _GroceryListScreenState extends ConsumerState<GroceryListScreen> {
-  final _addItemController = TextEditingController();
-
-  @override
-  void dispose() {
-    _addItemController.dispose();
-    super.dispose();
-  }
-
-  void _submitNewItem(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) return;
-    ref.read(groceryListProvider.notifier).addItem(
-      GroceryListItem(
-        id: 'g_${DateTime.now().millisecondsSinceEpoch}',
-        name: trimmed,
-        quantity: '1',
-        storeName: 'Any Store',
-        estimatedPrice: 0.0,
+  void _showAddItemSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      ),
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: _AddItemSheet(
+          onAdd: (item) => ref.read(groceryListProvider.notifier).addItem(item),
+        ),
       ),
     );
-    _addItemController.clear();
   }
 
   void _showMoreMenu() {
@@ -171,10 +165,9 @@ class _GroceryListScreenState extends ConsumerState<GroceryListScreen> {
                   _ItemsCard(
                     unchecked: unchecked,
                     checked: checked,
-                    addItemController: _addItemController,
                     onToggle: (id) => ref.read(groceryListProvider.notifier).toggleItem(id),
                     onDelete: (id) => ref.read(groceryListProvider.notifier).removeItem(id),
-                    onSubmitNewItem: _submitNewItem,
+                    onAddItem: _showAddItemSheet,
                   ),
                   const SizedBox(height: AppSpacing.md),
                   _SummaryCard(
@@ -202,18 +195,16 @@ class _GroceryListScreenState extends ConsumerState<GroceryListScreen> {
 class _ItemsCard extends StatelessWidget {
   final List<GroceryListItem> unchecked;
   final List<GroceryListItem> checked;
-  final TextEditingController addItemController;
   final ValueChanged<String> onToggle;
   final ValueChanged<String> onDelete;
-  final ValueChanged<String> onSubmitNewItem;
+  final VoidCallback onAddItem;
 
   const _ItemsCard({
     required this.unchecked,
     required this.checked,
-    required this.addItemController,
     required this.onToggle,
     required this.onDelete,
-    required this.onSubmitNewItem,
+    required this.onAddItem,
   });
 
   @override
@@ -248,9 +239,190 @@ class _ItemsCard extends StatelessWidget {
                 )),
           ],
           const Divider(color: AppColors.border, height: 1),
-          _AddItemRow(
-            controller: addItemController,
-            onSubmit: onSubmitNewItem,
+          _AddItemButton(onTap: onAddItem),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Add Item Button ──────────────────────────────────────────────────────────
+
+class _AddItemButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _AddItemButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: const BorderRadius.vertical(
+          bottom: Radius.circular(AppSpacing.radiusLg),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md + 2,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 22,
+                height: 22,
+                decoration: const BoxDecoration(
+                  color: AppColors.primaryLight,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.add, size: 14, color: AppColors.primary),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                'Add item',
+                style: AppTypography.body1.copyWith(color: AppColors.primary),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Add Item Sheet ───────────────────────────────────────────────────────────
+
+class _AddItemSheet extends StatefulWidget {
+  final ValueChanged<GroceryListItem> onAdd;
+
+  const _AddItemSheet({required this.onAdd});
+
+  @override
+  State<_AddItemSheet> createState() => _AddItemSheetState();
+}
+
+class _AddItemSheetState extends State<_AddItemSheet> {
+  final _nameCtrl = TextEditingController();
+  final _quantityCtrl = TextEditingController();
+  final _storeCtrl = TextEditingController();
+  final _priceCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _quantityCtrl.dispose();
+    _storeCtrl.dispose();
+    _priceCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) return;
+    widget.onAdd(
+      GroceryListItem(
+        id: 'g_${DateTime.now().millisecondsSinceEpoch}',
+        name: name,
+        quantity: _quantityCtrl.text.trim().isEmpty ? '1' : _quantityCtrl.text.trim(),
+        storeName: _storeCtrl.text.trim().isEmpty ? '' : _storeCtrl.text.trim(),
+        estimatedPrice: double.tryParse(_priceCtrl.text.trim()) ?? 0.0,
+      ),
+    );
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xl,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.neutral200,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text('Add Item', style: AppTypography.headline2),
+          const SizedBox(height: AppSpacing.lg),
+          _FieldLabel('Item name'),
+          const SizedBox(height: AppSpacing.xs),
+          _SheetField(
+            controller: _nameCtrl,
+            hint: 'e.g. Organic Eggs',
+            autofocus: true,
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _FieldLabel('Quantity'),
+                    const SizedBox(height: AppSpacing.xs),
+                    _SheetField(
+                      controller: _quantityCtrl,
+                      hint: 'e.g. 2 pcs',
+                      textInputAction: TextInputAction.next,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _FieldLabel('Est. Cost (RM)'),
+                    const SizedBox(height: AppSpacing.xs),
+                    _SheetField(
+                      controller: _priceCtrl,
+                      hint: '0.00',
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      textInputAction: TextInputAction.next,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _FieldLabel('Store'),
+          const SizedBox(height: AppSpacing.xs),
+          _SheetField(
+            controller: _storeCtrl,
+            hint: 'e.g. Fresh Mart',
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _submit(),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+              ),
+              child: Text('Add to List', style: AppTypography.button),
+            ),
           ),
         ],
       ),
@@ -258,41 +430,60 @@ class _ItemsCard extends StatelessWidget {
   }
 }
 
-// ─── Add Item Row ─────────────────────────────────────────────────────────────
-
-class _AddItemRow extends StatelessWidget {
-  final TextEditingController controller;
-  final ValueChanged<String> onSubmit;
-
-  const _AddItemRow({required this.controller, required this.onSubmit});
+class _FieldLabel extends StatelessWidget {
+  final String text;
+  const _FieldLabel(this.text);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.md + 2,
+    return Text(
+      text,
+      style: AppTypography.label.copyWith(color: AppColors.neutral700),
+    );
+  }
+}
+
+class _SheetField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hint;
+  final bool autofocus;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+
+  const _SheetField({
+    required this.controller,
+    required this.hint,
+    this.autofocus = false,
+    this.keyboardType,
+    this.textInputAction,
+    this.onSubmitted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.neutral100,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Row(
-        children: [
-          const Icon(Icons.add, size: 18, color: AppColors.neutral400),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              onSubmitted: onSubmit,
-              style: AppTypography.body1.copyWith(color: AppColors.neutral600),
-              decoration: InputDecoration(
-                hintText: 'Add new item...',
-                hintStyle: AppTypography.body1.copyWith(color: AppColors.neutral400),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-              textInputAction: TextInputAction.done,
-            ),
+      child: TextField(
+        controller: controller,
+        autofocus: autofocus,
+        keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        onSubmitted: onSubmitted,
+        style: AppTypography.body1.copyWith(color: AppColors.neutral),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppTypography.body1.copyWith(color: AppColors.neutral400),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm + 2,
           ),
-        ],
+        ),
       ),
     );
   }
