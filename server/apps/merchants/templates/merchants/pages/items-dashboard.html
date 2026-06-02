@@ -1,0 +1,160 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Items - {{ store.business_name }}
+{% endblock title %}
+
+{% block description %}
+  Manage your store's items, categories, and pricing. Add new items or update existing ones to keep your menu fresh and appealing to customers.
+{% endblock description %}
+
+{% block keywords %}
+  item management, menu management, product management, Mapetite merchant tools
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block dashboard_content %}
+  <div class="items-page-header">
+    <div class="items-page-header__title-wrap">
+      <h3 class="items-page-header__title">
+        {% if store.merchant_type == store.MerchantType.RESTAURANT %}
+          Menu Management
+        {% elif store.merchant_type == store.MerchantType.GROCERY %}
+          Inventory
+        {% endif %}
+      </h3>
+    </div>
+
+    <div class="items-page-header__actions">
+      <input class="items-page-header__search"
+             type="search"
+             placeholder="Search items..."
+             aria-label="Search items" />
+      <button class="items-page-header__add-button"
+              type="button"
+              popovertarget="add-item-popover">Add Item</button>
+    </div>
+  </div>
+
+  {% if items|length == 0 %}
+    <form action="" method="post">
+      <h4>No items found. Start by adding your first item category.</h4>
+
+      {% csrf_token %}
+      {{ category_form.as_p }}
+
+      <input type="hidden" name="current_store" value="{{ store.id }}" />
+      <button type="submit" name="submit_category">Create Category</button>
+    </form>
+  {% endif %}
+
+  <div class="items-tabs">
+    <button class="items-tabs__tab is-active" data-target="all">All Items</button>
+    {% for category in categories %}
+      <button class="items-tabs__tab" data-target="category-{{ category.id }}">{{ category.name }}</button>
+    {% endfor %}
+  </div>
+
+  <!-- All Items Section -->
+  <section id="all" class="items-category">
+    <ul>
+      {% for item in items %}<li>{{ item.name }} - RM{{ item.price }}</li>{% endfor %}
+    </ul>
+  </section>
+
+  <!-- Categorised Items Sections -->
+  {% for category in categories %}
+    <section id="category-{{ category.id }}" class="items-category">
+      <ul>
+        {% for item in items %}
+          {% if item.category.id == category.id %}<li>{{ item.name }} - RM {{ item.price }}</li>{% endif %}
+        {% endfor %}
+      </ul>
+    </section>
+  {% endfor %}
+
+  <div id="add-item-popover" class="items-popover" popover>
+    <div class="items-popover__header">
+      <h4 class="items-popover__title">Add New Item</h4>
+      <button class="items-popover__close-button"
+              type="button"
+              popovertarget="add-item-popover"
+              popovertargetaction="hide">Close</button>
+    </div>
+
+    <form class="items-popover__form" method="post">
+      {% csrf_token %}
+      {% for section_title, fields in item_form.grouped_fields %}
+        <fieldset class="items-form-group">
+          {% if section_title != "" %}<legend class="items-form-group__legend">{{ section_title }}</legend>{% endif %}
+          {% for field in fields %}
+            <div class="items-form-group__field">
+              <label class="items-form-group__label" for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
+              </label>
+
+              {% if field.name == "price" %}
+                <div class="items-form-group__input-prefix">
+                  <span class="items-form-group__currency">RM</span>
+                  {{ field }}
+                </div>
+              {% else %}
+                <div class="items-form-group__control">{{ field }}</div>
+              {% endif %}
+
+              {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
+              {{ field.errors }}
+            </div>
+          {% endfor %}
+        </fieldset>
+      {% endfor %}
+      <div class="items-popover__actions">
+        <button class="items-popover__submit-button" type="submit" name="submit_item">Save Item</button>
+        <button class="items-popover__cancel-button"
+                type="button"
+                popovertarget="add-item-popover"
+                popovertargetaction="hide">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.items-tabs__tab');
+      const sections = document.querySelectorAll('.items-category');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+          e.preventDefault();
+          const target = this.getAttribute('data-target');
+          console.log('Tab clicked, target:', target);
+          
+          // Remove active state from all tabs
+          tabs.forEach(t => t.classList.remove('is-active'));
+          
+          // Add active state to clicked tab
+          this.classList.add('is-active');
+          
+          // Hide all sections
+          sections.forEach(section => {
+            if (section.id === target) {
+              section.style.display = 'block';
+              section.classList.add('active');
+            } else {
+              section.style.display = 'none';
+              section.classList.remove('active');
+            }
+          });
+        });
+      });
+
+      // Show first tab on load
+      if (tabs.length > 0) {
+        tabs[0].click();
+      }
+    });
+  </script>
+{% endblock dashboard_content %}

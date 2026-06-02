@@ -18,7 +18,7 @@ urlpatterns = [
         "dashboard/<int:store_index>/", views.DashboardView.as_view(), name="dashboard_home"
     ),
     path(
-        "dashboard/<int:store_index>/items/", views.DashboardView.as_view(), name="dashboard_items"
+        "dashboard/<int:store_index>/items/", views.DashboardItemsView.as_view(), name="dashboard_items"
     ),
     path(
         "dashboard/<int:store_index>/promotions/", views.DashboardView.as_view(), name="dashboard_promotions"
