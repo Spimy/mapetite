@@ -26,6 +26,19 @@ class _AddRecipeSheetState extends State<AddRecipeSheet> {
   bool _isVegetarian = false;
   RecipeVisibility _visibility = RecipeVisibility.public;
 
+  bool get _canSubmit =>
+      _titleController.text.trim().isNotEmpty &&
+      _cookTimeController.text.trim().isNotEmpty &&
+      _servingsController.text.trim().isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController.addListener(() => setState(() {}));
+    _cookTimeController.addListener(() => setState(() {}));
+    _servingsController.addListener(() => setState(() {}));
+  }
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -310,10 +323,12 @@ class _AddRecipeSheetState extends State<AddRecipeSheet> {
                           width: double.infinity,
                           height: AppSpacing.buttonHeight,
                           child: ElevatedButton(
-                            onPressed: _submit,
+                            onPressed: _canSubmit ? _submit : null,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               foregroundColor: AppColors.white,
+                              disabledBackgroundColor: AppColors.neutral200,
+                              disabledForegroundColor: AppColors.neutral400,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                               ),

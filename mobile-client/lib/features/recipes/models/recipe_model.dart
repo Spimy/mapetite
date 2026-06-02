@@ -2,7 +2,7 @@ enum RecipeVisibility { public, private }
 
 enum RecipeSortOption { newest, mostPopular, lowestCalorie, quickest }
 
-enum RecipeFilter { halal, vegan, vegetarian, under30min, myRecipes }
+enum RecipeFilter { halal, vegan, vegetarian, under30min, myRecipes, saved }
 
 class RecipeIngredient {
   final String name;

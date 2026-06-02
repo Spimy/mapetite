@@ -161,31 +161,45 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
     return SliverAppBar(
       expandedHeight: 200,
       pinned: true,
-      backgroundColor: AppColors.primary.withValues(alpha: 0.9),
+      backgroundColor: AppColors.white,
       surfaceTintColor: Colors.transparent,
       leading: GestureDetector(
         onTap: () => context.pop(),
         child: Container(
           margin: const EdgeInsets.all(AppSpacing.sm),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: AppColors.white,
             shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          child: const Icon(Icons.arrow_back, color: AppColors.white, size: 20),
+          child: const Icon(Icons.arrow_back, color: AppColors.neutral, size: 20),
         ),
       ),
       actions: [
         GestureDetector(
-          onTap: () {},
+          onTap: () => _showShareSheet(context, recipe),
           child: Container(
             margin: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: AppColors.white,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: const Padding(
               padding: EdgeInsets.all(6),
-              child: Icon(Icons.share_outlined, color: AppColors.white, size: 20),
+              child: Icon(Icons.share_outlined, color: AppColors.neutral, size: 20),
             ),
           ),
         ),
@@ -202,6 +216,14 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showShareSheet(BuildContext context, RecipeModel recipe) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ShareSheet(recipe: recipe),
     );
   }
 
@@ -369,13 +391,153 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
   // ─── Steps ────────────────────────────────────────────────────────────────
 
   Widget _buildStepsSection(RecipeModel recipe) {
+    final tiles = <Widget>[];
+    for (int i = 0; i < recipe.steps.length; i++) {
+      tiles.add(RecipeStepTile(step: recipe.steps[i]));
+      if (i < recipe.steps.length - 1) {
+        tiles.add(const Divider(height: 1, thickness: 1, color: AppColors.border));
+      }
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Steps', style: AppTypography.headline2),
         const SizedBox(height: AppSpacing.sm),
-        ...recipe.steps.map((step) => RecipeStepTile(step: step)),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            child: Column(children: tiles),
+          ),
+        ),
       ],
+    );
+  }
+}
+
+// ─── Share Sheet ─────────────────────────────────────────────────────────────
+
+class _ShareSheet extends StatelessWidget {
+  final RecipeModel recipe;
+
+  const _ShareSheet({required this.recipe});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.neutral200,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text('Share Recipe', style: AppTypography.headline2),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                recipe.title,
+                style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _ShareOption(
+                icon: Icons.link_outlined,
+                label: 'Copy Link',
+                onTap: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Link copied to clipboard',
+                        style: AppTypography.body1.copyWith(color: AppColors.white),
+                      ),
+                      backgroundColor: AppColors.primary,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const Divider(height: 1, thickness: 1, color: AppColors.border),
+              _ShareOption(
+                icon: Icons.chat_outlined,
+                label: 'Share via WhatsApp',
+                onTap: () => Navigator.pop(context),
+              ),
+              const Divider(height: 1, thickness: 1, color: AppColors.border),
+              _ShareOption(
+                icon: Icons.person_add_outlined,
+                label: 'Send to a Friend',
+                onTap: () => Navigator.pop(context),
+              ),
+              const Divider(height: 1, thickness: 1, color: AppColors.border),
+              _ShareOption(
+                icon: Icons.download_outlined,
+                label: 'Save to Device',
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ShareOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ShareOption({required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.neutral100,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              ),
+              child: Icon(icon, size: 20, color: AppColors.neutral700),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Text(label, style: AppTypography.body1),
+          ],
+        ),
+      ),
     );
   }
 }

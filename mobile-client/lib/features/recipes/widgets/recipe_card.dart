@@ -47,6 +47,8 @@ class RecipeCard extends ConsumerWidget {
   }
 }
 
+// ─── Image area — no chips, just the image and bookmark ──────────────────────
+
 class _RecipeImage extends StatelessWidget {
   final RecipeModel recipe;
   final bool isSaved;
@@ -57,7 +59,7 @@ class _RecipeImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 120,
+      height: 110,
       width: double.infinity,
       child: Stack(
         fit: StackFit.expand,
@@ -65,35 +67,21 @@ class _RecipeImage extends StatelessWidget {
           Container(
             color: AppColors.primaryLight,
             child: const Center(
-              child: Icon(Icons.restaurant_menu, color: AppColors.primary, size: 36),
-            ),
-          ),
-          Positioned(
-            top: 8,
-            left: 8,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (recipe.isHalal) AppChip.halal(),
-                if (recipe.isHalal && (recipe.isVegan || recipe.isVegetarian))
-                  const SizedBox(width: 4),
-                if (recipe.isVegan) AppChip.vegan(),
-                if (!recipe.isVegan && recipe.isVegetarian) AppChip.vegetarian(),
-              ],
+              child: Icon(Icons.restaurant_menu, color: AppColors.primary, size: 34),
             ),
           ),
           if (recipe.isOwnedByCurrentUser &&
               recipe.visibility == RecipeVisibility.private)
             Positioned(
               top: 8,
-              right: 8,
+              left: 8,
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.45),
+                  color: Colors.black.withValues(alpha: 0.40),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
-                child: const Icon(Icons.lock, size: 13, color: AppColors.white),
+                child: const Icon(Icons.lock, size: 12, color: AppColors.white),
               ),
             ),
           Positioned(
@@ -106,11 +94,11 @@ class _RecipeImage extends StatelessWidget {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: isSaved ? AppColors.primary : Colors.white.withValues(alpha: 0.9),
+                  color: isSaved ? AppColors.primary : AppColors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
+                      color: Colors.black.withValues(alpha: 0.14),
                       blurRadius: 4,
                     ),
                   ],
@@ -129,6 +117,8 @@ class _RecipeImage extends StatelessWidget {
   }
 }
 
+// ─── Card body — chips (scrollable), title, stats, author ────────────────────
+
 class _RecipeCardBody extends StatelessWidget {
   final RecipeModel recipe;
 
@@ -136,11 +126,25 @@ class _RecipeCardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final chips = _buildChips();
+
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, AppSpacing.sm,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (chips.isNotEmpty)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: chips,
+              ),
+            ),
+          if (chips.isNotEmpty) const SizedBox(height: AppSpacing.xs),
           Text(
             recipe.title,
             style: AppTypography.headline3,
@@ -163,8 +167,54 @@ class _RecipeCardBody extends StatelessWidget {
               Text('${recipe.saves}', style: AppTypography.caption),
             ],
           ),
+          const SizedBox(height: AppSpacing.xs),
+          Row(
+            children: [
+              Container(
+                width: 18,
+                height: 18,
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    recipe.authorInitial,
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  'by ${recipe.authorName}',
+                  style: AppTypography.caption.copyWith(color: AppColors.neutral600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildChips() {
+    final chips = <Widget>[];
+    if (recipe.isHalal) chips.add(AppChip.halal());
+    if (recipe.isVegan) {
+      if (chips.isNotEmpty) chips.add(const SizedBox(width: 4));
+      chips.add(AppChip.vegan());
+    }
+    if (recipe.isVegetarian && !recipe.isVegan) {
+      if (chips.isNotEmpty) chips.add(const SizedBox(width: 4));
+      chips.add(AppChip.vegetarian());
+    }
+    return chips;
   }
 }

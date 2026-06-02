@@ -53,6 +53,7 @@ final recipeFilterProvider =
 
 final filteredRecipesProvider = Provider<List<RecipeModel>>((ref) {
   final filterState = ref.watch(recipeFilterProvider);
+  final savedIds = ref.watch(savedRecipeIdsProvider);
   var recipes = List<RecipeModel>.from(RecipeMocks.all);
 
   final q = filterState.searchQuery.toLowerCase();
@@ -76,6 +77,8 @@ final filteredRecipesProvider = Provider<List<RecipeModel>>((ref) {
         recipes = recipes.where((r) => r.cookMinutes <= 30).toList();
       case RecipeFilter.myRecipes:
         recipes = recipes.where((r) => r.isOwnedByCurrentUser).toList();
+      case RecipeFilter.saved:
+        recipes = recipes.where((r) => savedIds.contains(r.id)).toList();
     }
   }
 
