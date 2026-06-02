@@ -523,25 +523,19 @@ class _FilterBottomSheet extends ConsumerWidget {
                         _IconFilterChip(
                           label: 'Low (<300 kcal)',
                           isActive: filterState.calorieRange == CalorieRange.low,
-                          onToggle: () => notifier.setCalorieRange(
-                            filterState.calorieRange == CalorieRange.low ? null : CalorieRange.low,
-                          ),
+                          onToggle: () => notifier.setCalorieRange(CalorieRange.low),
                           icon: Icons.local_fire_department_outlined,
                         ),
                         _IconFilterChip(
                           label: 'Medium (300–500)',
                           isActive: filterState.calorieRange == CalorieRange.medium,
-                          onToggle: () => notifier.setCalorieRange(
-                            filterState.calorieRange == CalorieRange.medium ? null : CalorieRange.medium,
-                          ),
+                          onToggle: () => notifier.setCalorieRange(CalorieRange.medium),
                           icon: Icons.local_fire_department,
                         ),
                         _IconFilterChip(
                           label: 'High (>500 kcal)',
                           isActive: filterState.calorieRange == CalorieRange.high,
-                          onToggle: () => notifier.setCalorieRange(
-                            filterState.calorieRange == CalorieRange.high ? null : CalorieRange.high,
-                          ),
+                          onToggle: () => notifier.setCalorieRange(CalorieRange.high),
                           icon: Icons.whatshot,
                         ),
                       ],
