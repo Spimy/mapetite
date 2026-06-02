@@ -271,7 +271,7 @@ class _AddItemRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm + 2,
+        vertical: AppSpacing.md + 2,
       ),
       child: Row(
         children: [
