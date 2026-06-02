@@ -178,7 +178,10 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
               ),
             ],
           ),
-          child: const Icon(Icons.arrow_back, color: AppColors.neutral, size: 20),
+          child: const Padding(
+            padding: EdgeInsets.all(6),
+            child: Icon(Icons.arrow_back, color: AppColors.neutral, size: 20),
+          ),
         ),
       ),
       actions: [
@@ -226,6 +229,7 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
       builder: (_) => _ShareSheet(recipe: recipe),
     );
   }
+
 
   // ─── Title & Author ───────────────────────────────────────────────────────
 
@@ -473,19 +477,57 @@ class _ShareSheet extends StatelessWidget {
               _ShareOption(
                 icon: Icons.chat_outlined,
                 label: 'Share via WhatsApp',
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Opening WhatsApp…',
+                        style: AppTypography.body1.copyWith(color: AppColors.white),
+                      ),
+                      backgroundColor: AppColors.secondary,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      ),
+                    ),
+                  );
+                },
               ),
               const Divider(height: 1, thickness: 1, color: AppColors.border),
               _ShareOption(
                 icon: Icons.person_add_outlined,
                 label: 'Send to a Friend',
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  Navigator.pop(context);
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    isScrollControlled: true,
+                    builder: (_) => _FriendSelectorSheet(recipe: recipe),
+                  );
+                },
               ),
               const Divider(height: 1, thickness: 1, color: AppColors.border),
               _ShareOption(
                 icon: Icons.download_outlined,
                 label: 'Save to Device',
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Recipe saved to your device',
+                        style: AppTypography.body1.copyWith(color: AppColors.white),
+                      ),
+                      backgroundColor: AppColors.primary,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -555,6 +597,185 @@ class _StatChip extends StatelessWidget {
           const SizedBox(width: 4),
           Text(label, style: AppTypography.label.copyWith(color: AppColors.neutral600)),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Friend Selector Sheet ────────────────────────────────────────────────────
+
+const _kMockFriends = [
+  ('Aisha Rahman', 'A'),
+  ('Ben Lim', 'B'),
+  ('Chloe Tan', 'C'),
+  ('David Wong', 'D'),
+  ('Erica Malik', 'E'),
+];
+
+class _FriendSelectorSheet extends StatefulWidget {
+  final RecipeModel recipe;
+
+  const _FriendSelectorSheet({required this.recipe});
+
+  @override
+  State<_FriendSelectorSheet> createState() => _FriendSelectorSheetState();
+}
+
+class _FriendSelectorSheetState extends State<_FriendSelectorSheet> {
+  final Set<String> _selected = {};
+
+  void _send() {
+    if (_selected.isEmpty) return;
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Recipe sent to ${_selected.length} friend${_selected.length > 1 ? 's' : ''}',
+          style: AppTypography.body1.copyWith(color: AppColors.white),
+        ),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.neutral200,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text('Send to a Friend', style: AppTypography.headline2),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    widget.recipe.title,
+                    style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+              ),
+            ),
+            const Divider(height: 1, thickness: 1, color: AppColors.border),
+            ..._kMockFriends.map((f) {
+              final isSelected = _selected.contains(f.$1);
+              return InkWell(
+                onTap: () => setState(() {
+                  if (isSelected) {
+                    _selected.remove(f.$1);
+                  } else {
+                    _selected.add(f.$1);
+                  }
+                }),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.sm + 2,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            f.$2,
+                            style: AppTypography.body1.copyWith(
+                              color: AppColors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Text(f.$1, style: AppTypography.body1),
+                      ),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.primary : AppColors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected ? AppColors.primary : AppColors.border,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: isSelected
+                            ? const Icon(Icons.check, size: 14, color: AppColors.white)
+                            : null,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+            const Divider(height: 1, thickness: 1, color: AppColors.border),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: AppSpacing.buttonHeight,
+                child: ElevatedButton(
+                  onPressed: _selected.isNotEmpty ? _send : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.white,
+                    disabledBackgroundColor: AppColors.neutral200,
+                    disabledForegroundColor: AppColors.neutral400,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    ),
+                  ),
+                  child: Text(
+                    _selected.isEmpty
+                        ? 'Select friends to send'
+                        : 'Send to ${_selected.length} friend${_selected.length > 1 ? 's' : ''}',
+                    style: AppTypography.button,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -168,6 +168,8 @@ class _RecipeCardBody extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
+          const Divider(height: 1, thickness: 1, color: AppColors.border),
+          const SizedBox(height: AppSpacing.xs),
           Row(
             children: [
               Container(

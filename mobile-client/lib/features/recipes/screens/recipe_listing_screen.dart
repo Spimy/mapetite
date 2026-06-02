@@ -95,14 +95,6 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
         ),
       ),
       bottomNavigationBar: _RecipeScreenBottomNav(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _openAddSheet,
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.white,
-        elevation: 3,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
@@ -118,36 +110,50 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
       scrolledUnderElevation: 2,
       titleSpacing: AppSpacing.lg,
       automaticallyImplyLeading: false,
-      title: Stack(
-        alignment: Alignment.center,
+      title: Row(
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Builder(
-              builder: (drawerCtx) => GestureDetector(
-                onTap: () => Scaffold.of(drawerCtx).openDrawer(),
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primary,
-                    border: Border.all(color: AppColors.primaryLight, width: 2),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'A',
-                      style: AppTypography.body1.copyWith(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
+          Builder(
+            builder: (drawerCtx) => GestureDetector(
+              onTap: () => Scaffold.of(drawerCtx).openDrawer(),
+              child: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary,
+                  border: Border.all(color: AppColors.primaryLight, width: 2),
+                ),
+                child: Center(
+                  child: Text(
+                    'A',
+                    style: AppTypography.body1.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ),
             ),
           ),
-          Text('Recipes', style: AppTypography.headline2.copyWith(color: AppColors.primary)),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'Recipes',
+              style: AppTypography.headline2.copyWith(color: AppColors.primary),
+            ),
+          ),
+          GestureDetector(
+            onTap: _openAddSheet,
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.add, color: AppColors.white, size: 20),
+            ),
+          ),
         ],
       ),
     );
