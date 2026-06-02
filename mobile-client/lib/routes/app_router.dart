@@ -14,6 +14,9 @@ import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/budget/screens/budget_overview_screen.dart';
 import '../features/budget/screens/spending_analytics_screen.dart';
 import '../features/budget/screens/transactions_screen.dart';
+import '../features/recipes/screens/recipe_listing_screen.dart';
+import '../features/recipes/screens/recipe_detail_screen.dart';
+import '../features/grocery/screens/grocery_list_screen.dart';
 
 abstract class AppRoutes {
   static const String splash = '/';
@@ -28,6 +31,8 @@ abstract class AppRoutes {
   static const String profile = '/profile';
   static const String notifications = '/notifications';
   static const String directions = '/directions';
+  static const String recipes = '/recipes';
+  static const String recipeDetail = '/recipes/:id';
   static const String myList = '/my-list';
   static const String settings = '/settings';
 
@@ -111,9 +116,20 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const _WipScreen(label: 'Profile'),
     ),
     GoRoute(
+      path: AppRoutes.recipes,
+      builder: (context, state) => const RecipeListingScreen(),
+      routes: [
+        GoRoute(
+          path: ':id',
+          builder: (context, state) => RecipeDetailScreen(
+            recipeId: state.pathParameters['id'] ?? '',
+          ),
+        ),
+      ],
+    ),
+    GoRoute(
       path: AppRoutes.myList,
-      // TODO: Saved items, favourites, and shopping list management
-      builder: (context, state) => const _WipScreen(label: 'My List'),
+      builder: (context, state) => const GroceryListScreen(),
     ),
     GoRoute(
       path: AppRoutes.settings,

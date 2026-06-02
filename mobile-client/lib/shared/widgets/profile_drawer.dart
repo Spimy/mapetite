@@ -150,7 +150,7 @@ class ProfileDrawer extends StatelessWidget {
                       label: 'Recipes',
                       onTap: () {
                         Navigator.of(context).pop();
-                        context.go(AppRoutes.explore);
+                        context.push(AppRoutes.recipes);
                       },
                     ),
                     _DrawerItem(
