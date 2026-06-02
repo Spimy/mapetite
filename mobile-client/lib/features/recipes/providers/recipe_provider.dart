@@ -104,6 +104,10 @@ class RecipeListNotifier extends StateNotifier<List<RecipeModel>> {
   void addRecipe(RecipeModel recipe) {
     state = [recipe, ...state];
   }
+
+  void updateRecipe(RecipeModel updated) {
+    state = state.map((r) => r.id == updated.id ? updated : r).toList();
+  }
 }
 
 final recipeListProvider =

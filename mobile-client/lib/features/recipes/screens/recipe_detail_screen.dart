@@ -11,6 +11,7 @@ import '../models/recipe_model.dart';
 import '../providers/recipe_provider.dart';
 import '../widgets/ingredient_row.dart';
 import '../widgets/recipe_step_tile.dart';
+import 'edit_recipe_screen.dart';
 
 class RecipeDetailScreen extends ConsumerWidget {
   final String recipeId;
@@ -215,6 +216,33 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
         ),
       ),
       actions: [
+        if (recipe.isOwnedByCurrentUser)
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => EditRecipeScreen(recipe: recipe),
+              ),
+            ),
+            child: Container(
+              margin: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(6),
+                child: Icon(Icons.edit_outlined, color: AppColors.neutral, size: 20),
+              ),
+            ),
+          ),
         Consumer(
           builder: (context, ref, _) {
             final isSaved = ref.watch(savedRecipeIdsProvider).contains(recipe.id);
