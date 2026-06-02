@@ -2,12 +2,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/recipe_model.dart';
 import '../models/mocks/recipe_mocks.dart';
 
+enum CalorieRange {
+  low,    // < 300 kcal
+  medium, // 300–500 kcal
+  high,   // > 500 kcal
+}
+
 class RecipeFilterState {
   final String searchQuery;
   final Set<RecipeFilter> activeFilters;
   final RecipeSortOption sortOption;
   final Set<String> activeCuisines;
   final Set<String> allergenFreeFilters;
+  final CalorieRange? calorieRange;
 
   const RecipeFilterState({
     this.searchQuery = '',
@@ -15,6 +22,7 @@ class RecipeFilterState {
     this.sortOption = RecipeSortOption.newest,
     this.activeCuisines = const {},
     this.allergenFreeFilters = const {},
+    this.calorieRange,
   });
 
   RecipeFilterState copyWith({
@@ -23,6 +31,8 @@ class RecipeFilterState {
     RecipeSortOption? sortOption,
     Set<String>? activeCuisines,
     Set<String>? allergenFreeFilters,
+    CalorieRange? calorieRange,
+    bool clearCalorieRange = false,
   }) {
     return RecipeFilterState(
       searchQuery: searchQuery ?? this.searchQuery,
@@ -30,6 +40,7 @@ class RecipeFilterState {
       sortOption: sortOption ?? this.sortOption,
       activeCuisines: activeCuisines ?? this.activeCuisines,
       allergenFreeFilters: allergenFreeFilters ?? this.allergenFreeFilters,
+      calorieRange: clearCalorieRange ? null : (calorieRange ?? this.calorieRange),
     );
   }
 }
@@ -69,6 +80,14 @@ class RecipeFilterNotifier extends StateNotifier<RecipeFilterState> {
       updated.add(allergen);
     }
     state = state.copyWith(allergenFreeFilters: updated);
+  }
+
+  void setCalorieRange(CalorieRange? range) {
+    if (range == null || range == state.calorieRange) {
+      state = state.copyWith(clearCalorieRange: true);
+    } else {
+      state = state.copyWith(calorieRange: range);
+    }
   }
 
   void clearFilters() => state = const RecipeFilterState();
@@ -120,6 +139,17 @@ final filteredRecipesProvider = Provider<List<RecipeModel>>((ref) {
         recipes = recipes.where((r) => r.isOwnedByCurrentUser).toList();
       case RecipeFilter.saved:
         recipes = recipes.where((r) => savedIds.contains(r.id)).toList();
+    }
+  }
+
+  if (filterState.calorieRange != null) {
+    switch (filterState.calorieRange!) {
+      case CalorieRange.low:
+        recipes = recipes.where((r) => r.calories > 0 && r.calories < 300).toList();
+      case CalorieRange.medium:
+        recipes = recipes.where((r) => r.calories >= 300 && r.calories <= 500).toList();
+      case CalorieRange.high:
+        recipes = recipes.where((r) => r.calories > 500).toList();
     }
   }
 

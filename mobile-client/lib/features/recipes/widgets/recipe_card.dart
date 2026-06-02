@@ -16,6 +16,7 @@ class RecipeCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isSaved = ref.watch(savedRecipeIdsProvider).contains(recipe.id);
+    final effectiveSaves = recipe.saves + (isSaved ? 1 : 0);
 
     return GestureDetector(
       onTap: onTap,
@@ -38,7 +39,7 @@ class RecipeCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _RecipeImage(recipe: recipe, isSaved: isSaved, ref: ref),
-              Expanded(child: _RecipeCardBody(recipe: recipe)),
+              Expanded(child: _RecipeCardBody(recipe: recipe, saves: effectiveSaves)),
             ],
           ),
         ),
@@ -121,8 +122,9 @@ class _RecipeImage extends StatelessWidget {
 
 class _RecipeCardBody extends StatelessWidget {
   final RecipeModel recipe;
+  final int saves;
 
-  const _RecipeCardBody({required this.recipe});
+  const _RecipeCardBody({required this.recipe, required this.saves});
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +172,7 @@ class _RecipeCardBody extends StatelessWidget {
               const SizedBox(width: AppSpacing.xs + 2),
               const Icon(Icons.bookmark_border, size: 12, color: AppColors.neutral600),
               const SizedBox(width: 2),
-              Text('${recipe.saves}', style: AppTypography.caption),
+              Text('$saves', style: AppTypography.caption),
             ],
           ),
           const Spacer(),
