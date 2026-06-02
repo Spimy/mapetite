@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_typography.dart';
@@ -76,6 +77,19 @@ class AppChip extends StatelessWidget {
           allergenIconMap[allergen] ?? Icons.warning_amber,
           size: 11,
           color: AppColors.white,
+        ),
+        onTap: onTap,
+      );
+
+  factory AppChip.cuisine(String cuisine, {VoidCallback? onTap}) => AppChip(
+        label: cuisine,
+        backgroundColor: AppColors.neutral100,
+        textColor: AppColors.neutral700,
+        style: AppChipStyle.category,
+        leadingIcon: Icon(
+          AppConstants.cuisineIcons[cuisine] ?? Icons.restaurant_menu,
+          size: 11,
+          color: AppColors.neutral700,
         ),
         onTap: onTap,
       );

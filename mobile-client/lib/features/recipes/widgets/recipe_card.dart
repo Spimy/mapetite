@@ -225,6 +225,10 @@ class _RecipeCardBody extends StatelessWidget {
       if (chips.isNotEmpty) chips.add(const SizedBox(width: 4));
       chips.add(AppChip.vegetarian());
     }
+    if (recipe.cuisine != null) {
+      if (chips.isNotEmpty) chips.add(const SizedBox(width: 4));
+      chips.add(AppChip.cuisine(recipe.cuisine!));
+    }
     return chips;
   }
 }
