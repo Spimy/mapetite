@@ -58,12 +58,25 @@ class AppChip extends StatelessWidget {
         onTap: onTap,
       );
 
+  static const Map<String, IconData> allergenIconMap = {
+    'Nuts': Icons.park,
+    'Dairy': Icons.water_drop,
+    'Gluten': Icons.grain,
+    'Shellfish': Icons.waves,
+    'Eggs': Icons.egg,
+    'Soy': Icons.eco,
+  };
+
   factory AppChip.allergen(String allergen, {VoidCallback? onTap}) => AppChip(
         label: allergen,
         backgroundColor: AppColors.tagAllergen,
         textColor: AppColors.white,
         style: AppChipStyle.dietary,
-        leadingIcon: const Icon(Icons.warning_amber, size: 11, color: AppColors.white),
+        leadingIcon: Icon(
+          allergenIconMap[allergen] ?? Icons.warning_amber,
+          size: 11,
+          color: AppColors.white,
+        ),
         onTap: onTap,
       );
 

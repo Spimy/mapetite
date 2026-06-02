@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../shared/widgets/app_chip.dart';
 import '../../../shared/widgets/profile_drawer.dart';
 import '../models/recipe_model.dart';
 import '../providers/recipe_provider.dart';
@@ -461,11 +462,29 @@ class _FilterBottomSheet extends ConsumerWidget {
                     const SizedBox(height: AppSpacing.lg),
                     Text('Dietary', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
-                    _FilterChipGroup(
-                      filters: const [RecipeFilter.halal, RecipeFilter.vegan, RecipeFilter.vegetarian],
-                      labels: const ['Halal', 'Vegan', 'Vegetarian'],
-                      activeFilters: filterState.activeFilters,
-                      onToggle: notifier.toggleFilter,
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: [
+                        _IconFilterChip(
+                          label: 'Halal',
+                          isActive: filterState.activeFilters.contains(RecipeFilter.halal),
+                          onToggle: () => notifier.toggleFilter(RecipeFilter.halal),
+                          svgAsset: 'assets/icons/dietary/halal-icon.svg',
+                        ),
+                        _IconFilterChip(
+                          label: 'Vegan',
+                          isActive: filterState.activeFilters.contains(RecipeFilter.vegan),
+                          onToggle: () => notifier.toggleFilter(RecipeFilter.vegan),
+                          icon: Icons.eco,
+                        ),
+                        _IconFilterChip(
+                          label: 'Vegetarian',
+                          isActive: filterState.activeFilters.contains(RecipeFilter.vegetarian),
+                          onToggle: () => notifier.toggleFilter(RecipeFilter.vegetarian),
+                          icon: Icons.spa,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text('Time', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
@@ -479,10 +498,17 @@ class _FilterBottomSheet extends ConsumerWidget {
                     const SizedBox(height: AppSpacing.lg),
                     Text('Allergen-free (Free from)', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
-                    _StringChipGroup(
-                      options: AppConstants.allergenOptions,
-                      activeOptions: filterState.allergenFreeFilters,
-                      onToggle: notifier.toggleAllergenFree,
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: AppConstants.allergenOptions.map((allergen) {
+                        return _IconFilterChip(
+                          label: allergen,
+                          isActive: filterState.allergenFreeFilters.contains(allergen),
+                          onToggle: () => notifier.toggleAllergenFree(allergen),
+                          icon: AppChip.allergenIconMap[allergen] ?? Icons.warning_amber,
+                        );
+                      }).toList(),
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text('Collections', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
@@ -578,6 +604,69 @@ class _FilterChipGroup extends StatelessWidget {
   }
 }
 
+// ─── Icon Filter Chip (dietary + allergen-free) ───────────────────────────────
+
+class _IconFilterChip extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onToggle;
+  final IconData? icon;
+  final String? svgAsset;
+
+  const _IconFilterChip({
+    required this.label,
+    required this.isActive,
+    required this.onToggle,
+    this.icon,
+    this.svgAsset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final contentColor = isActive ? AppColors.primary : AppColors.neutral600;
+    return GestureDetector(
+      onTap: onToggle,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.primaryLight : AppColors.neutral100,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(
+            color: isActive ? AppColors.primary : AppColors.border,
+            width: isActive ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (svgAsset != null)
+              SvgPicture.asset(
+                svgAsset!,
+                width: 13,
+                height: 13,
+                colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn),
+              )
+            else if (icon != null)
+              Icon(icon, size: 13, color: contentColor),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: AppTypography.label.copyWith(
+                color: contentColor,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ─── Cuisine Icon Grid ────────────────────────────────────────────────────────
 
 class _CuisineIconGrid extends StatelessWidget {
@@ -657,56 +746,6 @@ class _CuisineIconGrid extends StatelessWidget {
           }).toList(),
         );
       },
-    );
-  }
-}
-
-// ─── String Chip Group (for cuisine / allergen-free filters) ─────────────────
-
-class _StringChipGroup extends StatelessWidget {
-  final List<String> options;
-  final Set<String> activeOptions;
-  final ValueChanged<String> onToggle;
-
-  const _StringChipGroup({
-    required this.options,
-    required this.activeOptions,
-    required this.onToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: AppSpacing.sm,
-      runSpacing: AppSpacing.sm,
-      children: options.map((option) {
-        final isActive = activeOptions.contains(option);
-        return GestureDetector(
-          onTap: () => onToggle(option),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            decoration: BoxDecoration(
-              color: isActive ? AppColors.primaryLight : AppColors.neutral100,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              border: Border.all(
-                color: isActive ? AppColors.primary : AppColors.border,
-                width: isActive ? 1.5 : 1,
-              ),
-            ),
-            child: Text(
-              option,
-              style: AppTypography.label.copyWith(
-                color: isActive ? AppColors.primary : AppColors.neutral600,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 }
