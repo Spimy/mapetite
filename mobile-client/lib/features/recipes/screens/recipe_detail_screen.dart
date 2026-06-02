@@ -76,9 +76,24 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
     if (selected.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Select at least one available ingredient.',
-            style: AppTypography.body1.copyWith(color: AppColors.white),
+          content: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Select at least one available ingredient.',
+                  style: AppTypography.body1.copyWith(color: AppColors.white),
+                ),
+              ),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.warning_amber_rounded, color: AppColors.white, size: 14),
+              ),
+            ],
           ),
           backgroundColor: AppColors.warning,
           behavior: SnackBarBehavior.floating,
@@ -101,19 +116,29 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          '${selected.length} item${selected.length > 1 ? 's' : ''} added to My List',
-          style: AppTypography.body1.copyWith(color: AppColors.white),
+        content: Row(
+          children: [
+            Expanded(
+              child: Text(
+                '${selected.length} item${selected.length > 1 ? 's' : ''} added to My List',
+                style: AppTypography.body1.copyWith(color: AppColors.white),
+              ),
+            ),
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check, color: AppColors.white, size: 14),
+            ),
+          ],
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        ),
-        action: SnackBarAction(
-          label: 'View List',
-          textColor: AppColors.primaryLight,
-          onPressed: () => context.push('/my-list'),
         ),
       ),
     );
@@ -168,6 +193,8 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
         onTap: () => context.pop(),
         child: Container(
           margin: const EdgeInsets.all(AppSpacing.sm),
+          width: 32,
+          height: 32,
           decoration: BoxDecoration(
             color: AppColors.white,
             shape: BoxShape.circle,
@@ -179,10 +206,7 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
               ),
             ],
           ),
-          child: const Padding(
-            padding: EdgeInsets.all(6),
-            child: Icon(Icons.arrow_back, color: AppColors.neutral, size: 20),
-          ),
+          child: const Icon(Icons.arrow_back, color: AppColors.neutral, size: 20),
         ),
       ),
       actions: [
@@ -493,11 +517,26 @@ class _ShareSheet extends StatelessWidget {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        'Link copied to clipboard',
-                        style: AppTypography.body1.copyWith(color: AppColors.white),
+                      content: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Link copied to clipboard',
+                              style: AppTypography.body1.copyWith(color: AppColors.white),
+                            ),
+                          ),
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.check, color: AppColors.white, size: 14),
+                          ),
+                        ],
                       ),
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: AppColors.success,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -514,9 +553,24 @@ class _ShareSheet extends StatelessWidget {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        'Opening WhatsApp…',
-                        style: AppTypography.body1.copyWith(color: AppColors.white),
+                      content: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Opening WhatsApp…',
+                              style: AppTypography.body1.copyWith(color: AppColors.white),
+                            ),
+                          ),
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.check, color: AppColors.white, size: 14),
+                          ),
+                        ],
                       ),
                       backgroundColor: AppColors.secondary,
                       behavior: SnackBarBehavior.floating,
@@ -549,11 +603,26 @@ class _ShareSheet extends StatelessWidget {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        'Recipe saved to your device',
-                        style: AppTypography.body1.copyWith(color: AppColors.white),
+                      content: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Recipe saved to your device',
+                              style: AppTypography.body1.copyWith(color: AppColors.white),
+                            ),
+                          ),
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.check, color: AppColors.white, size: 14),
+                          ),
+                        ],
                       ),
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: AppColors.success,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -662,11 +731,26 @@ class _FriendSelectorSheetState extends State<_FriendSelectorSheet> {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          'Recipe sent to ${_selected.length} friend${_selected.length > 1 ? 's' : ''}',
-          style: AppTypography.body1.copyWith(color: AppColors.white),
+        content: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Recipe sent to ${_selected.length} friend${_selected.length > 1 ? 's' : ''}',
+                style: AppTypography.body1.copyWith(color: AppColors.white),
+              ),
+            ),
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check, color: AppColors.white, size: 14),
+            ),
+          ],
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),

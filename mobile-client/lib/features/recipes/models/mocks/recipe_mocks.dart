@@ -13,6 +13,8 @@ abstract class RecipeMocks {
       calories: 450,
       servings: 2,
       isHalal: true,
+      cuisine: 'Malaysian',
+      allergens: const ['Eggs'],
       saves: 128,
       createdAt: DateTime(2026, 5, 30),
       ingredients: const [
@@ -42,6 +44,8 @@ abstract class RecipeMocks {
       servings: 1,
       isVegan: true,
       isVegetarian: true,
+      cuisine: 'Western',
+      allergens: const [],
       saves: 94,
       createdAt: DateTime(2026, 6, 1),
       ingredients: const [
@@ -68,6 +72,8 @@ abstract class RecipeMocks {
       calories: 520,
       servings: 2,
       isHalal: true,
+      cuisine: 'Malaysian',
+      allergens: const ['Gluten', 'Eggs'],
       saves: 211,
       createdAt: DateTime(2026, 5, 28),
       ingredients: const [
@@ -95,6 +101,8 @@ abstract class RecipeMocks {
       calories: 320,
       servings: 1,
       isVegetarian: true,
+      cuisine: 'Western',
+      allergens: const ['Gluten', 'Eggs'],
       saves: 47,
       createdAt: DateTime(2026, 6, 2),
       ingredients: const [
@@ -123,6 +131,8 @@ abstract class RecipeMocks {
       servings: 2,
       isHalal: true,
       isVegetarian: false,
+      cuisine: 'Indian',
+      allergens: const ['Gluten', 'Eggs', 'Soy'],
       saves: 305,
       createdAt: DateTime(2026, 5, 26),
       ingredients: const [
@@ -152,6 +162,8 @@ abstract class RecipeMocks {
       servings: 1,
       isVegan: true,
       isVegetarian: true,
+      cuisine: 'Western',
+      allergens: const [],
       saves: 23,
       visibility: RecipeVisibility.public,
       isOwnedByCurrentUser: true,
@@ -182,6 +194,8 @@ abstract class RecipeMocks {
       isHalal: true,
       isVegan: false,
       isVegetarian: true,
+      cuisine: 'Malaysian',
+      allergens: const ['Dairy'],
       saves: 189,
       createdAt: DateTime(2026, 5, 31),
       ingredients: const [
@@ -210,6 +224,8 @@ abstract class RecipeMocks {
       servings: 1,
       isVegan: true,
       isVegetarian: true,
+      cuisine: 'Western',
+      allergens: const ['Dairy', 'Gluten'],
       saves: 56,
       visibility: RecipeVisibility.private,
       isOwnedByCurrentUser: true,

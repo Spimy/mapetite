@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/constants/app_constants.dart';
 import '../models/recipe_model.dart';
 import '../providers/recipe_provider.dart';
 
@@ -39,6 +40,7 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
   final _descController = TextEditingController();
   final _cookTimeController = TextEditingController();
   final _servingsController = TextEditingController();
+  final _caloriesController = TextEditingController();
 
   final List<_IngredientEntry> _ingredients = [_IngredientEntry()];
   final List<TextEditingController> _stepControllers = [TextEditingController()];
@@ -46,6 +48,8 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
   bool _isHalal = false;
   bool _isVegan = false;
   bool _isVegetarian = false;
+  String? _cuisine;
+  final Set<String> _selectedAllergens = {};
   RecipeVisibility _visibility = RecipeVisibility.public;
 
   bool get _canSubmit =>
@@ -67,6 +71,7 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
     _descController.dispose();
     _cookTimeController.dispose();
     _servingsController.dispose();
+    _caloriesController.dispose();
     for (final e in _ingredients) {
       e.dispose();
     }
@@ -105,6 +110,7 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
 
     final cookMins = int.tryParse(_cookTimeController.text.trim()) ?? 0;
     final servings = int.tryParse(_servingsController.text.trim()) ?? 1;
+    final calories = int.tryParse(_caloriesController.text.trim()) ?? 0;
     final title = _titleController.text.trim();
 
     final ingredients = _ingredients.asMap().entries.map((e) {
@@ -132,11 +138,13 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
       authorInitial: 'A',
       postedAgo: 'Just now',
       cookMinutes: cookMins,
-      calories: 0,
+      calories: calories,
       servings: servings,
       isHalal: _isHalal,
       isVegan: _isVegan,
       isVegetarian: _isVegetarian,
+      cuisine: _cuisine,
+      allergens: List<String>.from(_selectedAllergens),
       ingredients: ingredients,
       steps: steps,
       visibility: _visibility,
@@ -150,19 +158,29 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          '"$title" added to your recipes!',
-          style: AppTypography.body1.copyWith(color: AppColors.white),
+        content: Row(
+          children: [
+            Expanded(
+              child: Text(
+                '"$title" added to your recipes!',
+                style: AppTypography.body1.copyWith(color: AppColors.white),
+              ),
+            ),
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check, color: AppColors.white, size: 14),
+            ),
+          ],
         ),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        ),
-        action: SnackBarAction(
-          label: 'View',
-          textColor: AppColors.primaryLight,
-          onPressed: () {},
         ),
       ),
     );
@@ -281,6 +299,14 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
                           ],
                         ),
                         const SizedBox(height: AppSpacing.lg),
+                        const _SectionLabel('Total Calories (kcal)'),
+                        const SizedBox(height: AppSpacing.sm),
+                        _SheetTextField(
+                          controller: _caloriesController,
+                          hint: 'e.g. 450',
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
                         const _SectionLabel('Dietary Tags'),
                         const SizedBox(height: AppSpacing.sm),
                         _DietaryTagRow(
@@ -290,6 +316,80 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
                           onHalalChanged: (v) => setState(() => _isHalal = v),
                           onVeganChanged: (v) => setState(() => _isVegan = v),
                           onVegetarianChanged: (v) => setState(() => _isVegetarian = v),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        const _SectionLabel('Cuisine'),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: AppSpacing.sm,
+                          runSpacing: AppSpacing.sm,
+                          children: AppConstants.cuisineCategories.map((c) {
+                            final isSelected = _cuisine == c;
+                            return GestureDetector(
+                              onTap: () => setState(() => _cuisine = isSelected ? null : c),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md,
+                                  vertical: AppSpacing.xs + 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? AppColors.primary : AppColors.neutral100,
+                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                                  border: Border.all(
+                                    color: isSelected ? AppColors.primary : AppColors.neutral200,
+                                  ),
+                                ),
+                                child: Text(
+                                  c,
+                                  style: AppTypography.label.copyWith(
+                                    color: isSelected ? AppColors.white : AppColors.neutral600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        const _SectionLabel('Allergens (This recipe contains)'),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: AppSpacing.sm,
+                          runSpacing: AppSpacing.sm,
+                          children: AppConstants.allergenOptions.map((a) {
+                            final isSelected = _selectedAllergens.contains(a);
+                            return GestureDetector(
+                              onTap: () => setState(() {
+                                if (isSelected) {
+                                  _selectedAllergens.remove(a);
+                                } else {
+                                  _selectedAllergens.add(a);
+                                }
+                              }),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md,
+                                  vertical: AppSpacing.xs + 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? AppColors.warning.withValues(alpha: 0.15) : AppColors.neutral100,
+                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                                  border: Border.all(
+                                    color: isSelected ? AppColors.warning : AppColors.neutral200,
+                                    width: isSelected ? 1.5 : 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  a,
+                                  style: AppTypography.label.copyWith(
+                                    color: isSelected ? AppColors.warning : AppColors.neutral600,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         const _SectionLabel('Ingredients'),
@@ -477,9 +577,24 @@ class _ImageUploadAreaState extends State<_ImageUploadArea> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Could not load image. Please try again.',
-              style: AppTypography.body1.copyWith(color: AppColors.white),
+            content: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Could not load image. Please try again.',
+                    style: AppTypography.body1.copyWith(color: AppColors.white),
+                  ),
+                ),
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, color: AppColors.white, size: 14),
+                ),
+              ],
             ),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,

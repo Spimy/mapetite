@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../shared/widgets/profile_drawer.dart';
@@ -49,7 +50,9 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
   Widget build(BuildContext context) {
     final recipes = ref.watch(filteredRecipesProvider);
     final filterState = ref.watch(recipeFilterProvider);
-    final activeFilterCount = filterState.activeFilters.length;
+    final activeFilterCount = filterState.activeFilters.length +
+        filterState.activeCuisines.length +
+        filterState.allergenFreeFilters.length;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -395,89 +398,130 @@ class _FilterBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final filterState = ref.watch(recipeFilterProvider);
     final notifier = ref.read(recipeFilterProvider.notifier);
+    final hasActiveFilters = filterState.activeFilters.isNotEmpty ||
+        filterState.activeCuisines.isNotEmpty ||
+        filterState.allergenFreeFilters.isNotEmpty;
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.xxxl,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 32,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.neutral200,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Filter Recipes', style: AppTypography.headline2),
-              if (filterState.activeFilters.isNotEmpty)
-                GestureDetector(
-                  onTap: notifier.clearFilters,
-                  child: Text(
-                    'Clear all',
-                    style: AppTypography.body2.copyWith(color: AppColors.primary),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 32,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.neutral200,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                      ),
+                    ),
                   ),
-                ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text('Dietary', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
-          const SizedBox(height: AppSpacing.sm),
-          _FilterChipGroup(
-            filters: const [RecipeFilter.halal, RecipeFilter.vegan, RecipeFilter.vegetarian],
-            labels: const ['Halal', 'Vegan', 'Vegetarian'],
-            activeFilters: filterState.activeFilters,
-            onToggle: notifier.toggleFilter,
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text('Time', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
-          const SizedBox(height: AppSpacing.sm),
-          _FilterChipGroup(
-            filters: const [RecipeFilter.under30min],
-            labels: const ['Under 30 min'],
-            activeFilters: filterState.activeFilters,
-            onToggle: notifier.toggleFilter,
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text('Collections', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
-          const SizedBox(height: AppSpacing.sm),
-          _FilterChipGroup(
-            filters: const [RecipeFilter.saved, RecipeFilter.myRecipes],
-            labels: const ['Saved', 'My Recipes'],
-            activeFilters: filterState.activeFilters,
-            onToggle: notifier.toggleFilter,
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-          SizedBox(
-            width: double.infinity,
-            height: AppSpacing.buttonHeight,
-            child: ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                ),
-                elevation: 0,
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Filter Recipes', style: AppTypography.headline2),
+                      if (hasActiveFilters)
+                        GestureDetector(
+                          onTap: notifier.clearFilters,
+                          child: Text(
+                            'Clear all',
+                            style: AppTypography.body2.copyWith(color: AppColors.primary),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
-              child: Text('Apply Filters', style: AppTypography.button),
             ),
-          ),
-        ],
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Dietary', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    _FilterChipGroup(
+                      filters: const [RecipeFilter.halal, RecipeFilter.vegan, RecipeFilter.vegetarian],
+                      labels: const ['Halal', 'Vegan', 'Vegetarian'],
+                      activeFilters: filterState.activeFilters,
+                      onToggle: notifier.toggleFilter,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Text('Time', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    _FilterChipGroup(
+                      filters: const [RecipeFilter.under30min],
+                      labels: const ['Under 30 min'],
+                      activeFilters: filterState.activeFilters,
+                      onToggle: notifier.toggleFilter,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Text('Cuisine', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    _StringChipGroup(
+                      options: AppConstants.cuisineCategories,
+                      activeOptions: filterState.activeCuisines,
+                      onToggle: notifier.toggleCuisine,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Text('Allergen-free (Free from)', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    _StringChipGroup(
+                      options: AppConstants.allergenOptions,
+                      activeOptions: filterState.allergenFreeFilters,
+                      onToggle: notifier.toggleAllergenFree,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Text('Collections', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    _FilterChipGroup(
+                      filters: const [RecipeFilter.saved, RecipeFilter.myRecipes],
+                      labels: const ['Saved', 'My Recipes'],
+                      activeFilters: filterState.activeFilters,
+                      onToggle: notifier.toggleFilter,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: AppSpacing.buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text('Apply Filters', style: AppTypography.button),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -531,6 +575,56 @@ class _FilterChipGroup extends StatelessWidget {
           ),
         );
       }),
+    );
+  }
+}
+
+// ─── String Chip Group (for cuisine / allergen-free filters) ─────────────────
+
+class _StringChipGroup extends StatelessWidget {
+  final List<String> options;
+  final Set<String> activeOptions;
+  final ValueChanged<String> onToggle;
+
+  const _StringChipGroup({
+    required this.options,
+    required this.activeOptions,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: options.map((option) {
+        final isActive = activeOptions.contains(option);
+        return GestureDetector(
+          onTap: () => onToggle(option),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: isActive ? AppColors.primaryLight : AppColors.neutral100,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              border: Border.all(
+                color: isActive ? AppColors.primary : AppColors.border,
+                width: isActive ? 1.5 : 1,
+              ),
+            ),
+            child: Text(
+              option,
+              style: AppTypography.label.copyWith(
+                color: isActive ? AppColors.primary : AppColors.neutral600,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

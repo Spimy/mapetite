@@ -6,22 +6,30 @@ class RecipeFilterState {
   final String searchQuery;
   final Set<RecipeFilter> activeFilters;
   final RecipeSortOption sortOption;
+  final Set<String> activeCuisines;
+  final Set<String> allergenFreeFilters;
 
   const RecipeFilterState({
     this.searchQuery = '',
     this.activeFilters = const {},
     this.sortOption = RecipeSortOption.newest,
+    this.activeCuisines = const {},
+    this.allergenFreeFilters = const {},
   });
 
   RecipeFilterState copyWith({
     String? searchQuery,
     Set<RecipeFilter>? activeFilters,
     RecipeSortOption? sortOption,
+    Set<String>? activeCuisines,
+    Set<String>? allergenFreeFilters,
   }) {
     return RecipeFilterState(
       searchQuery: searchQuery ?? this.searchQuery,
       activeFilters: activeFilters ?? this.activeFilters,
       sortOption: sortOption ?? this.sortOption,
+      activeCuisines: activeCuisines ?? this.activeCuisines,
+      allergenFreeFilters: allergenFreeFilters ?? this.allergenFreeFilters,
     );
   }
 }
@@ -42,6 +50,26 @@ class RecipeFilterNotifier extends StateNotifier<RecipeFilterState> {
   }
 
   void setSort(RecipeSortOption option) => state = state.copyWith(sortOption: option);
+
+  void toggleCuisine(String cuisine) {
+    final updated = Set<String>.from(state.activeCuisines);
+    if (updated.contains(cuisine)) {
+      updated.remove(cuisine);
+    } else {
+      updated.add(cuisine);
+    }
+    state = state.copyWith(activeCuisines: updated);
+  }
+
+  void toggleAllergenFree(String allergen) {
+    final updated = Set<String>.from(state.allergenFreeFilters);
+    if (updated.contains(allergen)) {
+      updated.remove(allergen);
+    } else {
+      updated.add(allergen);
+    }
+    state = state.copyWith(allergenFreeFilters: updated);
+  }
 
   void clearFilters() => state = const RecipeFilterState();
 }
@@ -93,6 +121,14 @@ final filteredRecipesProvider = Provider<List<RecipeModel>>((ref) {
       case RecipeFilter.saved:
         recipes = recipes.where((r) => savedIds.contains(r.id)).toList();
     }
+  }
+
+  if (filterState.activeCuisines.isNotEmpty) {
+    recipes = recipes.where((r) => filterState.activeCuisines.contains(r.cuisine)).toList();
+  }
+
+  for (final allergen in filterState.allergenFreeFilters) {
+    recipes = recipes.where((r) => !r.allergens.contains(allergen)).toList();
   }
 
   switch (filterState.sortOption) {

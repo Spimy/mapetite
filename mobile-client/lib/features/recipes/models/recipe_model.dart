@@ -40,6 +40,8 @@ class RecipeModel {
   final bool isHalal;
   final bool isVegan;
   final bool isVegetarian;
+  final String? cuisine;
+  final List<String> allergens;
   final List<RecipeIngredient> ingredients;
   final List<RecipeStep> steps;
   final RecipeVisibility visibility;
@@ -60,6 +62,8 @@ class RecipeModel {
     this.isHalal = false,
     this.isVegan = false,
     this.isVegetarian = false,
+    this.cuisine,
+    this.allergens = const [],
     required this.ingredients,
     required this.steps,
     this.visibility = RecipeVisibility.public,
