@@ -51,10 +51,23 @@ final recipeFilterProvider =
   (_) => RecipeFilterNotifier(),
 );
 
+class RecipeListNotifier extends StateNotifier<List<RecipeModel>> {
+  RecipeListNotifier() : super(List<RecipeModel>.from(RecipeMocks.all));
+
+  void addRecipe(RecipeModel recipe) {
+    state = [recipe, ...state];
+  }
+}
+
+final recipeListProvider =
+    StateNotifierProvider<RecipeListNotifier, List<RecipeModel>>(
+  (_) => RecipeListNotifier(),
+);
+
 final filteredRecipesProvider = Provider<List<RecipeModel>>((ref) {
   final filterState = ref.watch(recipeFilterProvider);
   final savedIds = ref.watch(savedRecipeIdsProvider);
-  var recipes = List<RecipeModel>.from(RecipeMocks.all);
+  var recipes = List<RecipeModel>.from(ref.watch(recipeListProvider));
 
   final q = filterState.searchQuery.toLowerCase();
   if (q.isNotEmpty) {
@@ -97,7 +110,7 @@ final filteredRecipesProvider = Provider<List<RecipeModel>>((ref) {
 });
 
 final recipeByIdProvider = Provider.family<RecipeModel?, String>((ref, id) {
-  return RecipeMocks.all.where((r) => r.id == id).firstOrNull;
+  return ref.watch(recipeListProvider).where((r) => r.id == id).firstOrNull;
 });
 
 final savedRecipeIdsProvider =

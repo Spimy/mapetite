@@ -1,11 +1,13 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../models/recipe_model.dart';
+import '../providers/recipe_provider.dart';
 
 class _IngredientEntry {
   final TextEditingController nameCtrl;
@@ -24,14 +26,14 @@ class _IngredientEntry {
   }
 }
 
-class AddRecipeSheet extends StatefulWidget {
+class AddRecipeSheet extends ConsumerStatefulWidget {
   const AddRecipeSheet({super.key});
 
   @override
-  State<AddRecipeSheet> createState() => _AddRecipeSheetState();
+  ConsumerState<AddRecipeSheet> createState() => _AddRecipeSheetState();
 }
 
-class _AddRecipeSheetState extends State<AddRecipeSheet> {
+class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
@@ -100,17 +102,67 @@ class _AddRecipeSheetState extends State<AddRecipeSheet> {
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final cookMins = int.tryParse(_cookTimeController.text.trim()) ?? 0;
+    final servings = int.tryParse(_servingsController.text.trim()) ?? 1;
+    final title = _titleController.text.trim();
+
+    final ingredients = _ingredients.asMap().entries.map((e) {
+      final ing = e.value;
+      return RecipeIngredient(
+        name: ing.nameCtrl.text.trim().isEmpty ? 'Ingredient ${e.key + 1}' : ing.nameCtrl.text.trim(),
+        quantity: '',
+        storeName: ing.storeCtrl.text.trim().isEmpty ? null : ing.storeCtrl.text.trim(),
+        estimatedCost: double.tryParse(ing.priceCtrl.text.trim()),
+      );
+    }).toList();
+
+    final steps = _stepControllers.asMap().entries.map((e) {
+      return RecipeStep(
+        stepNumber: e.key + 1,
+        description: e.value.text.trim().isEmpty ? 'Step ${e.key + 1}' : e.value.text.trim(),
+      );
+    }).toList();
+
+    final recipe = RecipeModel(
+      id: 'u_${DateTime.now().millisecondsSinceEpoch}',
+      title: title,
+      description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+      authorName: 'Aisha',
+      authorInitial: 'A',
+      postedAgo: 'Just now',
+      cookMinutes: cookMins,
+      calories: 0,
+      servings: servings,
+      isHalal: _isHalal,
+      isVegan: _isVegan,
+      isVegetarian: _isVegetarian,
+      ingredients: ingredients,
+      steps: steps,
+      visibility: _visibility,
+      saves: 0,
+      isOwnedByCurrentUser: true,
+      createdAt: DateTime.now(),
+    );
+
+    ref.read(recipeListProvider.notifier).addRecipe(recipe);
+
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Recipe "${_titleController.text}" submitted!',
+          '"$title" added to your recipes!',
           style: AppTypography.body1.copyWith(color: AppColors.white),
         ),
         backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+        action: SnackBarAction(
+          label: 'View',
+          textColor: AppColors.primaryLight,
+          onPressed: () {},
         ),
       ),
     );
@@ -410,7 +462,35 @@ class _ImageUploadArea extends StatefulWidget {
 }
 
 class _ImageUploadAreaState extends State<_ImageUploadArea> {
-  File? _image;
+  Uint8List? _imageBytes;
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: source,
+        imageQuality: 80,
+      );
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      if (mounted) setState(() => _imageBytes = bytes);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Could not load image. Please try again.',
+              style: AppTypography.body1.copyWith(color: AppColors.white),
+            ),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            ),
+          ),
+        );
+      }
+    }
+  }
 
   void _showPicker() {
     showModalBottomSheet(
@@ -446,13 +526,9 @@ class _ImageUploadAreaState extends State<_ImageUploadArea> {
                   child: const Icon(Icons.camera_alt_outlined, size: 20, color: AppColors.neutral700),
                 ),
                 title: Text('Take Photo', style: AppTypography.body1),
-                onTap: () async {
+                onTap: () {
                   Navigator.pop(context);
-                  final picked = await ImagePicker().pickImage(
-                    source: ImageSource.camera,
-                    imageQuality: 80,
-                  );
-                  if (picked != null) setState(() => _image = File(picked.path));
+                  _pickImage(ImageSource.camera);
                 },
               ),
               ListTile(
@@ -466,16 +542,12 @@ class _ImageUploadAreaState extends State<_ImageUploadArea> {
                   child: const Icon(Icons.photo_library_outlined, size: 20, color: AppColors.neutral700),
                 ),
                 title: Text('Choose from Gallery', style: AppTypography.body1),
-                onTap: () async {
+                onTap: () {
                   Navigator.pop(context);
-                  final picked = await ImagePicker().pickImage(
-                    source: ImageSource.gallery,
-                    imageQuality: 80,
-                  );
-                  if (picked != null) setState(() => _image = File(picked.path));
+                  _pickImage(ImageSource.gallery);
                 },
               ),
-              if (_image != null)
+              if (_imageBytes != null)
                 ListTile(
                   leading: Container(
                     width: 40,
@@ -489,7 +561,7 @@ class _ImageUploadAreaState extends State<_ImageUploadArea> {
                   title: Text('Remove Photo', style: AppTypography.body1.copyWith(color: AppColors.error)),
                   onTap: () {
                     Navigator.pop(context);
-                    setState(() => _image = null);
+                    setState(() => _imageBytes = null);
                   },
                 ),
             ],
@@ -511,13 +583,13 @@ class _ImageUploadAreaState extends State<_ImageUploadArea> {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           border: Border.all(color: AppColors.neutral200, width: 1.5),
         ),
-        child: _image != null
+        child: _imageBytes != null
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg - 1),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.file(_image!, fit: BoxFit.cover),
+                    Image.memory(_imageBytes!, fit: BoxFit.cover),
                     Positioned(
                       bottom: 8,
                       right: 8,

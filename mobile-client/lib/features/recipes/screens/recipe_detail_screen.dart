@@ -48,6 +48,7 @@ class _RecipeDetailContent extends ConsumerStatefulWidget {
 
 class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
   late final Set<String> _checkedIngredientKeys;
+  int _activeStep = 1;
 
   @override
   void initState() {
@@ -185,6 +186,36 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
         ),
       ),
       actions: [
+        Consumer(
+          builder: (context, ref, _) {
+            final isSaved = ref.watch(savedRecipeIdsProvider).contains(recipe.id);
+            return GestureDetector(
+              onTap: () => ref.read(savedRecipeIdsProvider.notifier).toggle(recipe.id),
+              child: Container(
+                margin: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: isSaved ? AppColors.primary : AppColors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(
+                    isSaved ? Icons.bookmark : Icons.bookmark_border,
+                    color: isSaved ? AppColors.white : AppColors.neutral,
+                    size: 20,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
         GestureDetector(
           onTap: () => _showShareSheet(context, recipe),
           child: Container(
@@ -403,6 +434,8 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
         ...recipe.steps.asMap().entries.map((e) => RecipeStepTile(
           step: e.value,
           isLast: e.key == recipe.steps.length - 1,
+          isActive: e.value.stepNumber == _activeStep,
+          onTap: () => setState(() => _activeStep = e.value.stepNumber),
         )),
       ],
     );

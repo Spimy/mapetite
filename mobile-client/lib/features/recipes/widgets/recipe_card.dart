@@ -38,7 +38,7 @@ class RecipeCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _RecipeImage(recipe: recipe, isSaved: isSaved, ref: ref),
-              _RecipeCardBody(recipe: recipe),
+              Expanded(child: _RecipeCardBody(recipe: recipe)),
             ],
           ),
         ),
@@ -167,7 +167,7 @@ class _RecipeCardBody extends StatelessWidget {
               Text('${recipe.saves}', style: AppTypography.caption),
             ],
           ),
-          const SizedBox(height: AppSpacing.xs),
+          const Spacer(),
           const Divider(height: 1, thickness: 1, color: AppColors.border),
           const SizedBox(height: AppSpacing.xs),
           Row(
