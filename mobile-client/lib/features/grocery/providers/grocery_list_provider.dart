@@ -29,13 +29,17 @@ class GroceryListNotifier extends StateNotifier<List<GroceryListItem>> {
   }
 
   void addFromIngredients(List<({String name, String quantity, String storeName, double cost})> ingredients) {
-    final newItems = ingredients.map((ing) => GroceryListItem(
-      id: 'g_${DateTime.now().millisecondsSinceEpoch}_${ing.name.hashCode}',
-      name: ing.name,
-      quantity: ing.quantity,
-      storeName: ing.storeName,
-      estimatedPrice: ing.cost,
-    )).toList();
+    final base = DateTime.now().millisecondsSinceEpoch;
+    final newItems = ingredients.indexed.map((entry) {
+      final (i, ing) = entry;
+      return GroceryListItem(
+        id: 'g_${base}_$i',
+        name: ing.name,
+        quantity: ing.quantity,
+        storeName: ing.storeName,
+        estimatedPrice: ing.cost,
+      );
+    }).toList();
     state = [...state, ...newItems];
   }
 }
