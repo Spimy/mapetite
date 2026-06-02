@@ -54,24 +54,3 @@ final groceryBudgetAlertProvider = Provider<bool>((ref) {
   final total = ref.watch(groceryTotalProvider);
   return total >= GroceryListMocks.weeklyBudgetLimit * 0.80;
 });
-
-final checkedIngredientIdsProvider =
-    StateNotifierProvider<_CheckedIngredientsNotifier, Set<String>>(
-  (_) => _CheckedIngredientsNotifier(),
-);
-
-class _CheckedIngredientsNotifier extends StateNotifier<Set<String>> {
-  _CheckedIngredientsNotifier() : super({});
-
-  void toggle(String ingredientKey) {
-    final updated = Set<String>.from(state);
-    if (updated.contains(ingredientKey)) {
-      updated.remove(ingredientKey);
-    } else {
-      updated.add(ingredientKey);
-    }
-    state = updated;
-  }
-
-  void clearAll() => state = {};
-}
