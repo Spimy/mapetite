@@ -1,8 +1,28 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../models/recipe_model.dart';
+
+class _IngredientEntry {
+  final TextEditingController nameCtrl;
+  final TextEditingController storeCtrl;
+  final TextEditingController priceCtrl;
+
+  _IngredientEntry()
+      : nameCtrl = TextEditingController(),
+        storeCtrl = TextEditingController(),
+        priceCtrl = TextEditingController();
+
+  void dispose() {
+    nameCtrl.dispose();
+    storeCtrl.dispose();
+    priceCtrl.dispose();
+  }
+}
 
 class AddRecipeSheet extends StatefulWidget {
   const AddRecipeSheet({super.key});
@@ -18,7 +38,7 @@ class _AddRecipeSheetState extends State<AddRecipeSheet> {
   final _cookTimeController = TextEditingController();
   final _servingsController = TextEditingController();
 
-  final List<TextEditingController> _ingredientControllers = [TextEditingController()];
+  final List<_IngredientEntry> _ingredients = [_IngredientEntry()];
   final List<TextEditingController> _stepControllers = [TextEditingController()];
 
   bool _isHalal = false;
@@ -45,8 +65,8 @@ class _AddRecipeSheetState extends State<AddRecipeSheet> {
     _descController.dispose();
     _cookTimeController.dispose();
     _servingsController.dispose();
-    for (final c in _ingredientControllers) {
-      c.dispose();
+    for (final e in _ingredients) {
+      e.dispose();
     }
     for (final c in _stepControllers) {
       c.dispose();
@@ -55,14 +75,14 @@ class _AddRecipeSheetState extends State<AddRecipeSheet> {
   }
 
   void _addIngredientField() {
-    setState(() => _ingredientControllers.add(TextEditingController()));
+    setState(() => _ingredients.add(_IngredientEntry()));
   }
 
   void _removeIngredientField(int index) {
-    if (_ingredientControllers.length <= 1) return;
+    if (_ingredients.length <= 1) return;
     setState(() {
-      _ingredientControllers[index].dispose();
-      _ingredientControllers.removeAt(index);
+      _ingredients[index].dispose();
+      _ingredients.removeAt(index);
     });
   }
 
@@ -222,31 +242,65 @@ class _AddRecipeSheetState extends State<AddRecipeSheet> {
                         const SizedBox(height: AppSpacing.lg),
                         const _SectionLabel('Ingredients'),
                         const SizedBox(height: AppSpacing.sm),
-                        ..._ingredientControllers.asMap().entries.map((entry) {
+                        ..._ingredients.asMap().entries.map((entry) {
                           final i = entry.key;
-                          final ctrl = entry.value;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                            child: Row(
+                          final ing = entry.value;
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                            padding: const EdgeInsets.all(AppSpacing.sm),
+                            decoration: BoxDecoration(
+                              color: AppColors.neutral100,
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Column(
                               children: [
-                                Expanded(
-                                  child: _SheetTextField(
-                                    controller: ctrl,
-                                    hint: 'e.g. 2 cups cooked rice',
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                GestureDetector(
-                                  onTap: () => _removeIngredientField(i),
-                                  child: Container(
-                                    width: 36,
-                                    height: 36,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.neutral100,
-                                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _SheetTextField(
+                                        controller: ing.nameCtrl,
+                                        hint: 'e.g. 2 cups cooked rice',
+                                      ),
                                     ),
-                                    child: const Icon(Icons.remove, size: 18, color: AppColors.neutral600),
-                                  ),
+                                    const SizedBox(width: AppSpacing.sm),
+                                    GestureDetector(
+                                      onTap: () => _removeIngredientField(i),
+                                      child: Container(
+                                        width: 36,
+                                        height: 36,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.white,
+                                          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                                          border: Border.all(color: AppColors.border),
+                                        ),
+                                        child: const Icon(Icons.remove, size: 18, color: AppColors.neutral600),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 3,
+                                      child: _SheetTextField(
+                                        controller: ing.storeCtrl,
+                                        hint: 'Store (optional)',
+                                        prefixIcon: Icons.storefront_outlined,
+                                      ),
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Expanded(
+                                      flex: 2,
+                                      child: _SheetTextField(
+                                        controller: ing.priceCtrl,
+                                        hint: 'Est. RM',
+                                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                        prefixIcon: Icons.attach_money_outlined,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -350,33 +404,164 @@ class _AddRecipeSheetState extends State<AddRecipeSheet> {
   }
 }
 
-class _ImageUploadArea extends StatelessWidget {
+class _ImageUploadArea extends StatefulWidget {
+  @override
+  State<_ImageUploadArea> createState() => _ImageUploadAreaState();
+}
+
+class _ImageUploadAreaState extends State<_ImageUploadArea> {
+  File? _image;
+
+  void _showPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      ),
+      builder: (_) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 32,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.neutral200,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                ),
+              ),
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.neutral100,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  ),
+                  child: const Icon(Icons.camera_alt_outlined, size: 20, color: AppColors.neutral700),
+                ),
+                title: Text('Take Photo', style: AppTypography.body1),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final picked = await ImagePicker().pickImage(
+                    source: ImageSource.camera,
+                    imageQuality: 80,
+                  );
+                  if (picked != null) setState(() => _image = File(picked.path));
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.neutral100,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  ),
+                  child: const Icon(Icons.photo_library_outlined, size: 20, color: AppColors.neutral700),
+                ),
+                title: Text('Choose from Gallery', style: AppTypography.body1),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final picked = await ImagePicker().pickImage(
+                    source: ImageSource.gallery,
+                    imageQuality: 80,
+                  );
+                  if (picked != null) setState(() => _image = File(picked.path));
+                },
+              ),
+              if (_image != null)
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.errorLight,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                    child: const Icon(Icons.delete_outline, size: 20, color: AppColors.error),
+                  ),
+                  title: Text('Remove Photo', style: AppTypography.body1.copyWith(color: AppColors.error)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() => _image = null);
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: _showPicker,
       child: Container(
         height: 140,
         width: double.infinity,
         decoration: BoxDecoration(
           color: AppColors.neutral100,
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          border: Border.all(
-            color: AppColors.neutral200,
-            width: 1.5,
-          ),
+          border: Border.all(color: AppColors.neutral200, width: 1.5),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.add_photo_alternate_outlined, size: 36, color: AppColors.neutral400),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Tap to add a photo',
-              style: AppTypography.body2.copyWith(color: AppColors.neutral600),
-            ),
-          ],
-        ),
+        child: _image != null
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg - 1),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.file(_image!, fit: BoxFit.cover),
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.edit_outlined, size: 12, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Change',
+                              style: AppTypography.caption.copyWith(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.add_photo_alternate_outlined, size: 36, color: AppColors.neutral400),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Tap to add a photo',
+                    style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Camera or gallery',
+                    style: AppTypography.caption,
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -406,7 +591,7 @@ class _DietaryTagRow extends StatelessWidget {
       children: [
         _TagToggle(
           label: 'Halal',
-          icon: Icons.check_circle_outline,
+          svgAsset: 'assets/icons/dietary/halal-icon.svg',
           isActive: isHalal,
           activeColor: AppColors.tagHalal,
           onToggle: () => onHalalChanged(!isHalal),
@@ -432,14 +617,16 @@ class _DietaryTagRow extends StatelessWidget {
 
 class _TagToggle extends StatelessWidget {
   final String label;
-  final IconData icon;
+  final IconData? icon;
+  final String? svgAsset;
   final bool isActive;
   final Color activeColor;
   final VoidCallback onToggle;
 
   const _TagToggle({
     required this.label,
-    required this.icon,
+    this.icon,
+    this.svgAsset,
     required this.isActive,
     required this.activeColor,
     required this.onToggle,
@@ -447,6 +634,7 @@ class _TagToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = isActive ? AppColors.white : AppColors.neutral600;
     return GestureDetector(
       onTap: onToggle,
       child: AnimatedContainer(
@@ -465,7 +653,15 @@ class _TagToggle extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 13, color: isActive ? AppColors.white : AppColors.neutral600),
+            if (svgAsset != null)
+              SvgPicture.asset(
+                svgAsset!,
+                width: 13,
+                height: 13,
+                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+              )
+            else if (icon != null)
+              Icon(icon, size: 13, color: iconColor),
             const SizedBox(width: 4),
             Text(
               label,
@@ -593,6 +789,7 @@ class _SheetTextField extends StatelessWidget {
   final int maxLines;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
+  final IconData? prefixIcon;
 
   const _SheetTextField({
     required this.controller,
@@ -600,6 +797,7 @@ class _SheetTextField extends StatelessWidget {
     this.maxLines = 1,
     this.keyboardType,
     this.validator,
+    this.prefixIcon,
   });
 
   @override
@@ -613,8 +811,11 @@ class _SheetTextField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: AppTypography.body1.copyWith(color: AppColors.neutral400),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, size: 16, color: AppColors.neutral400)
+            : null,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: prefixIcon != null ? AppSpacing.xs : AppSpacing.md,
           vertical: AppSpacing.sm + 2,
         ),
         isDense: true,

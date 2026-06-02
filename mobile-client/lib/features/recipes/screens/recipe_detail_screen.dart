@@ -391,29 +391,15 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
   // ─── Steps ────────────────────────────────────────────────────────────────
 
   Widget _buildStepsSection(RecipeModel recipe) {
-    final tiles = <Widget>[];
-    for (int i = 0; i < recipe.steps.length; i++) {
-      tiles.add(RecipeStepTile(step: recipe.steps[i]));
-      if (i < recipe.steps.length - 1) {
-        tiles.add(const Divider(height: 1, thickness: 1, color: AppColors.border));
-      }
-    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Steps', style: AppTypography.headline2),
-        const SizedBox(height: AppSpacing.sm),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            child: Column(children: tiles),
-          ),
-        ),
+        const SizedBox(height: AppSpacing.md),
+        ...recipe.steps.asMap().entries.map((e) => RecipeStepTile(
+          step: e.value,
+          isLast: e.key == recipe.steps.length - 1,
+        )),
       ],
     );
   }
@@ -435,7 +421,7 @@ class _ShareSheet extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg,
           ),
@@ -521,7 +507,7 @@ class _ShareOption extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
         child: Row(
           children: [
             Container(

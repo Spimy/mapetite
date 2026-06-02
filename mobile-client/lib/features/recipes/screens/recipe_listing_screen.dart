@@ -94,11 +94,13 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: _RecipeScreenBottomNav(),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddSheet,
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         elevation: 3,
+        shape: const CircleBorder(),
         child: const Icon(Icons.add),
       ),
     );
@@ -578,6 +580,62 @@ class _EmptyState extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─── Persistent Bottom Nav ────────────────────────────────────────────────────
+
+class _RecipeScreenBottomNav extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 14,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: NavigationBar(
+        selectedIndex: 0,
+        onDestinationSelected: (index) {
+          switch (index) {
+            case 0:
+              context.go('/home');
+            case 1:
+              context.go('/explore');
+            case 2:
+              context.go('/map');
+            case 3:
+              context.go('/budget');
+          }
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.explore_outlined),
+            selectedIcon: Icon(Icons.explore),
+            label: 'Explore',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.map_outlined),
+            selectedIcon: Icon(Icons.map),
+            label: 'Map',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet),
+            label: 'Budget',
+          ),
+        ],
       ),
     );
   }

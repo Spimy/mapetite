@@ -78,24 +78,24 @@ abstract class HomeFeedMocks {
 
   static const List<RecipeSummary> trendingRecipes = [
     RecipeSummary(
-      id: 'rc1',
-      name: 'Nasi Goreng Kampung',
+      id: 'r5',
+      name: 'Mee Goreng Mamak',
       cuisine: 'Malaysian',
-      prepMinutes: 30,
-      calories: 450,
+      prepMinutes: 25,
+      calories: 490,
       isHalal: true,
       isVegan: false,
-      authorName: 'Ahmad R.',
+      authorName: 'Ramesh K.',
     ),
     RecipeSummary(
-      id: 'rc2',
-      name: 'Smoothie Bowl',
-      cuisine: 'Healthy',
-      prepMinutes: 10,
-      calories: 280,
+      id: 'r3',
+      name: 'Roti John',
+      cuisine: 'Malaysian',
+      prepMinutes: 20,
+      calories: 520,
       isHalal: true,
-      isVegan: true,
-      authorName: 'Sarah T.',
+      isVegan: false,
+      authorName: 'Hafiz M.',
     ),
   ];
 
