@@ -90,7 +90,7 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
                         crossAxisCount: 2,
                         crossAxisSpacing: AppSpacing.md,
                         mainAxisSpacing: AppSpacing.md,
-                        childAspectRatio: 0.70,
+                        mainAxisExtent: 280,
                       ),
                     ),
                   ),
@@ -452,6 +452,13 @@ class _FilterBottomSheet extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text('Cuisine', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    _CuisineIconGrid(
+                      activeOptions: filterState.activeCuisines,
+                      onToggle: notifier.toggleCuisine,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
                     Text('Dietary', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
                     _FilterChipGroup(
@@ -468,14 +475,6 @@ class _FilterBottomSheet extends ConsumerWidget {
                       labels: const ['Under 30 min'],
                       activeFilters: filterState.activeFilters,
                       onToggle: notifier.toggleFilter,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text('Cuisine', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
-                    const SizedBox(height: AppSpacing.sm),
-                    _StringChipGroup(
-                      options: AppConstants.cuisineCategories,
-                      activeOptions: filterState.activeCuisines,
-                      onToggle: notifier.toggleCuisine,
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text('Allergen-free (Free from)', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
@@ -575,6 +574,89 @@ class _FilterChipGroup extends StatelessWidget {
           ),
         );
       }),
+    );
+  }
+}
+
+// ─── Cuisine Icon Grid ────────────────────────────────────────────────────────
+
+class _CuisineIconGrid extends StatelessWidget {
+  final Set<String> activeOptions;
+  final ValueChanged<String> onToggle;
+
+  static const Map<String, IconData> _icons = {
+    'Malaysian': Icons.rice_bowl,
+    'Chinese': Icons.ramen_dining,
+    'Indian': Icons.soup_kitchen,
+    'Japanese': Icons.set_meal,
+    'Western': Icons.lunch_dining,
+    'Thai': Icons.local_fire_department,
+    'Korean': Icons.outdoor_grill,
+    'Middle Eastern': Icons.kebab_dining,
+  };
+
+  const _CuisineIconGrid({
+    required this.activeOptions,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const columns = 4;
+        const totalSpacing = (columns - 1) * AppSpacing.sm;
+        final chipWidth = (constraints.maxWidth - totalSpacing) / columns;
+        return Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: AppConstants.cuisineCategories.map((cuisine) {
+            final isActive = activeOptions.contains(cuisine);
+            final icon = _icons[cuisine] ?? Icons.restaurant;
+            return GestureDetector(
+              onTap: () => onToggle(cuisine),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: chipWidth,
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.sm + 2,
+                  horizontal: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: isActive ? AppColors.primaryLight : AppColors.neutral100,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  border: Border.all(
+                    color: isActive ? AppColors.primary : AppColors.border,
+                    width: isActive ? 1.5 : 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      icon,
+                      size: 22,
+                      color: isActive ? AppColors.primary : AppColors.neutral600,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      cuisine,
+                      style: AppTypography.caption.copyWith(
+                        color: isActive ? AppColors.primary : AppColors.neutral600,
+                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 }

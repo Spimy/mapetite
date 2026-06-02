@@ -166,6 +166,10 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
                   _buildStatsRow(recipe),
                   const SizedBox(height: AppSpacing.md),
                   _buildDietaryChips(recipe),
+                  if (recipe.allergens.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    _buildAllergenSection(recipe),
+                  ],
                   const SizedBox(height: AppSpacing.xxl),
                   _buildIngredientsSection(recipe),
                   const SizedBox(height: AppSpacing.lg),
@@ -372,6 +376,23 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
     }
     if (chips.isEmpty) return const SizedBox.shrink();
     return Row(mainAxisSize: MainAxisSize.min, children: chips);
+  }
+
+  // ─── Allergen Section ────────────────────────────────────────────────────
+
+  Widget _buildAllergenSection(RecipeModel recipe) {
+    return Wrap(
+      spacing: AppSpacing.xs,
+      runSpacing: AppSpacing.xs,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(
+          'Contains:',
+          style: AppTypography.caption.copyWith(color: AppColors.neutral400),
+        ),
+        ...recipe.allergens.map((a) => AppChip.allergen(a)),
+      ],
+    );
   }
 
   // ─── Ingredients ──────────────────────────────────────────────────────────
