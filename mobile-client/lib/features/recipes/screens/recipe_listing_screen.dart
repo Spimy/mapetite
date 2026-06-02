@@ -329,9 +329,9 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   height: 2,
-                  width: isActive ? 100 : 0,
+                  width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: isActive ? AppColors.primary : Colors.transparent,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   ),
                 ),
@@ -380,7 +380,7 @@ class _FilterIconButton extends StatelessWidget {
                   child: Center(
                     child: Text(
                       '$count',
-                      style: const TextStyle(
+                      style: AppTypography.caption.copyWith(
                         color: AppColors.white,
                         fontSize: 8,
                         fontWeight: FontWeight.w700,
