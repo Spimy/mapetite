@@ -341,22 +341,27 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
   // ─── Stats Row ────────────────────────────────────────────────────────────
 
   Widget _buildStatsRow(RecipeModel recipe) {
-    return Row(
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
       children: [
         _StatChip(
           icon: Icons.timer_outlined,
           label: '${recipe.cookMinutes} min',
         ),
-        const SizedBox(width: AppSpacing.sm),
         _StatChip(
           icon: Icons.local_fire_department_outlined,
           label: '${recipe.calories} kcal',
         ),
-        const SizedBox(width: AppSpacing.sm),
         _StatChip(
           icon: Icons.people_outline,
           label: '${recipe.servings} serving${recipe.servings > 1 ? 's' : ''}',
         ),
+        if (recipe.cuisine != null)
+          _StatChip(
+            icon: _cuisineIcon(recipe.cuisine!),
+            label: recipe.cuisine!,
+          ),
       ],
     );
   }
@@ -691,6 +696,22 @@ class _ShareOption extends StatelessWidget {
       ),
     );
   }
+}
+
+// ─── Cuisine icon helper ──────────────────────────────────────────────────────
+
+IconData _cuisineIcon(String cuisine) {
+  const map = <String, IconData>{
+    'Malaysian': Icons.rice_bowl,
+    'Chinese': Icons.ramen_dining,
+    'Indian': Icons.soup_kitchen,
+    'Japanese': Icons.set_meal,
+    'Western': Icons.lunch_dining,
+    'Thai': Icons.local_fire_department,
+    'Korean': Icons.outdoor_grill,
+    'Middle Eastern': Icons.kebab_dining,
+  };
+  return map[cuisine] ?? Icons.restaurant_menu;
 }
 
 // ─── Stat Chip ────────────────────────────────────────────────────────────────

@@ -98,15 +98,17 @@ class _StoreBadge extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.xs),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.storefront_outlined, size: 11, color: AppColors.secondary),
           const SizedBox(width: 3),
-          Text(
-            cost != null
-                ? '${ingredient.storeName}  RM ${cost.toStringAsFixed(2)} est.'
-                : ingredient.storeName ?? '',
-            style: AppTypography.caption.copyWith(color: AppColors.secondary),
+          Flexible(
+            child: Text(
+              cost != null
+                  ? '${ingredient.storeName}  RM ${cost.toStringAsFixed(2)} est.'
+                  : ingredient.storeName ?? '',
+              style: AppTypography.caption.copyWith(color: AppColors.secondary),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
@@ -128,13 +130,15 @@ class _WarningBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.warning_amber_rounded, size: 12, color: AppColors.warning),
           const SizedBox(width: 4),
-          Text(
-            'Ingredient not sourced nearby',
-            style: AppTypography.caption.copyWith(color: AppColors.warning),
+          Flexible(
+            child: Text(
+              'Ingredient not sourced nearby',
+              style: AppTypography.caption.copyWith(color: AppColors.warning),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
