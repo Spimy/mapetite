@@ -24,6 +24,10 @@ class GroceryListNotifier extends StateNotifier<List<GroceryListItem>> {
     state = state.where((item) => !item.isChecked).toList();
   }
 
+  void clearAll() {
+    state = [];
+  }
+
   void addFromIngredients(List<({String name, String quantity, String storeName, double cost})> ingredients) {
     final newItems = ingredients.map((ing) => GroceryListItem(
       id: 'g_${DateTime.now().millisecondsSinceEpoch}_${ing.name.hashCode}',

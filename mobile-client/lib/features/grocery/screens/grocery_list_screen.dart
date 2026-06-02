@@ -47,10 +47,72 @@ class _GroceryListScreenState extends ConsumerState<GroceryListScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
       ),
       builder: (_) => _MoreMenuSheet(
-        onClearAll: () {
+        onClearCompleted: () {
           Navigator.of(context).pop();
           ref.read(groceryListProvider.notifier).clearCompleted();
         },
+        onClearAll: () {
+          Navigator.of(context).pop();
+          _showClearAllDialog();
+        },
+      ),
+    );
+  }
+
+  void _showClearAllDialog() {
+    showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        ),
+        icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 32),
+        title: Text('Clear Grocery List?', style: AppTypography.headline2),
+        content: Text(
+          'This will remove all items from your list. This action cannot be undone.',
+          style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actionsPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg,
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.neutral,
+                side: const BorderSide(color: AppColors.border),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+              ),
+              child: Text('Cancel', style: AppTypography.button.copyWith(color: AppColors.neutral)),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                ref.read(groceryListProvider.notifier).clearAll();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.error,
+                foregroundColor: AppColors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+              ),
+              child: Text('Clear List', style: AppTypography.button),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -383,9 +445,10 @@ class _PlanRouteButton extends StatelessWidget {
 // ─── More Menu Sheet ──────────────────────────────────────────────────────────
 
 class _MoreMenuSheet extends StatelessWidget {
+  final VoidCallback onClearCompleted;
   final VoidCallback onClearAll;
 
-  const _MoreMenuSheet({required this.onClearAll});
+  const _MoreMenuSheet({required this.onClearCompleted, required this.onClearAll});
 
   @override
   Widget build(BuildContext context) {
@@ -406,8 +469,18 @@ class _MoreMenuSheet extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.delete_sweep_outlined, color: AppColors.error),
+            leading: const Icon(Icons.delete_sweep_outlined, color: AppColors.neutral600),
             title: Text('Clear completed items', style: AppTypography.body1),
+            onTap: onClearCompleted,
+            contentPadding: EdgeInsets.zero,
+          ),
+          const Divider(height: 1, thickness: 1, color: AppColors.border),
+          ListTile(
+            leading: const Icon(Icons.delete_forever_outlined, color: AppColors.error),
+            title: Text(
+              'Clear grocery list',
+              style: AppTypography.body1.copyWith(color: AppColors.error),
+            ),
             onTap: onClearAll,
             contentPadding: EdgeInsets.zero,
           ),
