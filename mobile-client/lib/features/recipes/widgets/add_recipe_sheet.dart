@@ -13,16 +13,19 @@ import '../providers/recipe_provider.dart';
 
 class _IngredientEntry {
   final TextEditingController nameCtrl;
+  final TextEditingController quantityCtrl;
   final TextEditingController storeCtrl;
   final TextEditingController priceCtrl;
 
   _IngredientEntry()
       : nameCtrl = TextEditingController(),
+        quantityCtrl = TextEditingController(),
         storeCtrl = TextEditingController(),
         priceCtrl = TextEditingController();
 
   void dispose() {
     nameCtrl.dispose();
+    quantityCtrl.dispose();
     storeCtrl.dispose();
     priceCtrl.dispose();
   }
@@ -118,7 +121,7 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
       final ing = e.value;
       return RecipeIngredient(
         name: ing.nameCtrl.text.trim().isEmpty ? 'Ingredient ${e.key + 1}' : ing.nameCtrl.text.trim(),
-        quantity: '',
+        quantity: ing.quantityCtrl.text.trim().isEmpty ? '1' : ing.quantityCtrl.text.trim(),
         storeName: ing.storeCtrl.text.trim().isEmpty ? null : ing.storeCtrl.text.trim(),
         estimatedCost: double.tryParse(ing.priceCtrl.text.trim()),
       );
@@ -432,9 +435,18 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
                                 Row(
                                   children: [
                                     Expanded(
+                                      flex: 3,
                                       child: _SheetTextField(
                                         controller: ing.nameCtrl,
-                                        hint: 'e.g. 2 cups cooked rice',
+                                        hint: 'e.g. Cooked rice',
+                                      ),
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Expanded(
+                                      flex: 2,
+                                      child: _SheetTextField(
+                                        controller: ing.quantityCtrl,
+                                        hint: 'Qty, e.g. 2 cups',
                                       ),
                                     ),
                                     const SizedBox(width: AppSpacing.sm),
