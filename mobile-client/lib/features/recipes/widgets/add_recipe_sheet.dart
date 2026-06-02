@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../shared/widgets/app_chip.dart';
 import '../models/recipe_model.dart';
 import '../providers/recipe_provider.dart';
 
@@ -340,11 +341,22 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
                                     color: isSelected ? AppColors.primary : AppColors.neutral200,
                                   ),
                                 ),
-                                child: Text(
-                                  c,
-                                  style: AppTypography.label.copyWith(
-                                    color: isSelected ? AppColors.white : AppColors.neutral600,
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      _kCuisineIcons[c] ?? Icons.restaurant_menu,
+                                      size: 13,
+                                      color: isSelected ? AppColors.white : AppColors.neutral600,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      c,
+                                      style: AppTypography.label.copyWith(
+                                        color: isSelected ? AppColors.white : AppColors.neutral600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -380,12 +392,23 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
                                     width: isSelected ? 1.5 : 1,
                                   ),
                                 ),
-                                child: Text(
-                                  a,
-                                  style: AppTypography.label.copyWith(
-                                    color: isSelected ? AppColors.warning : AppColors.neutral600,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      AppChip.allergenIconMap[a] ?? Icons.warning_amber,
+                                      size: 13,
+                                      color: isSelected ? AppColors.warning : AppColors.neutral600,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      a,
+                                      style: AppTypography.label.copyWith(
+                                        color: isSelected ? AppColors.warning : AppColors.neutral600,
+                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
@@ -555,6 +578,17 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
     );
   }
 }
+
+const _kCuisineIcons = <String, IconData>{
+  'Malaysian': Icons.rice_bowl,
+  'Chinese': Icons.ramen_dining,
+  'Indian': Icons.soup_kitchen,
+  'Japanese': Icons.set_meal,
+  'Western': Icons.lunch_dining,
+  'Thai': Icons.local_fire_department,
+  'Korean': Icons.outdoor_grill,
+  'Middle Eastern': Icons.kebab_dining,
+};
 
 class _ImageUploadArea extends StatefulWidget {
   @override
