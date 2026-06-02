@@ -112,6 +112,7 @@
         </fieldset>
       {% endfor %}
       <div class="items-popover__actions">
+        <input type="hidden" name="current_store" value="{{ store.id }}" />
         <button class="items-popover__submit-button" type="submit" name="submit_item">Save Item</button>
         <button class="items-popover__cancel-button"
                 type="button"

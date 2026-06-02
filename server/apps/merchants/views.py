@@ -177,10 +177,13 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
             item_form = StoreItemForm(request.POST)
             if item_form.is_valid():
                 item = item_form.save(commit=False)
-                # item.store = request.user.owned_stores.first()
+                item.store = get_object_or_404(
+                    StoreProfile,
+                    id=request.POST.get("current_store"),
+                )
                 item.save()
                 
-                return redirect('merchants:items_dashboard')
+                return redirect('merchants:dashboard_items', store_index=kwargs.get("store_index", 0))
             else:
                 return self.render_to_response(self.get_context_data(item_form=item_form))
 
