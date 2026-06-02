@@ -173,7 +173,7 @@ class _AddRecipeSheetState extends ConsumerState<AddRecipeSheet> {
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.25),
+                color: AppColors.white.withValues(alpha: 0.25),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.check, color: AppColors.white, size: 14),
@@ -623,7 +623,7 @@ class _ImageUploadAreaState extends State<_ImageUploadArea> {
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
+                    color: AppColors.white.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.close, color: AppColors.white, size: 14),
@@ -754,11 +754,11 @@ class _ImageUploadAreaState extends State<_ImageUploadArea> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.edit_outlined, size: 12, color: Colors.white),
+                            const Icon(Icons.edit_outlined, size: 12, color: AppColors.white),
                             const SizedBox(width: 4),
                             Text(
                               'Change',
-                              style: AppTypography.caption.copyWith(color: Colors.white),
+                              style: AppTypography.caption.copyWith(color: AppColors.white),
                             ),
                           ],
                         ),
