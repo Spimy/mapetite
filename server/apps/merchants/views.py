@@ -55,7 +55,7 @@ class DashboardRedirectView(MerchantRequiredMixin, RedirectView):
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
-        return reverse("merchants:dashboard", kwargs={"store_index": 0})
+        return reverse("merchants:dashboard_home", kwargs={"store_index": 0})
     
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         store_index = request.POST.get("store_index")
