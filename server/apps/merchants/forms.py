@@ -58,7 +58,7 @@ class StoreItemForm(forms.ModelForm):
         
         self.grouped_fields = [
             ("", [self[name] for name in BASIC_FIELDS]),
-            ("Nutrition", [self[name] for name in NUTRITION_FIELDS]),
+            ("", [self[name] for name in NUTRITION_FIELDS]),
             ("Dietary Tags", [self[name] for name in DIETARY_FIELDS]),
             ("Sustainability", [self[name] for name in SUSTAINABILITY_FIELDS]),
             ("", [self[name] for name in META_FIELDS]),

@@ -138,10 +138,6 @@
   <div id="add-item-popover" class="items-popover" popover>
     <div class="items-popover__header">
       <h4 class="items-popover__title">Add New Item</h4>
-      <button class="items-popover__close-button"
-              type="button"
-              popovertarget="add-item-popover"
-              popovertargetaction="hide">Close</button>
     </div>
 
     <form class="items-popover__form" method="post">
@@ -150,24 +146,68 @@
         <fieldset class="items-form-group">
           {% if section_title != "" %}<legend class="items-form-group__legend">{{ section_title }}</legend>{% endif %}
           {% for field in fields %}
-            <div class="items-form-group__field">
-              <label class="items-form-group__label" for="{{ field.id_for_label }}">
-                {{ field.label }}
-                {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
-              </label>
+            {% if field.name == "thumbnail" %}
+              <div class="items-form-group__field">
+                <div class="items-form-group__file-dropzone">
+                  <div class="file-dropzone-content">
 
-              {% if field.name == "price" %}
-                <div class="items-form-group__input-prefix">
-                  <span class="items-form-group__currency">RM</span>
+                    <div class="file-dropzone-placeholder">
+                      <svg xmlns="http://www.w3.org/2000/svg"
+                           width="24"
+                           height="24"
+                           viewBox="0 0 24 24"
+                           fill="none"
+                           stroke="currentColor"
+                           stroke-width="2"
+                           stroke-linecap="round"
+                           stroke-linejoin="round"
+                           class="upload-icon">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      <span class="upload-title">Upload image</span>
+                      <span class="upload-subtitle">JPG or PNG, max 5MB</span>
+                    </div>
+
+                    <img class="file-dropzone-preview"
+                         alt="Image preview"
+                         width="100"
+                         height="100"
+                         hidden />
+
+                  </div>
                   {{ field }}
                 </div>
-              {% else %}
-                <div class="items-form-group__control">{{ field }}</div>
-              {% endif %}
+                {{ field.errors }}
+              </div>
 
-              {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
-              {{ field.errors }}
-            </div>
+            {% elif field.name == "is_active" %}
+              <div class="items-form-group__field items-form-group__toggle-wrap">
+                <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+              </div>
+
+            {% else %}
+              <div class="items-form-group__field">
+                <label class="items-form-group__label" for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                  {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
+                </label>
+
+                {% if field.name == "price" %}
+                  <div class="items-form-group__input-prefix">
+                    <span class="items-form-group__currency">RM</span>
+                    {{ field }}
+                  </div>
+                {% else %}
+                  <div class="items-form-group__control">{{ field }}</div>
+                {% endif %}
+
+                {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
+                {{ field.errors }}
+              </div>
+            {% endif %}
           {% endfor %}
         </fieldset>
       {% endfor %}
@@ -329,6 +369,47 @@
     // Handle browser back/forward buttons
     window.addEventListener('popstate', () => {
       window.location.reload(); 
+    });
+
+    // Select all dropzones
+    const dropzones = document.querySelectorAll('.items-form-group__file-dropzone');
+
+    dropzones.forEach(dropzone => {
+      dropzone.classList.add('js-enhanced');
+
+      const fileInput = dropzone.querySelector('input[type="file"]');
+      const placeholder = dropzone.querySelector('.file-dropzone-placeholder');
+      const previewImage = dropzone.querySelector('.file-dropzone-preview');
+
+      fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+
+        // Ensure the file exists and is actually an image
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+
+          // When the browser finishes reading the file into memory
+          reader.onload = (e) => {
+            // Hide the text/icon
+            placeholder.style.display = 'none';
+            
+            // Show the image and set its source to the file data
+            previewImage.src = e.target.result;
+            previewImage.style.display = 'block';
+            
+            // Adjust padding to make it look flush
+            dropzone.style.padding = '0.5rem'; 
+          };
+
+          reader.readAsDataURL(file);
+        } else {
+          // If they cancel or upload a non-image, reset the UI
+          previewImage.src = '';
+          previewImage.style.display = 'none';
+          placeholder.style.display = 'flex';
+          dropzone.style.padding = '';
+        }
+      });
     });
   });
   </script>
