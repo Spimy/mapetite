@@ -215,6 +215,11 @@
   {% comment %} Used for progressive enhancement {% endcomment %}
   <script>
   document.addEventListener('DOMContentLoaded', () => {
+    initTabSwitch();
+    initImageUpload();
+  });
+
+  function initTabSwitch() {
     const SELECTORS = '.items-tabs__tab, .pagination a';
     const tabsContainer = document.querySelector('.items-tabs');
     let indicator = null;
@@ -374,7 +379,9 @@
     window.addEventListener('popstate', () => {
       window.location.reload(); 
     });
+  }
 
+  function initImageUpload() {
     // Select all dropzones
     const dropzones = document.querySelectorAll('.items-form-group__file-dropzone');
 
@@ -415,6 +422,6 @@
         }
       });
     });
-  });
+  }
   </script>
 {% endblock dashboard_content %}
