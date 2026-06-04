@@ -34,10 +34,17 @@
     </div>
 
     <div class="items-page-header__actions">
-      <input class="items-page-header__search"
-             type="search"
-             placeholder="Search items..."
-             aria-label="Search items" />
+      <form action="."
+            method="get"
+            class="items-page-header__search-form"
+            id="search-form">
+        <input class="items-page-header__search"
+               name="search"
+               value="{% if current_search and current_search != 'None' %}{{ current_search }}{% endif %}"
+               type="search"
+               placeholder="Search items..."
+               aria-label="Search items" />
+      </form>
       <button class="btn items-page-header__add-button"
               type="button"
               popovertarget="add-item-popover">Add Item</button>
@@ -147,10 +154,10 @@
   <nav class="pagination-wrapper" aria-label="Pagination">
     <div class="pagination">
       {% if page_obj.has_previous and page_obj.number <= page_obj.paginator.num_pages %}
-        <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}"
+        <a href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}"
            class="pagination__btn"
            aria-label="First page">«</a>
-        <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+        <a href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}"
            class="pagination__btn"
            aria-label="Previous page">‹</a>
       {% else %}
@@ -162,16 +169,16 @@
         {% if page_obj.number == i %}
           <span class="pagination__btn pagination__btn--active" aria-current="page">{{ i }}</span>
         {% else %}
-          <a href="?page={{ i }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+          <a href="?page={{ i }}{% if current_search %}&search={{ current_search }}{% endif %}"
              class="pagination__btn">{{ i }}</a>
         {% endif %}
       {% endfor %}
 
       {% if page_obj.has_next and page_obj.number <= page_obj.paginator.num_pages %}
-        <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+        <a href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}"
            class="pagination__btn"
            aria-label="Next page">›</a>
-        <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}"
            class="pagination__btn"
            aria-label="Last page">»</a>
       {% else %}
@@ -181,7 +188,9 @@
     </div>
 
     <form class="pagination__jump" method="get">
-      {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}" />{% endif %}
+      {% if current_search and current_search != 'None' %}
+        <input type="hidden" name="search" value="{{ current_search }}" />
+      {% endif %}
 
       {% if page_obj.number <= page_obj.paginator.num_pages %}
         <label for="page-jump" class="pagination__info">Page</label>
@@ -314,214 +323,331 @@
 
   {% comment %} Used for progressive enhancement {% endcomment %}
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    initTabSwitch();
-    initImageUpload();
-  });
-
-  function initTabSwitch() {
-    const SELECTORS = '.items-tabs__tab, .pagination a';
-    const tabsContainer = document.querySelector('.items-tabs');
-    let indicator = null;
-
-    if (tabsContainer) {
-      tabsContainer.classList.add('js-enhanced');
+    let updateTabIndicatorShared = null;
       
-      indicator = document.createElement('div');
-      indicator.className = 'items-tabs__indicator';
-      tabsContainer.appendChild(indicator);
-      
-      const initialActiveTab = tabsContainer.querySelector('[aria-current="page"]');
-      updateIndicator(initialActiveTab, true); 
+    document.addEventListener('DOMContentLoaded', () => {
+      initTabSwitch();
+      initSearch();
+      initImageUpload();
+    });
 
-      if (document.fonts) {
-        document.fonts.ready.then(() => {
-          // Re-grab the active tab just to be safe, and snap it instantly
-          const active = tabsContainer.querySelector('[aria-current="page"]');
-          updateIndicator(active, true);
-        });
-      } else {
-        // Fallback for older browsers: wait for everything (images, fonts, etc.) to load
-        window.addEventListener('load', () => {
-          const active = tabsContainer.querySelector('[aria-current="page"]');
-          updateIndicator(active, true);
-        });
+    function initTabSwitch() {
+      const SELECTORS = '.items-tabs__tab, .pagination a';
+      const tabsContainer = document.querySelector('.items-tabs');
+      let indicator = null;
+
+      if (tabsContainer) {
+        tabsContainer.classList.add('js-enhanced');
+        
+        indicator = document.createElement('div');
+        indicator.className = 'items-tabs__indicator';
+        tabsContainer.appendChild(indicator);
+        
+        const initialActiveTab = tabsContainer.querySelector('[aria-current="page"]');
+        updateIndicator(initialActiveTab, true); 
+
+        if (document.fonts) {
+          document.fonts.ready.then(() => {
+            const active = tabsContainer.querySelector('[aria-current="page"]');
+            updateIndicator(active, true);
+          });
+        } else {
+          window.addEventListener('load', () => {
+            const active = tabsContainer.querySelector('[aria-current="page"]');
+            updateIndicator(active, true);
+          });
+        }
       }
-    }
 
-    // The updated animation function
-    function updateIndicator(activeTab, isInstant = false) {
-      if (!activeTab || !indicator || !tabsContainer) return;
-      
-      const containerRect = tabsContainer.getBoundingClientRect();
-      const tabRect = activeTab.getBoundingClientRect();
-      
-      // Where the indicator needs to go
-      const targetLeft = tabRect.left - containerRect.left + tabsContainer.scrollLeft;
-      const targetWidth = tabRect.width;
+      function updateIndicator(activeTab, isInstant = false) {
+        if (!activeTab || !indicator || !tabsContainer) return;
+        
+        const containerRect = tabsContainer.getBoundingClientRect();
+        const tabRect = activeTab.getBoundingClientRect();
+        
+        const targetLeft = tabRect.left - containerRect.left + tabsContainer.scrollLeft;
+        const targetWidth = tabRect.width;
 
-      if (isInstant) {
-        // Apply instantly without animation (for page load and window resizing)
-        indicator.style.transform = `translateX(${targetLeft}px)`;
-        indicator.style.width = `${targetWidth}px`;
-        // Save current coordinates to dataset for the next click
+        if (isInstant) {
+          indicator.style.transform = `translateX(${targetLeft}px)`;
+          indicator.style.width = `${targetWidth}px`;
+          indicator.dataset.left = targetLeft;
+          indicator.dataset.width = targetWidth;
+          return;
+        }
+
+        const currentLeft = parseFloat(indicator.dataset.left) || 0;
+        const currentWidth = parseFloat(indicator.dataset.width) || 0;
+
+        const minLeft = Math.min(currentLeft, targetLeft);
+        const maxRight = Math.max(currentLeft + currentWidth, targetLeft + targetWidth);
+        const stretchedWidth = maxRight - minLeft;
+
+        indicator.animate([
+          { transform: `translateX(${currentLeft}px)`, width: `${currentWidth}px` },
+          { transform: `translateX(${minLeft}px)`, width: `${stretchedWidth}px`, offset: 0.4 }, 
+          { transform: `translateX(${targetLeft}px)`, width: `${targetWidth}px` }
+        ], {
+          duration: 350,
+          easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          fill: 'forwards'
+        });
+
         indicator.dataset.left = targetLeft;
         indicator.dataset.width = targetWidth;
-        return;
       }
 
-      // Where the indicator currently is
-      const currentLeft = parseFloat(indicator.dataset.left) || 0;
-      const currentWidth = parseFloat(indicator.dataset.width) || 0;
+      // Expose this function globally to the search feature context
+      updateTabIndicatorShared = updateIndicator;
 
-      // Calculate the bounding box bridging both tabs
-      const minLeft = Math.min(currentLeft, targetLeft);
-      const maxRight = Math.max(currentLeft + currentWidth, targetLeft + targetWidth);
-      const stretchedWidth = maxRight - minLeft;
-
-      // Start the Caterpillar animation
-      indicator.animate([
-        // Start at current size/position
-        { transform: `translateX(${currentLeft}px)`, width: `${currentWidth}px` },
-        
-        // Stretch to cover the gap between both tabs
-        { transform: `translateX(${minLeft}px)`, width: `${stretchedWidth}px`, offset: 0.4 }, 
-        
-        // Snap into the new target size/position
-        { transform: `translateX(${targetLeft}px)`, width: `${targetWidth}px` }
-      ], {
-        duration: 350,
-        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-        fill: 'forwards'
+      window.addEventListener('resize', () => {
+        updateIndicator(document.querySelector('.items-tabs__tab[aria-current="page"]'), true);
       });
 
-      // Update the dataset so the next click starts from this new position
-      indicator.dataset.left = targetLeft;
-      indicator.dataset.width = targetWidth;
-    }
+      // Intercept Navigation (Tabs & Pagination)
+      document.body.addEventListener('click', async (e) => {
+        const link = e.target.closest(SELECTORS);
+        if (!link) return;
 
-    // Keep indicator aligned instantly if the user resizes the window
-    window.addEventListener('resize', () => {
-      updateIndicator(document.querySelector('.items-tabs__tab[aria-current="page"]'), true);
-    });
+        e.preventDefault();
+        const url = link.href;
 
-    // Intercept Navigation
-    document.body.addEventListener('click', async (e) => {
-      const link = e.target.closest(SELECTORS);
-      if (!link) return;
+        if (link.classList.contains('items-tabs__tab')) {
+          document.querySelectorAll('.items-tabs__tab').forEach(t => t.removeAttribute('aria-current'));
+          link.setAttribute('aria-current', 'page');
+          updateIndicator(link);
+          
+          // Clear search parameters contextually if user physically changes category tabs
+          const searchInput = document.querySelector('.items-page-header__search');
+          if (searchInput) searchInput.value = '';
+        }
 
-      e.preventDefault();
-      const url = link.href;
-
-      // If they clicked a tab, move the indicator immediately 
-      // before waiting for the server response
-      if (link.classList.contains('items-tabs__tab')) {
-        document.querySelectorAll('.items-tabs__tab').forEach(t => t.removeAttribute('aria-current'));
-        link.setAttribute('aria-current', 'page');
-        updateIndicator(link);
-      }
-
-      const listContainer = document.querySelector('.items-category__list');
-      if (listContainer) {
-        // Create the HTML for a single skeleton card
-        const skeletonCardHTML = `
-          <li class="item-card is-skeleton">
-            <div class="item-card__image-wrap"></div>
-            <div class="item-card__content">
-              <div class="skeleton-block skeleton-title"></div>
-              <div class="skeleton-block skeleton-category"></div>
-              <div class="skeleton-block skeleton-price"></div>
-              <div class="item-card__actions">
-                 <div class="skeleton-block skeleton-actions"></div>
+        const listContainer = document.querySelector('.items-category__list');
+        if (listContainer) {
+          const skeletonCardHTML = `
+            <li class="item-card is-skeleton">
+              <div class="item-card__image-wrap"></div>
+              <div class="item-card__content">
+                <div class="skeleton-block skeleton-title"></div>
+                <div class="skeleton-block skeleton-category"></div>
+                <div class="skeleton-block skeleton-price"></div>
+                <div class="item-card__actions">
+                   <div class="skeleton-block skeleton-actions"></div>
+                </div>
               </div>
-            </div>
-          </li>
-        `;
-        // Inject 6 skeleton cards to fill out a standard grid layout
-        listContainer.innerHTML = Array(6).fill(skeletonCardHTML).join('');
-        
-        // Dim the pagination links while loading
-        document.querySelectorAll('.pagination a').forEach(a => a.style.opacity = '0.5');
-      }
+            </li>
+          `;
+          listContainer.innerHTML = Array(6).fill(skeletonCardHTML).join('');
+          document.querySelectorAll('.pagination a').forEach(a => a.style.opacity = '0.5');
+        }
 
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Network response was not ok');
-        
-        const htmlString = await response.text();
-        const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error('Network response was not ok');
+          
+          const htmlString = await response.text();
+          const doc = new DOMParser().parseFromString(htmlString, 'text/html');
 
-        // Deliberately excluded '.items-tabs' from this list for now, 
-        // otherwise replacing the DOM node would destroy the playing animation.
-        const sectionsToUpdate = [
-          '.items-category', 
-          '.pagination-wrapper'
-        ];
+          const sectionsToUpdate = [
+            '.items-category', 
+            '.pagination-wrapper'
+          ];
 
-        sectionsToUpdate.forEach(selector => {
-          const currentElement = document.querySelector(selector);
-          const newElement = doc.querySelector(selector);
-          if (currentElement && newElement) {
-            currentElement.outerHTML = newElement.outerHTML; 
-          }
-        });
+          sectionsToUpdate.forEach(selector => {
+            const currentElement = document.querySelector(selector);
+            const newElement = doc.querySelector(selector);
+            if (currentElement && newElement) {
+              currentElement.outerHTML = newElement.outerHTML; 
+            }
+          });
 
-        // Update the URL without reloading the page
-        history.pushState(null, '', url);
+          history.pushState(null, '', url);
 
-      } catch (error) {
-        console.error('Progressive enhancement failed:', error);
-        window.location.href = url;
-      }
-    });
-
-    // Handle browser back/forward buttons
-    window.addEventListener('popstate', () => {
-      window.location.reload(); 
-    });
-  }
-
-  function initImageUpload() {
-    // Select all dropzones
-    const dropzones = document.querySelectorAll('.items-form-group__file-dropzone');
-
-    dropzones.forEach(dropzone => {
-      dropzone.classList.add('js-enhanced');
-
-      const fileInput = dropzone.querySelector('input[type="file"]');
-      const placeholder = dropzone.querySelector('.file-dropzone-placeholder');
-      const previewImage = dropzone.querySelector('.file-dropzone-preview');
-
-      fileInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-
-        // Ensure the file exists and is actually an image
-        if (file && file.type.startsWith('image/')) {
-          const reader = new FileReader();
-
-          // When the browser finishes reading the file into memory
-          reader.onload = (e) => {
-            // Hide the text/icon
-            placeholder.style.display = 'none';
-            
-            // Show the image and set its source to the file data
-            previewImage.src = e.target.result;
-            previewImage.style.display = 'block';
-            
-            // Adjust padding to make it look flush
-            dropzone.style.padding = '0.5rem'; 
-          };
-
-          reader.readAsDataURL(file);
-        } else {
-          // If they cancel or upload a non-image, reset the UI
-          previewImage.src = '';
-          previewImage.style.display = 'none';
-          placeholder.style.display = 'flex';
-          dropzone.style.padding = '';
+        } catch (error) {
+          console.error('Progressive enhancement failed:', error);
+          window.location.href = url;
         }
       });
-    });
-  }
+
+      window.addEventListener('popstate', () => {
+        window.location.reload(); 
+      });
+    }
+
+    function initSearch() {
+      const searchForm = document.getElementById('search-form');
+      const searchInput = searchForm?.querySelector('input[type="search"]');
+      if (!searchForm || !searchInput) return;
+
+      let debounceTimer;
+
+      // 1. Listen for typing in the search bar
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          triggerSearchFetch();
+        }, 400);
+      });
+
+      // 2. Listen for "Enter" on the search bar
+      searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        clearTimeout(debounceTimer);
+        triggerSearchFetch();
+      });
+
+      // 3. Listen for "Jump to Page" form submissions
+      document.body.addEventListener('submit', async (e) => {
+        const jumpForm = e.target.closest('.pagination__jump');
+        if (!jumpForm) return;
+
+        e.preventDefault();
+
+        const url = new URL(window.location.href);
+        const formData = new FormData(jumpForm);
+        url.search = new URLSearchParams(formData).toString();
+        const targetUrl = url.toString();
+
+        const listContainer = document.querySelector('.items-category__list');
+        if (listContainer) {
+          const skeletonCardHTML = `
+            <li class="item-card is-skeleton">
+              <div class="item-card__image-wrap"></div>
+              <div class="item-card__content">
+                <div class="skeleton-block skeleton-title"></div>
+                <div class="skeleton-block skeleton-category"></div>
+                <div class="skeleton-block skeleton-price"></div>
+                <div class="item-card__actions"><div class="skeleton-block skeleton-actions"></div></div>
+              </div>
+            </li>
+          `;
+          listContainer.innerHTML = Array(6).fill(skeletonCardHTML).join('');
+          document.querySelectorAll('.pagination a, .pagination__jump-input').forEach(el => el.style.opacity = '0.5');
+        }
+
+        try {
+          const response = await fetch(targetUrl);
+          if (!response.ok) throw new Error('Network response was not ok');
+          
+          const htmlString = await response.text();
+          const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+
+          const sectionsToUpdate = ['.items-category', '.pagination-wrapper'];
+
+          sectionsToUpdate.forEach(selector => {
+            const currentElement = document.querySelector(selector);
+            const newElement = doc.querySelector(selector);
+            if (currentElement && newElement) {
+              currentElement.outerHTML = newElement.outerHTML; 
+            }
+          });
+
+          history.pushState(null, '', targetUrl);
+
+        } catch (error) {
+          console.error('Jump to page failed:', error);
+          window.location.href = targetUrl;
+        }
+      });
+
+      async function triggerSearchFetch() {
+        const url = new URL(window.location.href);
+        const formData = new FormData(searchForm);
+        
+        // Global Search Logic: Set search, delete category and page
+        url.searchParams.set('search', formData.get('search'));
+        url.searchParams.delete('category'); 
+        url.searchParams.delete('page'); 
+
+        const targetUrl = url.toString();
+
+        // UI Synchronization: Force the highlights back to "All Items" tab 
+        const tabs = document.querySelectorAll('.items-tabs__tab');
+        if (tabs.length > 0) {
+          tabs.forEach(t => t.removeAttribute('aria-current'));
+          const allItemsTab = tabs[0]; // First element is always the 'All Items' anchor
+          allItemsTab.setAttribute('aria-current', 'page');
+          
+          // Fire the shared animation function to slide the tab line safely over to All Items
+          if (typeof updateTabIndicatorShared === 'function') {
+            updateTabIndicatorShared(allItemsTab);
+          }
+        }
+
+        const listContainer = document.querySelector('.items-category__list');
+        if (listContainer) {
+          const skeletonCardHTML = `
+            <li class="item-card is-skeleton">
+              <div class="item-card__image-wrap"></div>
+              <div class="item-card__content">
+                <div class="skeleton-block skeleton-title"></div>
+                <div class="skeleton-block skeleton-category"></div>
+                <div class="skeleton-block skeleton-price"></div>
+                <div class="item-card__actions"><div class="skeleton-block skeleton-actions"></div></div>
+              </div>
+            </li>
+          `;
+          listContainer.innerHTML = Array(6).fill(skeletonCardHTML).join('');
+          document.querySelectorAll('.pagination-wrapper').forEach(el => el.style.opacity = '0.5');
+        }
+
+        try {
+          const response = await fetch(targetUrl);
+          if (!response.ok) throw new Error('Network response was not ok');
+          
+          const htmlString = await response.text();
+          const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+
+          const sectionsToUpdate = ['.items-category', '.pagination-wrapper'];
+          sectionsToUpdate.forEach(selector => {
+            const currentElement = document.querySelector(selector);
+            const newElement = doc.querySelector(selector);
+            if (currentElement && newElement) {
+              currentElement.outerHTML = newElement.outerHTML; 
+            }
+          });
+
+          history.pushState(null, '', targetUrl);
+
+        } catch (error) {
+          console.error('Search enhancement failed:', error);
+          window.location.href = targetUrl;
+        }
+      }
+    }
+
+    function initImageUpload() {
+      const dropzones = document.querySelectorAll('.items-form-group__file-dropzone');
+
+      dropzones.forEach(dropzone => {
+        dropzone.classList.add('js-enhanced');
+
+        const fileInput = dropzone.querySelector('input[type="file"]');
+        const placeholder = dropzone.querySelector('.file-dropzone-placeholder');
+        const previewImage = dropzone.querySelector('.file-dropzone-preview');
+
+        fileInput.addEventListener('change', (event) => {
+          const file = event.target.files[0];
+
+          if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+              placeholder.style.display = 'none';
+              previewImage.src = e.target.result;
+              previewImage.style.display = 'block';
+              dropzone.style.padding = '0.5rem'; 
+            };
+
+            reader.readAsDataURL(file);
+          } else {
+            previewImage.src = '';
+            previewImage.style.display = 'none';
+            placeholder.style.display = 'flex';
+            dropzone.style.padding = '';
+          }
+        });
+      });
+    }
   </script>
 {% endblock dashboard_content %}

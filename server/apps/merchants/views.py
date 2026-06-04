@@ -127,8 +127,15 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
         
         queryset = StoreItem.objects.filter(store=active_store).select_related("category").order_by("category__display_order", "category__name", "name")
         
+        search_param = self.request.GET.get('search')
         category_param = self.request.GET.get('category')
-        if category_param:
+        
+        # Search is global and overrides specific category selections
+        if search_param:
+            queryset = queryset.filter(
+                Q(name__icontains=search_param) | Q(description__icontains=search_param)
+            )
+        elif category_param:
             queryset = queryset.filter(category__name=category_param)
         
         return queryset
@@ -166,6 +173,7 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
             page_range = range(start_page, end_page + 1)
        
         category_param = self.request.GET.get('category')
+        current_search = self.request.GET.get('search', '') or ''
         
         context.update({
             "store": active_store,
@@ -179,6 +187,7 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
             "category_form": ItemCategoryForm(),
             "selected_category": category_param,
             "page_range": page_range,
+            "current_search": current_search,
         })
         return context
     
