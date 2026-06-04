@@ -213,6 +213,47 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
             else:
                 # Form failed validation. Render the page with the errors in category_form.
                 return self.render_to_response(self.get_context_data(category_form=category_form))
+            
+        # User submitted the Manage Categories Form (bulk update/delete)
+        elif 'submit_manage_categories' in request.POST:
+            active_store = get_object_or_404(StoreProfile, id=request.POST.get("current_store"))
+            store_categories = ItemCategory.objects.filter(store=active_store)
+            
+            categories_to_update = []
+            categories_to_delete_ids = []
+
+            for category in store_categories:
+                # Check if marked for deletion
+                delete_flag = request.POST.get(f"delete_{category.pk}")
+                if delete_flag == "true":
+                    categories_to_delete_ids.append(category.pk)
+                    continue # Skip updating if we are deleting it
+
+                # If not deleted, check for name and order updates
+                new_name = request.POST.get(f"name_{category.pk}")
+                new_order = request.POST.get(f"order_{category.pk}")
+                
+                needs_update = False
+
+                if new_name and new_name.strip() != category.name:
+                    category.name = new_name.strip()
+                    needs_update = True
+                    
+                if new_order and new_order.isdigit() and int(new_order) != category.display_order:
+                    category.display_order = int(new_order)
+                    needs_update = True
+                    
+                if needs_update:
+                    categories_to_update.append(category)
+
+            # Perform efficient bulk operations
+            if categories_to_delete_ids:
+                ItemCategory.objects.filter(id__in=categories_to_delete_ids).delete()
+                
+            if categories_to_update:
+                ItemCategory.objects.bulk_update(categories_to_update, ['name', 'display_order'])
+
+            return redirect('merchants:dashboard_items', store_index=kwargs.get("store_index", 0))
 
         # User submitted the Item Form
         elif 'submit_item' in request.POST:

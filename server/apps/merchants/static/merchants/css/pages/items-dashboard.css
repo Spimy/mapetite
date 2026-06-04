@@ -70,14 +70,22 @@
     pointer-events: none;
   }
 
-  .items-tabs__add-btn {
+  .items-tabs__actions {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.6rem; 
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .items-tabs__action-btn {
     display: block;
     margin-bottom: 0.5rem;
     margin-left: 0.5rem;
     padding: 0.25rem;
     border: none;
     background: transparent;
-    color: var(--color-grey-400); 
+    color: var(--color-grey-400);
     cursor: pointer;
     transition: color 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -130,7 +138,6 @@
       filter: grayscale(100%) opacity(70%);
     }
   }
-  
 
   &.is-skeleton {
     pointer-events: none;
@@ -522,6 +529,10 @@
     color: color-mix(in srgb, var(--color-grey-400) 40%, var(--color-grey-600));
     font-size: 0.8rem;
   }
+
+  .items-form-group__helptext--spaced {
+    margin-bottom: 1rem;
+  }
 }
 
 /* Dietary & Sustainability Pills */
@@ -645,8 +656,6 @@
   }
 }
 
-/* Image Dropzone */
-/* --- Image Dropzone --- */
 /* --- Image Dropzone --- */
 .items-form-group__file-dropzone {
   position: relative;
@@ -669,11 +678,10 @@
   font-size: 0.875rem;
 }
 
-/* --- JS Enhanced State --- */
 .items-form-group__file-dropzone.js-enhanced {
   cursor: pointer;
-  height: 12rem; /* FIX: Locks the height so the UI never jumps */
-  padding: 0.5rem; /* FIX: Sets a uniform padding to act as a frame */
+  height: 12rem;
+  padding: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -695,14 +703,13 @@
   margin-top: 0;
 }
 
-/* Content Styling */
 .file-dropzone-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100%; /* Ensures the content wrapper fills the locked height */
+  height: 100%; 
   color: color-mix(in srgb, var(--color-grey-400) 40%, var(--color-grey-600));
 }
 
@@ -729,16 +736,89 @@
   font-size: 0.8rem;
 }
 
-/* Live Image Preview Styling */
 .file-dropzone-preview {
   display: none;
   width: 100%;
-  height: 100%; /* FIX: Forces the image to fill the exact height of the container */
-  object-fit: cover; /* Acts as a smart crop so the image never stretches */
-  border-radius: 0.5rem; /* Inner border radius */
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.5rem;
   pointer-events: none;
 }
 
+.category-bulk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.category-bulk-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s;
+}
+
+.items-form-group__text-input,
+.items-form-group__number-input {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background-color: var(--color-white);
+  color: var(--color-neutral);
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.items-form-group__text-input { flex: 1; }
+.items-form-group__number-input { width: 4.5rem; text-align: center; }
+
+.items-form-group__text-input:focus,
+.items-form-group__number-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-light) 50%, transparent);
+}
+
+.category-bulk-delete input[type="checkbox"] {
+  display: none; 
+}
+
+.delete-icon-wrapper {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  color: var(--color-grey-400);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.category-bulk-delete:hover .delete-icon-wrapper {
+  color: var(--color-error);
+  border-color: var(--color-error);
+  background-color: color-mix(in srgb, var(--color-error) 5%, var(--color-white));
+}
+
+.category-bulk-row:has(input[type="checkbox"]:checked) {
+  opacity: 0.5;
+}
+
+.category-bulk-row:has(input[type="checkbox"]:checked) .delete-icon-wrapper {
+  background-color: var(--color-error);
+  color: var(--color-white);
+  border-color: var(--color-error);
+}
+
+.category-bulk-row:has(input[type="checkbox"]:checked) .items-form-group__text-input {
+  text-decoration: line-through;
+  pointer-events: none;
+}
+
+/* --- Pagination --- */
 .pagination-wrapper {
   display: flex;
   flex-direction: column;
@@ -771,7 +851,6 @@
   transition: all 0.2s ease;
 }
 
-/* Hover State for active links */
 a.pagination__btn:hover,
 a.pagination__btn:focus-visible {
   outline: none;
@@ -780,7 +859,6 @@ a.pagination__btn:focus-visible {
   background-color: color-mix(in srgb, var(--color-primary) 5%, var(--color-white));
 }
 
-/* Current Page State */
 .pagination__btn--active {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
@@ -788,14 +866,12 @@ a.pagination__btn:focus-visible {
   cursor: default;
 }
 
-/* Disabled State (First/Last page arrows) */
 button.pagination__btn:disabled {
   background-color: color-mix(in srgb, var(--color-grey-100) 50%, var(--color-white));
   color: var(--color-grey-400);
   cursor: not-allowed;
 }
 
-/* "Page X of Y" text */
 .pagination__info {
   font-size: 0.875rem;
   color: var(--color-grey-600);
@@ -828,12 +904,13 @@ button.pagination__btn:disabled {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-light) 50%, transparent);
 }
 
-/* Hide the native up/down number arrows for a cleaner aesthetic */
 .pagination__jump-input::-webkit-outer-spin-button,
 .pagination__jump-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
 .pagination__jump-input[type=number] {
+  appearance: textfield;
   -moz-appearance: textfield;
 }
