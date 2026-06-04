@@ -112,7 +112,7 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
     model = StoreItem
     context_object_name = "items"
     paginator_class = Template404Paginator
-    paginate_by = 2
+    paginate_by = 6
     
     def get_queryset(self):
         store_index = self.kwargs.get("store_index", 0)
