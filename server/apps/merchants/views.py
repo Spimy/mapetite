@@ -186,7 +186,7 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
 
         # User submitted the Item Form
         elif 'submit_item' in request.POST:
-            item_form = StoreItemForm(request.POST)
+            item_form = StoreItemForm(request.POST, request.FILES)
             if item_form.is_valid():
                 item = item_form.save(commit=False)
                 item.store = get_object_or_404(

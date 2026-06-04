@@ -140,7 +140,9 @@
       <h4 class="items-popover__title">Add New Item</h4>
     </div>
 
-    <form class="items-popover__form" method="post">
+    <form class="items-popover__form"
+          method="post"
+          enctype="multipart/form-data">
       {% csrf_token %}
       {% for section_title, fields in item_form.grouped_fields %}
         <fieldset class="items-form-group">
