@@ -60,25 +60,62 @@
   <section class="items-category">
     <ul role="list" class="items-category__list">
       {% for item in items %}
-        <li class="items-category__item">{{ item.name }} - RM{{ item.price }}</li>
+        <li class="item-card {% if not item.is_active %}item-card--hidden{% endif %}">
+
+          <div class="item-card__image-wrap">
+            {% if not item.is_active %}<span class="item-card__status-badge">Hidden</span>{% endif %}
+
+            {% if item.thumbnail %}
+              <img src="{{ item.thumbnail.url }}"
+                   alt="{{ item.name }}"
+                   class="item-card__image"
+                   loading="lazy"
+                   width="200"
+                   height="200" />
+            {% else %}
+              <span class="item-card__placeholder-icon">{% include "icons/utensils.html" %}</span>
+            {% endif %}
+          </div>
+
+          <div class="item-card__content">
+            <div class="item-card__header">
+              <h4 class="item-card__title">{{ item.name }}</h4>
+              <span class="item-card__category">{{ item.category.name }}</span>
+            </div>
+
+            <div class="item-card__price-row">
+              <span class="item-card__price">RM {{ item.price }}</span>
+              <span class="item-card__tax">excl. tax</span>
+            </div>
+
+            <div class="item-card__tags">
+              {% if item.organic %}<span class="item-card__tag item-card__tag--organic">Organic</span>{% endif %}
+              {% if item.vegan %}<span class="item-card__tag item-card__tag--vegan">Vegan</span>{% endif %}
+              {% if item.gluten_free %}<span class="item-card__tag item-card__tag--gluten-free">Gluten-Free</span>{% endif %}
+              {% if item.dairy_free %}<span class="item-card__tag item-card__tag--dairy-free">Dairy-Free</span>{% endif %}
+              {% if item.contains_nuts %}<span class="item-card__tag item-card__tag--contains-nuts">Contain Nuts</span>{% endif %}
+              {% if item.eco_packaging %}<span class="item-card__tag item-card__tag--eco-packaging">Eco-Packaging</span>{% endif %}
+            </div>
+
+            {% if item.calories %}<span class="item-card__meta">{{ item.calories }} kcal</span>{% endif %}
+
+            <div class="item-card__actions">
+              <button type="button" class="item-card__action-btn" aria-label="Edit item">{% include "icons/edit.html" %}</button>
+
+              <button type="button"
+                      class="item-card__action-btn"
+                      aria-label="Toggle visibility">
+                {% if item.is_active %}
+                  {% include "icons/eye-on.html" %}
+                {% else %}
+                  {% include "icons/eye-off.html" %}
+                {% endif %}
+              </button>
+            </div>
+          </div>
+
+        </li>
       {% empty %}
-        <div class="items-category__empty-state">
-          {% if paginator.count == 0 %}
-            <h4>No items found</h4>
-            <p>
-              {% if selected_category %}
-                There are no items in the "{{ selected_category }}" category yet.
-              {% else %}
-                Your store doesn't have any items yet.
-              {% endif %}
-            </p>
-
-          {% else %}
-            <h4>Page {{ page_obj.number }} Not Found</h4>
-            <p>There are no items on this page.</p>
-          {% endif %}
-
-        </div>
       {% endfor %}
     </ul>
   </section>
