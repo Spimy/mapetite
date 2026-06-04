@@ -228,6 +228,20 @@
       
       const initialActiveTab = tabsContainer.querySelector('[aria-current="page"]');
       updateIndicator(initialActiveTab, true); 
+
+      if (document.fonts) {
+        document.fonts.ready.then(() => {
+          // Re-grab the active tab just to be safe, and snap it instantly
+          const active = tabsContainer.querySelector('[aria-current="page"]');
+          updateIndicator(active, true);
+        });
+      } else {
+        // Fallback for older browsers: wait for everything (images, fonts, etc.) to load
+        window.addEventListener('load', () => {
+          const active = tabsContainer.querySelector('[aria-current="page"]');
+          updateIndicator(active, true);
+        });
+      }
     }
 
     // The updated animation function
