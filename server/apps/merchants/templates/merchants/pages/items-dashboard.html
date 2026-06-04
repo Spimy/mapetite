@@ -135,137 +135,155 @@
 
         </li>
       {% empty %}
-      </ul>
-    </section>
+        <div class="items-category__empty-state">
+          {% if paginator.count == 0 %}
+            <h4>No items found</h4>
+            <p>
+              {% if selected_category %}
+                There are no items in the "{{ selected_category }}" category yet.
+              {% else %}
+                Your store doesn't have any items yet.
+              {% endif %}
+            </p>
 
-    {% comment %} Pagination controls {% endcomment %}
-    <nav class="pagination">
-      {% if page_obj.has_previous %}
-        <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}">First</a>
-        <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
-      {% endif %}
+          {% else %}
+            <h4>Page {{ page_obj.number }} Not Found</h4>
+            <p>There are no items on this page.</p>
+          {% endif %}
 
-      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        </div>
+      {% endfor %}
+    </ul>
+  </section>
 
-      {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
-        <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Last</a>
-      {% endif %}
-    </nav>
+  {% comment %} Pagination controls {% endcomment %}
+  <nav class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}">First</a>
+      <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
+    {% endif %}
 
-    {% comment %} Add Item Popover {% endcomment %}
-    <div id="add-item-popover" class="items-popover" popover>
-      <div class="items-popover__header">
-        <h4 class="items-popover__title">Add New Item</h4>
-      </div>
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
 
-      <form class="items-popover__form"
-            method="post"
-            enctype="multipart/form-data">
-        {% csrf_token %}
-        {% for section_title, fields in item_form.grouped_fields %}
-          <fieldset class="items-form-group">
-            {% if section_title != "" %}<legend class="items-form-group__legend">{{ section_title }}</legend>{% endif %}
-            {% for field in fields %}
-              {% if field.name == "thumbnail" %}
-                <div class="items-form-group__field">
-                  <div class="items-form-group__file-dropzone">
-                    <div class="file-dropzone-content">
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Last</a>
+    {% endif %}
+  </nav>
 
-                      <div class="file-dropzone-placeholder">
-                        {% include "icons/upload.html" %}
-                        <span class="upload-title">Upload image</span>
-                        <span class="upload-subtitle">JPG or PNG, max 5MB</span>
-                      </div>
+  {% comment %} Add Item Popover {% endcomment %}
+  <div id="add-item-popover" class="items-popover" popover>
+    <div class="items-popover__header">
+      <h4 class="items-popover__title">Add New Item</h4>
+    </div>
 
-                      <img class="file-dropzone-preview"
-                           alt="Image preview"
-                           width="100"
-                           height="100"
-                           hidden />
+    <form class="items-popover__form"
+          method="post"
+          enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for section_title, fields in item_form.grouped_fields %}
+        <fieldset class="items-form-group">
+          {% if section_title != "" %}<legend class="items-form-group__legend">{{ section_title }}</legend>{% endif %}
+          {% for field in fields %}
+            {% if field.name == "thumbnail" %}
+              <div class="items-form-group__field">
+                <div class="items-form-group__file-dropzone">
+                  <div class="file-dropzone-content">
 
+                    <div class="file-dropzone-placeholder">
+                      {% include "icons/upload.html" %}
+                      <span class="upload-title">Upload image</span>
+                      <span class="upload-subtitle">JPG or PNG, max 5MB</span>
                     </div>
+
+                    <img class="file-dropzone-preview"
+                         alt="Image preview"
+                         width="100"
+                         height="100"
+                         hidden />
+
+                  </div>
+                  {{ field }}
+                </div>
+                {{ field.errors }}
+              </div>
+
+            {% elif field.name == "is_active" %}
+              <div class="items-form-group__field items-form-group__toggle-wrap">
+                <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+              </div>
+
+            {% else %}
+              <div class="items-form-group__field">
+                <label class="items-form-group__label" for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                  {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
+                </label>
+
+                {% if field.name == "price" %}
+                  <div class="items-form-group__input-prefix">
+                    <span class="items-form-group__currency">RM</span>
                     {{ field }}
                   </div>
-                  {{ field.errors }}
-                </div>
+                {% else %}
+                  <div class="items-form-group__control">{{ field }}</div>
+                {% endif %}
 
-              {% elif field.name == "is_active" %}
-                <div class="items-form-group__field items-form-group__toggle-wrap">
-                  <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                  {{ field }}
-                  {{ field.errors }}
-                </div>
-
-              {% else %}
-                <div class="items-form-group__field">
-                  <label class="items-form-group__label" for="{{ field.id_for_label }}">
-                    {{ field.label }}
-                    {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
-                  </label>
-
-                  {% if field.name == "price" %}
-                    <div class="items-form-group__input-prefix">
-                      <span class="items-form-group__currency">RM</span>
-                      {{ field }}
-                    </div>
-                  {% else %}
-                    <div class="items-form-group__control">{{ field }}</div>
-                  {% endif %}
-
-                  {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
-                  {{ field.errors }}
-                </div>
-              {% endif %}
-            {% endfor %}
-          </fieldset>
-        {% endfor %}
-        <div class="items-popover__actions">
-          <input type="hidden" name="current_store" value="{{ store.id }}" />
-          <button class="items-popover__submit-button" type="submit" name="submit_item">Save Item</button>
-          <button class="items-popover__cancel-button"
-                  type="button"
-                  popovertarget="add-item-popover"
-                  popovertargetaction="hide">Cancel</button>
-        </div>
-      </form>
-    </div>
-
-    {% comment %} Add Category Popover {% endcomment %}
-    <div id="add-category-popover" class="items-popover" popover>
-      <div class="items-popover__header">
-        <h4 class="items-popover__title">Add New Category</h4>
-      </div>
-
-      <form class="items-popover__form" method="post">
-        {% csrf_token %}
-        <fieldset class="items-form-group">
-          {% for field in category_form %}
-            <div class="items-form-group__field">
-              <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-              <div class="items-form-group__control">{{ field }}</div>
-              {{ field.errors }}
-              {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
-            </div>
+                {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
+                {{ field.errors }}
+              </div>
+            {% endif %}
           {% endfor %}
         </fieldset>
+      {% endfor %}
+      <div class="items-popover__actions">
+        <input type="hidden" name="current_store" value="{{ store.id }}" />
+        <button class="items-popover__submit-button" type="submit" name="submit_item">Save Item</button>
+        <button class="items-popover__cancel-button"
+                type="button"
+                popovertarget="add-item-popover"
+                popovertargetaction="hide">Cancel</button>
+      </div>
+    </form>
+  </div>
 
-        <div class="items-popover__actions">
-          <input type="hidden" name="current_store" value="{{ store.id }}" />
-
-          <button class="items-popover__submit-button"
-                  type="submit"
-                  name="submit_category">Save Category</button>
-          <button class="items-popover__cancel-button"
-                  type="button"
-                  popovertarget="add-category-popover"
-                  popovertargetaction="hide">Cancel</button>
-        </div>
-      </form>
+  {% comment %} Add Category Popover {% endcomment %}
+  <div id="add-category-popover" class="items-popover" popover>
+    <div class="items-popover__header">
+      <h4 class="items-popover__title">Add New Category</h4>
     </div>
 
-    {% comment %} Used for progressive enhancement {% endcomment %}
-    <script>
+    <form class="items-popover__form" method="post">
+      {% csrf_token %}
+      <fieldset class="items-form-group">
+        {% for field in category_form %}
+          <div class="items-form-group__field">
+            <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            <div class="items-form-group__control">{{ field }}</div>
+            {{ field.errors }}
+            {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
+          </div>
+        {% endfor %}
+      </fieldset>
+
+      <div class="items-popover__actions">
+        <input type="hidden" name="current_store" value="{{ store.id }}" />
+
+        <button class="items-popover__submit-button"
+                type="submit"
+                name="submit_category">Save Category</button>
+        <button class="items-popover__cancel-button"
+                type="button"
+                popovertarget="add-category-popover"
+                popovertargetaction="hide">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  {% comment %} Used for progressive enhancement {% endcomment %}
+  <script>
   document.addEventListener('DOMContentLoaded', () => {
     initTabSwitch();
     initImageUpload();
@@ -475,5 +493,5 @@
       });
     });
   }
-    </script>
-  {% endblock dashboard_content %}
+  </script>
+{% endblock dashboard_content %}
