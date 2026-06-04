@@ -145,6 +145,26 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
         except IndexError:
             raise Http404("Invalid merchant access index portfolio scale.")
        
+        page_obj = context.get('page_obj')
+        paginator = context.get('paginator')
+        page_range = []
+        
+        if page_obj and paginator:
+            current_page = page_obj.number
+            total_pages = paginator.num_pages
+            
+            # Start 1 page before current, but don't go below 1
+            start_page = max(current_page - 1, 1)
+            # End 2 pages after start
+            end_page = start_page + 2
+            
+            # If the end_page overshoots the total, shift the window back
+            if end_page > total_pages:
+                end_page = total_pages
+                start_page = max(end_page - 2, 1)
+                
+            page_range = range(start_page, end_page + 1)
+       
         category_param = self.request.GET.get('category')
         
         context.update({
@@ -158,6 +178,7 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
             "item_form": StoreItemForm(),
             "category_form": ItemCategoryForm(),
             "selected_category": category_param,
+            "page_range": page_range,
         })
         return context
     

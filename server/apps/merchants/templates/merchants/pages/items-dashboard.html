@@ -149,6 +149,7 @@
           {% else %}
             <h4>Page {{ page_obj.number }} Not Found</h4>
             <p>There are no items on this page.</p>
+            <a href="{% url 'merchants:dashboard_items' store_index=current_index %}">Return to First Page</a>.
           {% endif %}
 
         </div>
@@ -157,18 +158,61 @@
   </section>
 
   {% comment %} Pagination controls {% endcomment %}
-  <nav class="pagination">
-    {% if page_obj.has_previous %}
-      <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}">First</a>
-      <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
-    {% endif %}
+  <nav class="pagination-wrapper" aria-label="Pagination">
+    <div class="pagination">
+      {% if page_obj.has_previous and page_obj.number <= page_obj.paginator.num_pages %}
+        <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}"
+           class="pagination__btn"
+           aria-label="First page">«</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+           class="pagination__btn"
+           aria-label="Previous page">‹</a>
+      {% else %}
+        <button class="pagination__btn" disabled aria-hidden="true">«</button>
+        <button class="pagination__btn" disabled aria-hidden="true">‹</button>
+      {% endif %}
 
-    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% for i in page_range %}
+        {% if page_obj.number == i %}
+          <span class="pagination__btn pagination__btn--active" aria-current="page">{{ i }}</span>
+        {% else %}
+          <a href="?page={{ i }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+             class="pagination__btn">{{ i }}</a>
+        {% endif %}
+      {% endfor %}
 
-    {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
-      <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Last</a>
-    {% endif %}
+      {% if page_obj.has_next and page_obj.number <= page_obj.paginator.num_pages %}
+        <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+           class="pagination__btn"
+           aria-label="Next page">›</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}"
+           class="pagination__btn"
+           aria-label="Last page">»</a>
+      {% else %}
+        <button class="pagination__btn" disabled aria-hidden="true">›</button>
+        <button class="pagination__btn" disabled aria-hidden="true">»</button>
+      {% endif %}
+    </div>
+
+    <form class="pagination__jump" method="get">
+      {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}" />{% endif %}
+
+      {% if page_obj.number <= page_obj.paginator.num_pages %}
+        <label for="page-jump" class="pagination__info">Page</label>
+        <input type="number"
+               id="page-jump"
+               name="page"
+               class="pagination__jump-input"
+               min="1"
+               max="{{ page_obj.paginator.num_pages }}"
+               value="{{ page_obj.number }}"
+               aria-label="Jump to page" />
+        <span class="pagination__info">of {{ page_obj.paginator.num_pages }}</span>
+        <button type="submit" hidden>Go</button>
+      {% else %}
+        <span class="pagination__info">Page Not Found</span>
+      {% endif %}
+    </form>
   </nav>
 
   {% comment %} Add Item Popover {% endcomment %}
@@ -425,7 +469,7 @@
         // otherwise replacing the DOM node would destroy the playing animation.
         const sectionsToUpdate = [
           '.items-category', 
-          '.pagination'
+          '.pagination-wrapper'
         ];
 
         sectionsToUpdate.forEach(selector => {
