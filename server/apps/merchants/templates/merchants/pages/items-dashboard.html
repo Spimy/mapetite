@@ -1,6 +1,12 @@
 {% extends "merchants/dashboard.html" %}
 {% load static %}
 
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'merchants/css/pages/items-dashboard.css' %}" />
+{% endblock styles %}
+
 {% comment %} Page Meta {% endcomment %}
 {% block title %}
   Items - {{ store.business_name }}
@@ -38,42 +44,59 @@
     </div>
   </div>
 
-  {% if items|length == 0 %}
-    <form action="" method="post">
-      <h4>No items found. Start by adding your first item category.</h4>
+  <nav class="items-tabs" aria-label="Category filter">
+    <a class="items-tabs__tab"
+       href="{% url 'merchants:dashboard_items' store_index=current_index %}"
+       {% if not selected_category %}aria-current="page"{% endif %}>All Items</a>
 
-      {% csrf_token %}
-      {{ category_form.as_p }}
-
-      <input type="hidden" name="current_store" value="{{ store.id }}" />
-      <button type="submit" name="submit_category">Create Category</button>
-    </form>
-  {% endif %}
-
-  <div class="items-tabs">
-    <button class="items-tabs__tab is-active" data-target="all">All Items</button>
     {% for category in categories %}
-      <button class="items-tabs__tab" data-target="category-{{ category.id }}">{{ category.name }}</button>
+      <a class="items-tabs__tab"
+         href="?category={{ category.name }}"
+         {% if selected_category == category.name %}aria-current="page"{% endif %}>{{ category.name }}</a>
     {% endfor %}
-  </div>
+  </nav>
 
-  <!-- All Items Section -->
-  <section id="all" class="items-category">
-    <ul>
-      {% for item in items %}<li>{{ item.name }} - RM{{ item.price }}</li>{% endfor %}
+  <!-- Display paginated items -->
+  <section class="items-category">
+    <ul role="list" class="items-category__list">
+      {% for item in items %}
+        <li class="items-category__item">{{ item.name }} - RM{{ item.price }}</li>
+      {% empty %}
+        <div class="items-category__empty-state">
+          {% if paginator.count == 0 %}
+            <h4>No items found</h4>
+            <p>
+              {% if selected_category %}
+                There are no items in the "{{ selected_category }}" category yet.
+              {% else %}
+                Your store doesn't have any items yet.
+              {% endif %}
+            </p>
+
+          {% else %}
+            <h4>Page {{ page_obj.number }} Not Found</h4>
+            <p>There are no items on this page.</p>
+          {% endif %}
+
+        </div>
+      {% endfor %}
     </ul>
   </section>
 
-  <!-- Categorised Items Sections -->
-  {% for category in categories %}
-    <section id="category-{{ category.id }}" class="items-category">
-      <ul>
-        {% for item in items %}
-          {% if item.category.id == category.id %}<li>{{ item.name }} - RM {{ item.price }}</li>{% endif %}
-        {% endfor %}
-      </ul>
-    </section>
-  {% endfor %}
+  <!-- Pagination controls -->
+  <nav class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}">First</a>
+      <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
+    {% endif %}
+
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Last</a>
+    {% endif %}
+  </nav>
 
   <div id="add-item-popover" class="items-popover" popover>
     <div class="items-popover__header">
@@ -121,41 +144,4 @@
       </div>
     </form>
   </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const tabs = document.querySelectorAll('.items-tabs__tab');
-      const sections = document.querySelectorAll('.items-category');
-
-      tabs.forEach(tab => {
-        tab.addEventListener('click', function(e) {
-          e.preventDefault();
-          const target = this.getAttribute('data-target');
-          console.log('Tab clicked, target:', target);
-          
-          // Remove active state from all tabs
-          tabs.forEach(t => t.classList.remove('is-active'));
-          
-          // Add active state to clicked tab
-          this.classList.add('is-active');
-          
-          // Hide all sections
-          sections.forEach(section => {
-            if (section.id === target) {
-              section.style.display = 'block';
-              section.classList.add('active');
-            } else {
-              section.style.display = 'none';
-              section.classList.remove('active');
-            }
-          });
-        });
-      });
-
-      // Show first tab on load
-      if (tabs.length > 0) {
-        tabs[0].click();
-      }
-    });
-  </script>
 {% endblock dashboard_content %}

@@ -7,6 +7,7 @@ from django.views.generic import ListView, RedirectView, TemplateView, View
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
+from apps.merchants.paginator import Template404Paginator
 from apps.users.mixins import MerchantRequiredMixin
 from .models import StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
 from .forms import ItemCategoryForm, StoreItemForm
@@ -108,8 +109,10 @@ class DashboardView(MerchantRequiredMixin, TemplateView):
 
 class DashboardItemsView(MerchantRequiredMixin, ListView):
     template_name = "merchants/pages/items-dashboard.html"
-    model = StoreItem  # Changed from ItemCategory
+    model = StoreItem
     context_object_name = "items"
+    paginator_class = Template404Paginator
+    paginate_by = 2
     
     def get_queryset(self):
         store_index = self.kwargs.get("store_index", 0)
@@ -122,7 +125,13 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
         except IndexError:
             raise Http404("Invalid merchant access index portfolio scale.")
         
-        return StoreItem.objects.filter(store=active_store).select_related("category").order_by("category__display_order", "category__name", "name")
+        queryset = StoreItem.objects.filter(store=active_store).select_related("category").order_by("category__display_order", "category__name", "name")
+        
+        category_param = self.request.GET.get('category')
+        if category_param:
+            queryset = queryset.filter(category__name=category_param)
+        
+        return queryset
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -135,6 +144,8 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
             active_store = stores[store_index]
         except IndexError:
             raise Http404("Invalid merchant access index portfolio scale.")
+       
+        category_param = self.request.GET.get('category')
         
         context.update({
             "store": active_store,
@@ -145,7 +156,8 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
             "has_next": (store_index + 1) < stores.count(),
             "has_prev": store_index > 0,
             "item_form": StoreItemForm(),
-            "category_form": ItemCategoryForm()
+            "category_form": ItemCategoryForm(),
+            "selected_category": category_param,
         })
         return context
     
