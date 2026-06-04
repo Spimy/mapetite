@@ -28,17 +28,6 @@
     background-color: var(--color-white);
     color: var(--color-neutral);
   }
-
-  .items-page-header__add-button {
-    border: none;
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    font: inherit;
-    font-weight: var(--font-weight-label);
-    cursor: pointer;
-    background-color: var(--color-primary);
-    color: var(--color-white);
-  }
 }
 
 .items-tabs {
@@ -79,6 +68,25 @@
     height: 3px;
     background-color: var(--color-primary);
     pointer-events: none;
+  }
+
+  .items-tabs__add-btn {
+    display: block;
+    margin-bottom: 0.5rem;
+    margin-left: 0.5rem;
+    padding: 0.25rem;
+    border: none;
+    background: transparent;
+    color: var(--color-grey-400); 
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover,
+    &:focus-visible {
+      outline: none;
+      color: var(--color-primary);
+      transform: scale(1.1);
+    }
   }
 }
 
