@@ -187,6 +187,7 @@
   border-bottom: 1px solid var(--color-grey-100);
   margin-bottom: 1.5rem;
   font-weight: var(--font-weight-heading);
+  position: relative;
 
   .items-tabs__tab {
     padding: 0.75rem 0;
@@ -197,10 +198,25 @@
     background: none;
     border: none;
     border-bottom: 3px solid transparent;
+    transition: color 0.2s ease;
 
-    &.is-active {
+    &[aria-current="page"] {
       color: var(--color-primary);
       border-bottom-color: var(--color-primary);
     }
+  }
+
+  /* CSS for when JavaScript is enabled for progressive enhancement */
+  &.js-enhanced .items-tabs__tab {
+    border-bottom-color: transparent !important; /* Hide native borders */
+  }
+
+  .items-tabs__indicator {
+    position: absolute;
+    bottom: -1px; /* Overlap the grey border slightly */
+    left: 0;
+    height: 3px;
+    background-color: var(--color-primary);
+    pointer-events: none; /* Prevents the line from blocking clicks */
   }
 }

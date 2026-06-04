@@ -144,4 +144,132 @@
       </div>
     </form>
   </div>
+
+  {% comment %} Used for progressive enhancement {% endcomment %}
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const SELECTORS = '.items-tabs__tab, .pagination a';
+    const tabsContainer = document.querySelector('.items-tabs');
+    let indicator = null;
+
+    if (tabsContainer) {
+      tabsContainer.classList.add('js-enhanced');
+      
+      indicator = document.createElement('div');
+      indicator.className = 'items-tabs__indicator';
+      tabsContainer.appendChild(indicator);
+      
+      const initialActiveTab = tabsContainer.querySelector('[aria-current="page"]');
+      updateIndicator(initialActiveTab, true); 
+    }
+
+    // The updated animation function
+    function updateIndicator(activeTab, isInstant = false) {
+      if (!activeTab || !indicator || !tabsContainer) return;
+      
+      const containerRect = tabsContainer.getBoundingClientRect();
+      const tabRect = activeTab.getBoundingClientRect();
+      
+      // Where the indicator needs to go
+      const targetLeft = tabRect.left - containerRect.left + tabsContainer.scrollLeft;
+      const targetWidth = tabRect.width;
+
+      if (isInstant) {
+        // Apply instantly without animation (for page load and window resizing)
+        indicator.style.transform = `translateX(${targetLeft}px)`;
+        indicator.style.width = `${targetWidth}px`;
+        // Save current coordinates to dataset for the next click
+        indicator.dataset.left = targetLeft;
+        indicator.dataset.width = targetWidth;
+        return;
+      }
+
+      // Where the indicator currently is
+      const currentLeft = parseFloat(indicator.dataset.left) || 0;
+      const currentWidth = parseFloat(indicator.dataset.width) || 0;
+
+      // Calculate the bounding box bridging both tabs
+      const minLeft = Math.min(currentLeft, targetLeft);
+      const maxRight = Math.max(currentLeft + currentWidth, targetLeft + targetWidth);
+      const stretchedWidth = maxRight - minLeft;
+
+      // Start the Caterpillar animation
+      indicator.animate([
+        // Start at current size/position
+        { transform: `translateX(${currentLeft}px)`, width: `${currentWidth}px` },
+        
+        // Stretch to cover the gap between both tabs
+        { transform: `translateX(${minLeft}px)`, width: `${stretchedWidth}px`, offset: 0.4 }, 
+        
+        // Snap into the new target size/position
+        { transform: `translateX(${targetLeft}px)`, width: `${targetWidth}px` }
+      ], {
+        duration: 350,
+        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        fill: 'forwards'
+      });
+
+      // Update the dataset so the next click starts from this new position
+      indicator.dataset.left = targetLeft;
+      indicator.dataset.width = targetWidth;
+    }
+
+    // Keep indicator aligned instantly if the user resizes the window
+    window.addEventListener('resize', () => {
+      updateIndicator(document.querySelector('.items-tabs__tab[aria-current="page"]'), true);
+    });
+
+    // Intercept Navigation
+    document.body.addEventListener('click', async (e) => {
+      const link = e.target.closest(SELECTORS);
+      if (!link) return;
+
+      e.preventDefault();
+      const url = link.href;
+
+      // If they clicked a tab, move the indicator immediately 
+      // before waiting for the server response
+      if (link.classList.contains('items-tabs__tab')) {
+        document.querySelectorAll('.items-tabs__tab').forEach(t => t.removeAttribute('aria-current'));
+        link.setAttribute('aria-current', 'page');
+        updateIndicator(link);
+      }
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const htmlString = await response.text();
+        const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+
+        // Deliberately excluded '.items-tabs' from this list for now, 
+        // otherwise replacing the DOM node would destroy the playing animation.
+        const sectionsToUpdate = [
+          '.items-category', 
+          '.pagination'
+        ];
+
+        sectionsToUpdate.forEach(selector => {
+          const currentElement = document.querySelector(selector);
+          const newElement = doc.querySelector(selector);
+          if (currentElement && newElement) {
+            currentElement.outerHTML = newElement.outerHTML; 
+          }
+        });
+
+        // Update the URL without reloading the page
+        history.pushState(null, '', url);
+
+      } catch (error) {
+        console.error('Progressive enhancement failed:', error);
+        window.location.href = url;
+      }
+    });
+
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', () => {
+      window.location.reload(); 
+    });
+  });
+  </script>
 {% endblock dashboard_content %}
