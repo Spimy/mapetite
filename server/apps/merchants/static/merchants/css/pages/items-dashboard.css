@@ -426,3 +426,30 @@
     }
   }
 }
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* --- Skeleton Card Styles --- */
+.item-card.is-skeleton {
+  pointer-events: none;
+  box-shadow: none;
+  
+  .item-card__image-wrap {
+    background-color: color-mix(in srgb, var(--color-grey-400) 20%, var(--color-white));
+    animation: skeleton-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .skeleton-block {
+    background-color: color-mix(in srgb, var(--color-grey-400) 20%, var(--color-white));
+    border-radius: 0.25rem;
+    animation: skeleton-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .skeleton-title { height: 1.25rem; width: 70%; margin-bottom: 0.25rem; }
+  .skeleton-category { height: 0.875rem; width: 40%; margin-bottom: 1rem; }
+  .skeleton-price { height: 1.25rem; width: 30%; }
+  .skeleton-actions { height: 2.25rem; width: 100%; margin-top: auto; }
+}

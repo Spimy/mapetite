@@ -272,6 +272,29 @@
         updateIndicator(link);
       }
 
+      const listContainer = document.querySelector('.items-category__list');
+      if (listContainer) {
+        // Create the HTML for a single skeleton card
+        const skeletonCardHTML = `
+          <li class="item-card is-skeleton">
+            <div class="item-card__image-wrap"></div>
+            <div class="item-card__content">
+              <div class="skeleton-block skeleton-title"></div>
+              <div class="skeleton-block skeleton-category"></div>
+              <div class="skeleton-block skeleton-price"></div>
+              <div class="item-card__actions">
+                 <div class="skeleton-block skeleton-actions"></div>
+              </div>
+            </div>
+          </li>
+        `;
+        // Inject 6 skeleton cards to fill out a standard grid layout
+        listContainer.innerHTML = Array(6).fill(skeletonCardHTML).join('');
+        
+        // Dim the pagination links while loading
+        document.querySelectorAll('.pagination a').forEach(a => a.style.opacity = '0.5');
+      }
+
       try {
         const response = await fetch(url);
         if (!response.ok) throw new Error('Network response was not ok');
