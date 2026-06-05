@@ -17,6 +17,8 @@ import '../features/budget/screens/transactions_screen.dart';
 import '../features/recipes/screens/recipe_listing_screen.dart';
 import '../features/recipes/screens/recipe_detail_screen.dart';
 import '../features/grocery/screens/grocery_list_screen.dart';
+import '../features/restaurants/screens/restaurant_listing_screen.dart';
+import '../features/restaurants/screens/restaurant_detail_screen.dart';
 
 abstract class AppRoutes {
   static const String splash = '/';
@@ -146,7 +148,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.dineIn,
-      builder: (context, state) => const _WipScreen(label: 'Dine-In Feed'),
+      builder: (context, state) => const RestaurantListingScreen(),
     ),
     GoRoute(
       path: AppRoutes.cookIn,
@@ -154,12 +156,12 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.restaurants,
-      builder: (context, state) => const _WipScreen(label: 'Restaurants'),
+      builder: (context, state) => const RestaurantListingScreen(),
       routes: [
         GoRoute(
           path: ':id',
-          builder: (context, state) => _WipScreen(
-            label: 'Restaurant — ${state.pathParameters['id'] ?? ''}',
+          builder: (context, state) => RestaurantDetailScreen(
+            restaurantId: state.pathParameters['id'] ?? '',
           ),
         ),
       ],
