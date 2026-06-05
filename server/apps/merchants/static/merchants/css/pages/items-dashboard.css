@@ -292,14 +292,19 @@
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
 
+    .item-card__toggle-icon-off,
+    .item-card__toggle-icon-on {
+      line-height: 0;
+      
+      svg {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+    }
+
     &:hover {
       background-color: var(--color-border);
       color: var(--color-neutral);
-    }
-
-    svg {
-      width: 1.25rem;
-      height: 1.25rem;
     }
   }
 }

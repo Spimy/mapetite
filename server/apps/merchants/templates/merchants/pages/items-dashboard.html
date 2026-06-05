@@ -90,7 +90,6 @@
     <ul role="list" class="items-category__list">
       {% for item in items %}
         <li class="item-card {% if not item.is_active %}item-card--hidden{% endif %}">
-
           <div class="item-card__image-wrap">
             {% if not item.is_active %}<span class="item-card__status-badge">Hidden</span>{% endif %}
 
@@ -131,18 +130,21 @@
             <div class="item-card__actions">
               <button type="button" class="item-card__action-btn" aria-label="Edit item">{% include "icons/edit.html" %}</button>
 
-              <button type="button"
-                      class="item-card__action-btn"
-                      aria-label="Toggle visibility">
-                {% if item.is_active %}
-                  {% include "icons/eye-on.html" %}
-                {% else %}
-                  {% include "icons/eye-off.html" %}
-                {% endif %}
-              </button>
+              <form method="post" action="." class="item-card__toggle-form">
+                {% csrf_token %}
+                <input type="hidden" name="toggle_item" value="{{ item.id }}" />
+
+                <button type="submit"
+                        class="item-card__action-btn"
+                        aria-label="Toggle visibility">
+                  <span class="item-card__toggle-icon-on"
+                        {% if not item.is_active %}hidden{% endif %}>{% include "icons/eye-on.html" %}</span>
+                  <span class="item-card__toggle-icon-off"
+                        {% if item.is_active %}hidden{% endif %}>{% include "icons/eye-off.html" %}</span>
+                </button>
+              </form>
             </div>
           </div>
-
         </li>
       {% empty %}
         <div class="items-category__empty-state">
@@ -413,6 +415,7 @@
       initTabSwitch();
       initSearch();
       initImageUpload();
+      initItemToggles();
     });
 
     function initTabSwitch() {
@@ -565,7 +568,6 @@
 
       let debounceTimer;
 
-      // 1. Listen for typing in the search bar
       searchInput.addEventListener('input', (e) => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
@@ -573,14 +575,12 @@
         }, 400);
       });
 
-      // 2. Listen for "Enter" on the search bar
       searchForm.addEventListener('submit', (e) => {
         e.preventDefault();
         clearTimeout(debounceTimer);
         triggerSearchFetch();
       });
 
-      // 3. Listen for "Jump to Page" form submissions
       document.body.addEventListener('submit', async (e) => {
         const jumpForm = e.target.closest('.pagination__jump');
         if (!jumpForm) return;
@@ -645,7 +645,7 @@
 
         const targetUrl = url.toString();
 
-        // UI Synchronization: Force the highlights back to "All Items" tab 
+        // Force the highlights back to "All Items" tab 
         const tabs = document.querySelectorAll('.items-tabs__tab');
         if (tabs.length > 0) {
           tabs.forEach(t => t.removeAttribute('aria-current'));
@@ -731,6 +731,66 @@
             dropzone.style.padding = '';
           }
         });
+      });
+    }
+
+    function initItemToggles() {
+      document.body.addEventListener('submit', async (e) => {
+        const toggleForm = e.target.closest('.item-card__toggle-form');
+        if (!toggleForm) return;
+
+        e.preventDefault();
+
+        const card = toggleForm.closest('.item-card');
+        const iconOn = toggleForm.querySelector('.item-card__toggle-icon-on');
+        const iconOff = toggleForm.querySelector('.item-card__toggle-icon-off');
+        const imageWrap = card.querySelector('.item-card__image-wrap');
+
+        // Toggle the grey-out class
+        card.classList.toggle('item-card--hidden');
+
+        // Swap the icons based on the new state
+        const isNowHidden = card.classList.contains('item-card--hidden');
+        if (isNowHidden) {
+          iconOn.hidden = true;
+          iconOff.hidden = false;
+          
+          // Inject the "Hidden" badge instantly if it doesn't exist
+          if (!card.querySelector('.item-card__status-badge')) {
+            imageWrap.insertAdjacentHTML('afterbegin', '<span class="item-card__status-badge">Hidden</span>');
+          }
+        } else {
+          iconOn.hidden = false;
+          iconOff.hidden = true;
+          
+          // Remove the "Hidden" badge
+          const badge = card.querySelector('.item-card__status-badge');
+          if (badge) badge.remove();
+        }
+
+        try {
+          const formData = new FormData(toggleForm);
+          
+          // Grab the current store ID from the hidden input in your "Add Item" popover 
+          // to satisfy the View's security check
+          const currentStoreId = document.querySelector('input[name="current_store"]')?.value;
+          if (currentStoreId) formData.append('current_store', currentStoreId);
+
+          const response = await fetch(toggleForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+
+          if (!response.ok) throw new Error('Failed to toggle item state.');
+
+        } catch (error) {
+          console.error('Toggle failed, reverting UI:', error);
+          // If the server crashes or the network drops, reload the page to snap the UI back to the actual state from the server
+          window.location.reload();
+        }
       });
     }
   </script>

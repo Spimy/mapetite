@@ -269,6 +269,16 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
                 return redirect('merchants:dashboard_items', store_index=kwargs.get("store_index", 0))
             else:
                 return self.render_to_response(self.get_context_data(item_form=item_form))
+            
+        elif 'toggle_item' in request.POST:
+            active_store = get_object_or_404(StoreProfile, id=request.POST.get("current_store", kwargs.get("store_index", 0)))
+            item_id = request.POST.get('toggle_item')
+            
+            item = get_object_or_404(StoreItem, id=item_id, store=active_store)
+            item.is_active = not item.is_active
+            item.save(update_fields=['is_active'])
+            
+            return redirect('merchants:dashboard_items', store_index=kwargs.get("store_index", 0))
 
         # Fallback if neither button was detected
         return self.get(request, *args, **kwargs)
