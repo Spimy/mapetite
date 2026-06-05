@@ -32,7 +32,9 @@ void main() {
   group('ModeChoiceSheet', () {
     Future<void> openSheet(WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp.router(routerConfig: _testRouter()),
+        ProviderScope(
+          child: MaterialApp.router(routerConfig: _testRouter()),
+        ),
       );
       await tester.pumpAndSettle();
       await tester.tap(find.text('open'));

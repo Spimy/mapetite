@@ -13,14 +13,12 @@ void showModeChoiceSheet(BuildContext context) {
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
-    builder: (_) => _ModeChoiceSheet(parentContext: context),
+    builder: (context) => const _ModeChoiceSheet(),
   );
 }
 
 class _ModeChoiceSheet extends StatelessWidget {
-  final BuildContext parentContext;
-
-  const _ModeChoiceSheet({required this.parentContext});
+  const _ModeChoiceSheet();
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +30,8 @@ class _ModeChoiceSheet extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           // Drag handle
           Container(
-            width: 32,
-            height: 4,
+            width: AppSpacing.xxxl,
+            height: AppSpacing.xs,
             decoration: BoxDecoration(
               color: AppColors.border,
               borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
@@ -69,7 +67,7 @@ class _ModeChoiceSheet extends StatelessWidget {
               borderWidth: 2,
               onTap: () {
                 Navigator.of(context).pop();
-                parentContext.go(AppRoutes.dineIn);
+                context.go(AppRoutes.dineIn);
               },
             ),
           ),
@@ -87,7 +85,7 @@ class _ModeChoiceSheet extends StatelessWidget {
               borderWidth: 1,
               onTap: () {
                 Navigator.of(context).pop();
-                parentContext.go(AppRoutes.cookIn);
+                context.go(AppRoutes.cookIn);
               },
             ),
           ),
@@ -129,42 +127,47 @@ class _ModeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          border: Border.all(color: borderColor, width: borderWidth),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: AppSpacing.avatarMd,
-              height: AppSpacing.avatarMd,
-              decoration: BoxDecoration(
-                color: iconBg,
-                shape: BoxShape.circle,
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: borderColor, width: borderWidth),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: AppSpacing.avatarMd,
+                height: AppSpacing.avatarMd,
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: AppSpacing.iconXl, color: iconColor),
               ),
-              child: Icon(icon, size: 28, color: iconColor),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: AppTypography.headline2),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: AppTypography.body2.copyWith(color: AppColors.neutral600),
-                  ),
-                ],
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: AppTypography.headline2),
+                    const SizedBox(height: AppSpacing.xxs), // 2dp micro-gap
+                    Text(
+                      subtitle,
+                      style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const Icon(Icons.chevron_right, color: AppColors.neutral400),
-          ],
+              const Icon(Icons.chevron_right, color: AppColors.neutral400),
+            ],
+          ),
         ),
       ),
     );
