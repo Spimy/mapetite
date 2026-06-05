@@ -165,7 +165,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
           const SizedBox(height: AppSpacing.md),
           GestureDetector(
             key: const Key('top_pick_card'),
-            onTap: () => context.go(AppRoutes.dineIn),
+            onTap: () => context.push(AppRoutes.dineIn),
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.white,
@@ -206,7 +206,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
             children: [
               Text('Cook Something?', style: AppTypography.headline3),
               TextButton(
-                onPressed: () => context.go(AppRoutes.cookIn),
+                onPressed: () => context.push(AppRoutes.cookIn),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.secondary,
                   padding: EdgeInsets.zero,
@@ -235,7 +235,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
               final r = HomeFeedMocks.cookInRecipes[i];
               return RecipeHorizontalCard(
                 recipe: r,
-                onTap: () => context.go(AppRoutes.cookIn),
+                onTap: () => context.push(AppRoutes.cookIn),
               );
             },
           ),

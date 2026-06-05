@@ -67,7 +67,7 @@ class _ModeChoiceSheet extends StatelessWidget {
               borderWidth: 2,
               onTap: () {
                 Navigator.of(context).pop();
-                context.go(AppRoutes.dineIn);
+                context.push(AppRoutes.dineIn);
               },
             ),
           ),
@@ -85,7 +85,7 @@ class _ModeChoiceSheet extends StatelessWidget {
               borderWidth: 1,
               onTap: () {
                 Navigator.of(context).pop();
-                context.go(AppRoutes.cookIn);
+                context.push(AppRoutes.cookIn);
               },
             ),
           ),
