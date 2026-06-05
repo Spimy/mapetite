@@ -25,6 +25,11 @@ class StoreProfile(gis_models.Model):
 
     business_name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    
+    # Halal and vegan are restaurant level attributes rather than item level because if a restaurant is halal-certified, then all its food items are halal.
+    # Similarly, if a restaurant is fully vegan, then all its food items are vegan.
+    halal = models.BooleanField(default=False)
+    vegan = models.BooleanField(default=False)
 
     location = gis_models.PointField(geography=True, null=True, blank=True)
 
@@ -143,8 +148,6 @@ class StoreItem(models.Model):
     calories = models.PositiveIntegerField(null=True, blank=True)
 
     # Dietary attributes
-    halal = models.BooleanField(default=False)
-    vegan = models.BooleanField(default=False)
     vegetarian = models.BooleanField(default=False)
     organic = models.BooleanField(default=False)
     gluten_free = models.BooleanField(default=False)

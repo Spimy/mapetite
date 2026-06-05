@@ -6,8 +6,6 @@ from .models import ItemCategory, StoreItem
 BASIC_FIELDS = ["name", "description", "price", "category", "stock_status"]
 NUTRITION_FIELDS = ["calories"]
 DIETARY_FIELDS = [
-    "halal",
-    "vegan",
     "vegetarian",
     "organic",
     "gluten_free",
