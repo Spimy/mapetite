@@ -284,6 +284,7 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
         # Fallback if neither button was detected
         return self.get(request, *args, **kwargs)
 
+
 class DashboardItemUpdateView(MerchantRequiredMixin, UpdateView):
     model = StoreItem
     form_class = StoreItemForm
@@ -301,6 +302,22 @@ class DashboardItemUpdateView(MerchantRequiredMixin, UpdateView):
             raise Http404("Invalid merchant access index.")
             
         return super().get_queryset().filter(store=active_store)
+    
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+        except Http404:
+            self.object = None
+            return self.render_to_response(self.get_context_data(item_not_found=True))
+        return super().get(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+        except Http404:
+            self.object = None
+            return self.render_to_response(self.get_context_data(item_not_found=True))
+        return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse('merchants:dashboard_items', kwargs={'store_index': self.kwargs.get("store_index", 0)})
@@ -322,6 +339,7 @@ class DashboardItemUpdateView(MerchantRequiredMixin, UpdateView):
         })
         
         return context
+
 
 class OnboardingView(MerchantRequiredMixin, TemplateView):
     template_name = "merchants/onboarding.html"

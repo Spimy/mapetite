@@ -25,7 +25,13 @@
   <section class="item-edit-page">
     <div class="items-page-header">
       <div class="items-page-header__title-wrap">
-        <h3 class="items-page-header__title">Edit Item: {{ object.name }}</h3>
+        <h3 class="items-page-header__title">
+          {% if item_not_found %}
+            Item Not Found
+          {% else %}
+            Edit Item: {{ object.name }}
+          {% endif %}
+        </h3>
       </div>
       <div class="items-page-header__actions">
         <a href="{% url 'merchants:dashboard_items' store_index=current_index %}"
@@ -34,77 +40,93 @@
     </div>
 
     <div class="item-edit-page__card">
-      <form class="items-form" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="hidden" name="current_store" value="{{ object.store.id }}" />
+      {% if item_not_found %}
+        <div class="items-category__empty-state">
+          <h4>We couldn't find this item</h4>
+          <p>The item you are trying to edit does not exist, belongs to another store, or has been deleted.</p>
+          <br />
+          <a href="{% url 'merchants:dashboard_items' store_index=current_index %}">Return to
+            {% if store.merchant_type == store.MerchantType.RESTAURANT %}
+              Menu
+            {% elif store.merchant_type == store.MerchantType.GROCERY %}
+              Products
+            {% endif %}
+          </a>
+        </div>
 
-        {% for section_title, fields in form.grouped_fields %}
-          <fieldset class="items-form-group">
-            {% if section_title != "" %}<legend class="items-form-group__legend">{{ section_title }}</legend>{% endif %}
+      {% else %}
+        <form class="items-form" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="current_store" value="{{ object.store.id }}" />
 
-            {% for field in fields %}
-              {% if field.name == "thumbnail" %}
-                <div class="items-form-group__field">
-                  <div class="items-form-group__file-dropzone {% if object.thumbnail %}items-form-group__file-dropzone--has-file{% endif %}">
-                    <div class="file-dropzone-content">
+          {% for section_title, fields in form.grouped_fields %}
+            <fieldset class="items-form-group">
+              {% if section_title != "" %}<legend class="items-form-group__legend">{{ section_title }}</legend>{% endif %}
 
-                      <div class="file-dropzone-placeholder"
-                           style="{% if object.thumbnail %}display: none;
-                                  {% endif %}">
-                        {% include "icons/upload.html" %}
-                        <span class="upload-title">Upload new image</span>
-                        <span class="upload-subtitle">JPG or PNG, max 5MB</span>
+              {% for field in fields %}
+                {% if field.name == "thumbnail" %}
+                  <div class="items-form-group__field">
+                    <div class="items-form-group__file-dropzone {% if object.thumbnail %}items-form-group__file-dropzone--has-file{% endif %}">
+                      <div class="file-dropzone-content">
+
+                        <div class="file-dropzone-placeholder"
+                             style="{% if object.thumbnail %}display: none;
+                                    {% endif %}">
+                          {% include "icons/upload.html" %}
+                          <span class="upload-title">Upload new image</span>
+                          <span class="upload-subtitle">JPG or PNG, max 5MB</span>
+                        </div>
+
+                        <img class="file-dropzone-preview"
+                             alt="Image preview"
+                             width="100"
+                             height="100"
+                             {% if object.thumbnail %}src="{{ object.thumbnail.url }}" style="display: block;"{% endif %} />
+
                       </div>
-
-                      <img class="file-dropzone-preview"
-                           alt="Image preview"
-                           width="100"
-                           height="100"
-                           {% if object.thumbnail %}src="{{ object.thumbnail.url }}" style="display: block;"{% endif %} />
-
-                    </div>
-                    {{ field }}
-                  </div>
-                  {{ field.errors }}
-                </div>
-
-              {% elif field.name == "is_active" %}
-                <div class="items-form-group__field items-form-group__toggle-wrap">
-                  <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                  {{ field }}
-                  {{ field.errors }}
-                </div>
-
-              {% else %}
-                <div class="items-form-group__field">
-                  <label class="items-form-group__label" for="{{ field.id_for_label }}">
-                    {{ field.label }}
-                    {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
-                  </label>
-
-                  {% if field.name == "price" %}
-                    <div class="items-form-group__input-prefix">
-                      <span class="items-form-group__currency">RM</span>
                       {{ field }}
                     </div>
-                  {% else %}
-                    <div class="items-form-group__control">{{ field }}</div>
-                  {% endif %}
+                    {{ field.errors }}
+                  </div>
 
-                  {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
-                  {{ field.errors }}
-                </div>
-              {% endif %}
-            {% endfor %}
-          </fieldset>
-        {% endfor %}
+                {% elif field.name == "is_active" %}
+                  <div class="items-form-group__field items-form-group__toggle-wrap">
+                    <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                  </div>
 
-        <div class="item-edit-page__actions">
-          <button class="items-popover__submit-button" type="submit">Save Changes</button>
-          <a href="{% url 'merchants:dashboard_items' store_index=current_index %}"
-             class="items-popover__cancel-button item-edit-page__cancel-link">Cancel</a>
-        </div>
-      </form>
+                {% else %}
+                  <div class="items-form-group__field">
+                    <label class="items-form-group__label" for="{{ field.id_for_label }}">
+                      {{ field.label }}
+                      {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
+                    </label>
+
+                    {% if field.name == "price" %}
+                      <div class="items-form-group__input-prefix">
+                        <span class="items-form-group__currency">RM</span>
+                        {{ field }}
+                      </div>
+                    {% else %}
+                      <div class="items-form-group__control">{{ field }}</div>
+                    {% endif %}
+
+                    {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
+                    {{ field.errors }}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </fieldset>
+          {% endfor %}
+
+          <div class="item-edit-page__actions">
+            <button class="items-popover__submit-button" type="submit">Save Changes</button>
+            <a href="{% url 'merchants:dashboard_items' store_index=current_index %}"
+               class="items-popover__cancel-button item-edit-page__cancel-link">Cancel</a>
+          </div>
+        </form>
+      {% endif %}
     </div>
   </section>
 
