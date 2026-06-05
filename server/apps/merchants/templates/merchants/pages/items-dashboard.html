@@ -128,10 +128,10 @@
             {% if item.calories %}<span class="item-card__meta">{{ item.calories }} kcal</span>{% endif %}
 
             <div class="item-card__actions">
-              <a href="{% url 'merchants:edit_item' store_index=current_index pk=item.id %}"
+              <a href="{% url 'merchants:dashboard_edit_item' store_index=current_index pk=item.id %}"
                  class="item-card__action-btn js-edit-item-btn"
                  aria-label="Edit item"
-                 data-url="{% url 'merchants:edit_item' store_index=current_index pk=item.id %}"
+                 data-url="{% url 'merchants:dashboard_edit_item' store_index=current_index pk=item.id %}"
                  data-id="{{ item.id }}"
                  data-name="{{ item.name }}"
                  data-description="{{ item.description }}"

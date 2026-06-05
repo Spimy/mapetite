@@ -53,7 +53,7 @@
           <li class="sidebar__nav-item">
             <a class="sidebar__nav-link"
                href="{% url 'merchants:dashboard_items' current_index %}"
-               {% if request.resolver_match.view_name == 'merchants:dashboard_items' %}aria-current="page"{% endif %}>
+               {% if request.resolver_match.view_name == 'merchants:dashboard_items' or request.resolver_match.view_name == 'merchants:dashboard_edit_item' %}aria-current="page"{% endif %}>
               <span class="sidebar__nav-icon">{% include "icons/list.html" %}</span>
               <span class="sidebar__nav-text">
                 {% if store.merchant_type == store.MerchantType.RESTAURANT %}
