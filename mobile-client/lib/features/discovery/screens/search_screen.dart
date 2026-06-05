@@ -510,7 +510,7 @@ class _AppSliderThumb extends SliderComponentShape {
         ..color = Colors.black.withValues(alpha: 0.12)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
     );
-    canvas.drawCircle(center, 12, Paint()..color = Colors.white);
+    canvas.drawCircle(center, 12, Paint()..color = AppColors.white);
     canvas.drawCircle(
       center,
       12,
