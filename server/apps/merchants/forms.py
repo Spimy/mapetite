@@ -43,6 +43,7 @@ class StoreItemForm(forms.ModelForm):
           "description": forms.Textarea(attrs={"placeholder": "Brief description..."}),
           "price": forms.NumberInput(attrs={"placeholder": "0.00"}),
           "calories": forms.NumberInput(attrs={"placeholder": "kcal"}),
+          "thumbnail": forms.FileInput(),
         }
 
     def __init__(self, *args, **kwargs):

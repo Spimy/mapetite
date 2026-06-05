@@ -118,7 +118,7 @@
 
             <div class="item-card__tags">
               {% if item.organic %}<span class="item-card__tag item-card__tag--organic">Organic</span>{% endif %}
-              {% if item.vegan %}<span class="item-card__tag item-card__tag--vegan">Vegan</span>{% endif %}
+              {% if item.vegetarian %}<span class="item-card__tag item-card__tag--vegetarian">Vegetarian</span>{% endif %}
               {% if item.gluten_free %}<span class="item-card__tag item-card__tag--gluten-free">Gluten-Free</span>{% endif %}
               {% if item.dairy_free %}<span class="item-card__tag item-card__tag--dairy-free">Dairy-Free</span>{% endif %}
               {% if item.contains_nuts %}<span class="item-card__tag item-card__tag--contains-nuts">Contain Nuts</span>{% endif %}
@@ -128,7 +128,28 @@
             {% if item.calories %}<span class="item-card__meta">{{ item.calories }} kcal</span>{% endif %}
 
             <div class="item-card__actions">
-              <button type="button" class="item-card__action-btn" aria-label="Edit item">{% include "icons/edit.html" %}</button>
+              <a href="{% url 'merchants:edit_item' store_index=current_index pk=item.id %}"
+                 class="item-card__action-btn js-edit-item-btn"
+                 aria-label="Edit item"
+                 data-url="{% url 'merchants:edit_item' store_index=current_index pk=item.id %}"
+                 data-id="{{ item.id }}"
+                 data-name="{{ item.name }}"
+                 data-description="{{ item.description }}"
+                 data-price="{{ item.price }}"
+                 data-calories="{{ item.calories|default:'' }}"
+                 data-category="{{ item.category.id }}"
+                 data-stock-status="{{ item.stock_status }}"
+                 data-is-active="{{ item.is_active|yesno:'true,false' }}"
+                 data-organic="{{ item.organic|yesno:'true,false' }}"
+                 data-vegetarian="{{ item.vegetarian|yesno:'true,false' }}"
+                 data-gluten-free="{{ item.gluten_free|yesno:'true,false' }}"
+                 data-dairy-free="{{ item.dairy_free|yesno:'true,false' }}"
+                 data-contains-nuts="{{ item.contains_nuts|yesno:'true,false' }}"
+                 data-eco-packaging="{{ item.eco_packaging|yesno:'true,false' }}"
+                 data-locally-sourced="{{ item.locally_sourced|yesno:'true,false' }}"
+                 data-image-url="{% if item.thumbnail %}{{ item.thumbnail.url }}{% endif %}">
+                {% include "icons/edit.html" %}
+              </a>
 
               <form method="post" action="." class="item-card__toggle-form">
                 {% csrf_token %}
@@ -407,6 +428,80 @@
     </form>
   </div>
 
+  {% comment %} Edit Item Popover {% endcomment %}
+  <div id="edit-item-popover" class="items-popover" popover>
+    <div class="items-popover__header">
+      <h4 class="items-popover__title">Edit Item</h4>
+    </div>
+
+    <form class="items-popover__form"
+          method="post"
+          id="edit-item-form"
+          enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="edit_item_id" id="edit-item-id" />
+
+      {% for section_title, fields in edit_item_form.grouped_fields %}
+        <fieldset class="items-form-group">
+          {% if section_title != "" %}<legend class="items-form-group__legend">{{ section_title }}</legend>{% endif %}
+          {% for field in fields %}
+            {% if field.name == "thumbnail" %}
+              <div class="items-form-group__field">
+                <div class="items-form-group__file-dropzone">
+                  <div class="file-dropzone-content">
+                    <div class="file-dropzone-placeholder">
+                      {% include "icons/upload.html" %}
+                      <span class="upload-title">Upload new image</span>
+                      <span class="upload-subtitle">JPG or PNG, max 5MB</span>
+                    </div>
+                    <img class="file-dropzone-preview"
+                         alt="Image preview"
+                         width="100"
+                         height="100"
+                         hidden />
+                  </div>
+                  {{ field }}
+                </div>
+                {{ field.errors }}
+              </div>
+            {% elif field.name == "is_active" %}
+              <div class="items-form-group__field items-form-group__toggle-wrap">
+                <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+              </div>
+            {% else %}
+              <div class="items-form-group__field">
+                <label class="items-form-group__label" for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                  {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
+                </label>
+                {% if field.name == "price" %}
+                  <div class="items-form-group__input-prefix">
+                    <span class="items-form-group__currency">RM</span>
+                    {{ field }}
+                  </div>
+                {% else %}
+                  <div class="items-form-group__control">{{ field }}</div>
+                {% endif %}
+                {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
+                {{ field.errors }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </fieldset>
+      {% endfor %}
+
+      <div class="items-popover__actions">
+        <button class="items-popover__submit-button" type="submit">Save Changes</button>
+        <button class="items-popover__cancel-button"
+                type="button"
+                popovertarget="edit-item-popover"
+                popovertargetaction="hide">Cancel</button>
+      </div>
+    </form>
+  </div>
+
   {% comment %} Used for progressive enhancement {% endcomment %}
   <script>
     let updateTabIndicatorShared = null;
@@ -416,6 +511,7 @@
       initSearch();
       initImageUpload();
       initItemToggles();
+      initItemEditing();
     });
 
     function initTabSwitch() {
@@ -720,7 +816,7 @@
               placeholder.style.display = 'none';
               previewImage.src = e.target.result;
               previewImage.style.display = 'block';
-              dropzone.style.padding = '0.5rem'; 
+              dropzone.classList.add('items-form-group__file-dropzone--has-file');
             };
 
             reader.readAsDataURL(file);
@@ -728,7 +824,7 @@
             previewImage.src = '';
             previewImage.style.display = 'none';
             placeholder.style.display = 'flex';
-            dropzone.style.padding = '';
+            dropzone.classList.remove('items-form-group__file-dropzone--has-file');
           }
         });
       });
@@ -791,6 +887,77 @@
           // If the server crashes or the network drops, reload the page to snap the UI back to the actual state from the server
           window.location.reload();
         }
+      });
+    }
+
+    function initItemEditing() {
+      document.body.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.js-edit-item-btn');
+        if (!editBtn) return;
+
+        e.preventDefault(); 
+
+        const editForm = document.getElementById('edit-item-form');
+        const popover = document.getElementById('edit-item-popover');
+        
+        if (!editForm || !popover) {
+          window.location.href = editBtn.href;
+          return;
+        }
+
+        editForm.action = editBtn.dataset.url;
+        
+        const safeQuery = (selector) => editForm.querySelector(selector);
+        
+        if (safeQuery('#edit-item-id')) safeQuery('#edit-item-id').value = editBtn.dataset.id;
+        if (safeQuery('[name="name"]')) safeQuery('[name="name"]').value = editBtn.dataset.name;
+        if (safeQuery('[name="price"]')) safeQuery('[name="price"]').value = editBtn.dataset.price;
+        if (safeQuery('[name="category"]')) safeQuery('[name="category"]').value = editBtn.dataset.category;
+        if (safeQuery('[name="description"]')) safeQuery('[name="description"]').value = editBtn.dataset.description;
+        if (safeQuery('[name="calories"]')) safeQuery('[name="calories"]').value = editBtn.dataset.calories;
+        if (safeQuery('[name="stock_status"]')) safeQuery('[name="stock_status"]').value = editBtn.dataset.stockStatus;
+
+        // Hydrate ALL checkboxes (Dietary, Sustainability, Visibility)
+        const checkboxes = [
+          { name: 'is_active', dataKey: 'isActive' },
+          { name: 'organic', dataKey: 'organic' },
+          { name: 'vegetarian', dataKey: 'vegetarian' },
+          { name: 'gluten_free', dataKey: 'glutenFree' },
+          { name: 'dairy_free', dataKey: 'dairyFree' },
+          { name: 'contains_nuts', dataKey: 'containsNuts' },
+          { name: 'eco_packaging', dataKey: 'ecoPackaging' },
+          { name: 'locally_sourced', dataKey: 'locallySourced' },
+        ];
+
+        checkboxes.forEach(box => {
+          const checkboxEl = safeQuery(`[name="${box.name}"]`);
+          if (checkboxEl && editBtn.dataset[box.dataKey] !== undefined) {
+            checkboxEl.checked = editBtn.dataset[box.dataKey] === 'true';
+          }
+        });
+
+        const dropzone = editForm.querySelector('.items-form-group__file-dropzone');
+        if (dropzone) {
+          const preview = dropzone.querySelector('.file-dropzone-preview');
+          const placeholder = dropzone.querySelector('.file-dropzone-placeholder');
+          const imageUrl = editBtn.dataset.imageUrl;
+
+          if (imageUrl) {
+            preview.src = imageUrl;
+            preview.hidden = false;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+            dropzone.classList.add('items-form-group__file-dropzone--has-file');
+          } else {
+            preview.src = '';
+            preview.hidden = true;
+            preview.style.display = 'none';
+            placeholder.style.display = 'flex';
+            dropzone.classList.remove('items-form-group__file-dropzone--has-file');
+          }
+        }
+
+        popover.showPopover();
       });
     }
   </script>

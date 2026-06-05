@@ -3,7 +3,7 @@ from typing import Any
 from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import ListView, RedirectView, TemplateView, View
+from django.views.generic import ListView, RedirectView, TemplateView, View, UpdateView
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
@@ -188,6 +188,7 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
             "selected_category": category_param,
             "page_range": page_range,
             "current_search": current_search,
+            "edit_item_form": StoreItemForm(auto_id="edit_%s"),
         })
         return context
     
@@ -283,6 +284,44 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
         # Fallback if neither button was detected
         return self.get(request, *args, **kwargs)
 
+class DashboardItemUpdateView(MerchantRequiredMixin, UpdateView):
+    model = StoreItem
+    form_class = StoreItemForm
+    template_name = "merchants/pages/items-edit-dashboard.html"
+
+    def get_queryset(self):
+        store_index = self.kwargs.get("store_index", 0)
+        stores = StoreProfile.objects.filter(
+            Q(owner=self.request.user) | Q(staff=self.request.user)
+        ).distinct().order_by("id")
+        
+        try:
+            active_store = stores[store_index]
+        except IndexError:
+            raise Http404("Invalid merchant access index.")
+            
+        return super().get_queryset().filter(store=active_store)
+
+    def get_success_url(self):
+        return reverse('merchants:dashboard_items', kwargs={'store_index': self.kwargs.get("store_index", 0)})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        store_index = self.kwargs.get("store_index", 0)
+        stores = StoreProfile.objects.filter(
+            Q(owner=self.request.user) | Q(staff=self.request.user)
+        ).distinct().order_by("id")
+
+        context.update({
+            "store": stores[store_index],
+            "stores": stores,
+            "current_index": store_index,
+            "total_stores": stores.count(),
+            "has_next": (store_index + 1) < stores.count(),
+            "has_prev": store_index > 0,
+        })
+        
+        return context
 
 class OnboardingView(MerchantRequiredMixin, TemplateView):
     template_name = "merchants/onboarding.html"
