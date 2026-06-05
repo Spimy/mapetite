@@ -108,43 +108,10 @@
     </div>
   </section>
 
+  <script src="{% static 'merchants/js/pages/items-dashboard.js' %}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       initImageUpload();
     });
-
-    function initImageUpload() {
-      const dropzones = document.querySelectorAll('.items-form-group__file-dropzone');
-
-      dropzones.forEach(dropzone => {
-        dropzone.classList.add('js-enhanced');
-
-        const fileInput = dropzone.querySelector('input[type="file"]');
-        const placeholder = dropzone.querySelector('.file-dropzone-placeholder');
-        const previewImage = dropzone.querySelector('.file-dropzone-preview');
-
-        fileInput.addEventListener('change', (event) => {
-          const file = event.target.files[0];
-
-          if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-
-            reader.onload = (e) => {
-              placeholder.style.display = 'none';
-              previewImage.src = e.target.result;
-              previewImage.style.display = 'block';
-              dropzone.classList.add('items-form-group__file-dropzone--has-file');
-            };
-
-            reader.readAsDataURL(file);
-          } else {
-            previewImage.src = '';
-            previewImage.style.display = 'none';
-            placeholder.style.display = 'flex';
-            dropzone.classList.remove('items-form-group__file-dropzone--has-file');
-          }
-        });
-      });
-    }
   </script>
 {% endblock dashboard_content %}
