@@ -46,6 +46,13 @@ abstract class AppRoutes {
   // Budget sub-screens (pushed over shell)
   static const String budgetAnalytics = '/budget/analytics';
   static const String budgetTransactions = '/budget/transactions';
+
+  static const String dineIn = '/dine-in';
+  static const String cookIn = '/cook-in';
+  static const String restaurants = '/restaurants';
+  static const String groceries = '/groceries';
+  static const String list = '/list';
+  static const String listRoute = '/list/route';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -135,6 +142,36 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.settings,
       // TODO: App preferences, notification settings, dietary filters
       builder: (context, state) => const _WipScreen(label: 'Settings'),
+    ),
+    GoRoute(
+      path: AppRoutes.dineIn,
+      builder: (context, state) => const _WipScreen(label: 'Dine-In Feed'),
+    ),
+    GoRoute(
+      path: AppRoutes.cookIn,
+      redirect: (_, _) => AppRoutes.recipes,
+    ),
+    GoRoute(
+      path: AppRoutes.restaurants,
+      builder: (context, state) => const _WipScreen(label: 'Restaurants'),
+    ),
+    GoRoute(
+      path: '${AppRoutes.restaurants}/:id',
+      builder: (context, state) => _WipScreen(
+        label: 'Restaurant — ${state.pathParameters['id'] ?? ''}',
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.groceries,
+      builder: (context, state) => const _WipScreen(label: 'Grocery Stores'),
+    ),
+    GoRoute(
+      path: AppRoutes.list,
+      redirect: (_, _) => AppRoutes.myList,
+    ),
+    GoRoute(
+      path: AppRoutes.listRoute,
+      builder: (context, state) => const _WipScreen(label: 'Route Map'),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
