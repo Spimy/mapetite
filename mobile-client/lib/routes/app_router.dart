@@ -27,6 +27,11 @@ import '../features/groceries/screens/grocery_match_screen.dart';
 import '../features/groceries/screens/grocery_store_detail_screen.dart';
 import '../features/restaurants/screens/restaurant_listing_screen.dart';
 import '../features/restaurants/screens/restaurant_detail_screen.dart';
+import '../features/notifications/screens/notification_centre_screen.dart';
+import '../features/notifications/screens/notification_settings_screen.dart';
+import '../features/settings/screens/app_settings_screen.dart';
+import '../features/settings/screens/about_screen.dart';
+import '../shared/screens/web_placeholder_screen.dart';
 
 abstract class AppRoutes {
   static const String splash = '/';
@@ -66,6 +71,12 @@ abstract class AppRoutes {
   static const String groceries = '/groceries';
   static const String list = '/list';
   static const String listRoute = '/list/route';
+
+  static const String about = '/about';
+  static const String aboutTerms = '/about/terms';
+  static const String aboutPrivacy = '/about/privacy';
+  static const String aboutLicences = '/about/licences';
+  static const String settingsNotifications = '/settings/notifications';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -122,7 +133,11 @@ final GoRouter appRouter = GoRouter(
 
     GoRoute(
       path: AppRoutes.notifications,
-      builder: (context, state) => const _WipScreen(label: 'Notifications'),
+      builder: (context, state) => const NotificationCentreScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.settingsNotifications,
+      builder: (context, state) => const NotificationSettingsScreen(),
     ),
     GoRoute(
       path: AppRoutes.directions,
@@ -131,6 +146,27 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.profile,
       builder: (context, state) => const _WipScreen(label: 'Profile'),
+    ),
+    GoRoute(
+      path: AppRoutes.about,
+      builder: (context, state) => const AboutScreen(),
+      routes: [
+        GoRoute(
+          path: 'terms',
+          builder: (context, state) =>
+              const WebPlaceholderScreen(title: 'Terms of Service'),
+        ),
+        GoRoute(
+          path: 'privacy',
+          builder: (context, state) =>
+              const WebPlaceholderScreen(title: 'Privacy Policy'),
+        ),
+        GoRoute(
+          path: 'licences',
+          builder: (context, state) =>
+              const WebPlaceholderScreen(title: 'Open Source Licences'),
+        ),
+      ],
     ),
 
     // ── Category browse (accessible from explore & drawer) ───────────────
@@ -171,7 +207,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: AppRoutes.settings,
-      builder: (context, state) => const _WipScreen(label: 'Settings'),
+      builder: (context, state) => const AppSettingsScreen(),
     ),
 
     // ── Dine-in flow ──────────────────────────────────────────────────────

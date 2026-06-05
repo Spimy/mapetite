@@ -16,6 +16,7 @@ import '../models/home_feed_models.dart';
 import '../models/mocks/home_feed_mocks.dart';
 import '../providers/home_feed_providers.dart';
 import '../../../routes/app_router.dart';
+import '../../../features/notifications/providers/notification_provider.dart';
 
 class HomeFeedScreen extends ConsumerStatefulWidget {
   const HomeFeedScreen({super.key});
@@ -98,11 +99,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
                   ),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.search, color: AppColors.neutral),
-                onPressed: () {},
-                tooltip: 'Search',
-              ),
+              _BellButton(onTap: () => context.push(AppRoutes.notifications)),
             ],
           ),
         ),
@@ -414,6 +411,51 @@ class _TopPickBody extends StatelessWidget {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Bell Button with Badge ──────────────────────────────────────────────────
+
+class _BellButton extends ConsumerWidget {
+  final VoidCallback onTap;
+  const _BellButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(unreadCountProvider);
+
+    return IconButton(
+      tooltip: 'Notifications',
+      onPressed: onTap,
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Icon(Icons.notifications_outlined, color: AppColors.neutral),
+          if (count > 0)
+            Positioned(
+              top: -4,
+              right: -4,
+              child: Container(
+                width: 16,
+                height: 16,
+                decoration: const BoxDecoration(
+                  color: AppColors.error,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    count > 9 ? '9+' : '$count',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.white,
+                      fontSize: 9,
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
