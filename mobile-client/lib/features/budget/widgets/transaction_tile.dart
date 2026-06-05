@@ -22,6 +22,8 @@ class TransactionTile extends StatelessWidget {
         return Icons.local_grocery_store_outlined;
       case BudgetCategory.dining:
         return Icons.restaurant_outlined;
+      case BudgetCategory.delivery:
+        return Icons.delivery_dining_outlined;
     }
   }
 
@@ -31,6 +33,8 @@ class TransactionTile extends StatelessWidget {
         return AppColors.primaryLight;
       case BudgetCategory.dining:
         return AppColors.warningLight;
+      case BudgetCategory.delivery:
+        return AppColors.secondaryLight;
     }
   }
 
@@ -40,6 +44,8 @@ class TransactionTile extends StatelessWidget {
         return AppColors.primary;
       case BudgetCategory.dining:
         return AppColors.warning;
+      case BudgetCategory.delivery:
+        return AppColors.secondary;
     }
   }
 
