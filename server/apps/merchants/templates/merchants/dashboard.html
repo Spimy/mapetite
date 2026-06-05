@@ -21,6 +21,13 @@
                 <option value="{{ forloop.counter0 }}"
                         {% if forloop.counter0 == current_index %}selected{% endif %}>
                   {{ owned_store.business_name }}
+                  {% if owned_store.halal and owned_store.vegan %}
+                    (Halal + Vegan)
+                  {% elif owned_store.halal %}
+                    (Halal)
+                  {% elif owned_store.vegan %}
+                    (Vegan)
+                  {% endif %}
                 </option>
               {% endfor %}
             </select>
