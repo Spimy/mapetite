@@ -31,9 +31,13 @@
                 </option>
               {% endfor %}
             </select>
-            <input type="hidden"
-                   name="current_route"
-                   value="{{ request.resolver_match.view_name }}" />
+            {% if request.resolver_match.view_name == 'merchants:dashboard_edit_item' %}
+              <input type="hidden" name="current_route" value="merchants:dashboard_items" />
+            {% else %}
+              <input type="hidden"
+                     name="current_route"
+                     value="{{ request.resolver_match.view_name }}" />
+            {% endif %}
             <noscript>
               <button type="submit" class="btn">Switch Store</button>
             </noscript>
