@@ -49,8 +49,8 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
     ),
     const _TxData(
       id: 'tl3',
-      merchant: 'GrabFood',
-      category: BudgetCategory.delivery,
+      merchant: 'Village Grocer',
+      category: BudgetCategory.groceries,
       dateLabel: 'May 24',
       amount: 45.00,
     ),
@@ -73,7 +73,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
   late List<_TxData> _transactions;
   late List<_TxData> _undoBuffer;
 
-  static const _filters = ['All', 'Dining', 'Groceries', 'Delivery'];
+  static const _filters = ['All', 'Dining', 'Groceries'];
 
   @override
   void initState() {
@@ -377,8 +377,6 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
         return (AppColors.primaryLight, AppColors.primary);
       case BudgetCategory.groceries:
         return (AppColors.secondaryLight, AppColors.secondary);
-      case BudgetCategory.delivery:
-        return (AppColors.warningLight, const Color(0xFF92400E));
     }
   }
 
@@ -388,8 +386,6 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
         return Icons.restaurant_outlined;
       case BudgetCategory.groceries:
         return Icons.local_grocery_store_outlined;
-      case BudgetCategory.delivery:
-        return Icons.delivery_dining_outlined;
     }
   }
 }

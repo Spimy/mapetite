@@ -309,14 +309,8 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen> {
                     showTitle: false,
                   ),
                   PieChartSectionData(
-                    value: 29,
+                    value: 40,
                     color: AppColors.secondary,
-                    radius: 50,
-                    showTitle: false,
-                  ),
-                  PieChartSectionData(
-                    value: 11,
-                    color: AppColors.warning,
                     radius: 50,
                     showTitle: false,
                   ),
@@ -336,9 +330,8 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen> {
 
   Widget _buildLegend() {
     final items = [
-      (AppColors.primary, 'Dining', '60%'),
-      (AppColors.secondary, 'Groceries', '29%'),
-      (AppColors.warning, 'Delivery', '11%'),
+      (AppColors.primary, 'Dining Out', '60%'),
+      (AppColors.secondary, 'Cook-In', '40%'),
     ];
     return Column(
       children: items
@@ -384,12 +377,12 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen> {
         amount: 120.0,
       ),
       (
-        icon: Icons.delivery_dining_outlined,
-        bg: AppColors.warningLight,
-        fg: Color(0xFF92400E),
-        name: 'GrabFood',
-        detail: '2 orders · Delivery',
-        amount: 45.0,
+        icon: Icons.restaurant_outlined,
+        bg: AppColors.primaryLight,
+        fg: AppColors.primary,
+        name: 'Kopitiam Old Town',
+        detail: '4 visits · Dining',
+        amount: 72.0,
       ),
     ];
 

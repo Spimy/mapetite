@@ -247,7 +247,7 @@ class _AddTransactionSheetState
                 Expanded(
                     child: _CatCard(
                   icon: Icons.restaurant_outlined,
-                  label: 'Dining',
+                  label: 'Dining Out',
                   selected: _category == BudgetCategory.dining,
                   onTap: () =>
                       setState(() => _category = BudgetCategory.dining),
@@ -256,19 +256,10 @@ class _AddTransactionSheetState
                 Expanded(
                     child: _CatCard(
                   icon: Icons.local_grocery_store_outlined,
-                  label: 'Groceries',
+                  label: 'Cook-In',
                   selected: _category == BudgetCategory.groceries,
                   onTap: () =>
                       setState(() => _category = BudgetCategory.groceries),
-                )),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                    child: _CatCard(
-                  icon: Icons.delivery_dining_outlined,
-                  label: 'Delivery',
-                  selected: _category == BudgetCategory.delivery,
-                  onTap: () =>
-                      setState(() => _category = BudgetCategory.delivery),
                 )),
               ],
             ),

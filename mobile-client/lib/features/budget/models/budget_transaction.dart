@@ -1,4 +1,4 @@
-enum BudgetCategory { groceries, dining, delivery }
+enum BudgetCategory { groceries, dining }
 
 extension BudgetCategoryX on BudgetCategory {
   String get label {
@@ -7,8 +7,6 @@ extension BudgetCategoryX on BudgetCategory {
         return 'Groceries';
       case BudgetCategory.dining:
         return 'Dining Out';
-      case BudgetCategory.delivery:
-        return 'Delivery';
     }
   }
 }

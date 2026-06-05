@@ -269,10 +269,8 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
 
     final diningSpent = spentFor(BudgetCategory.dining);
     final groceriesSpent = spentFor(BudgetCategory.groceries);
-    final deliverySpent = spentFor(BudgetCategory.delivery);
     const diningBudget = 200.0;
     const groceriesBudget = 300.0;
-    const deliveryBudget = 100.0;
 
     return _Card(
       child: Column(
@@ -284,7 +282,7 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
             icon: Icons.restaurant_outlined,
             iconBg: AppColors.primaryLight,
             iconColor: AppColors.primary,
-            label: 'Dining',
+            label: 'Dining Out',
             spent: diningSpent,
             budget: diningBudget,
             progressColor: AppColors.primary,
@@ -294,20 +292,10 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
             icon: Icons.local_grocery_store_outlined,
             iconBg: AppColors.secondaryLight,
             iconColor: AppColors.secondary,
-            label: 'Groceries',
+            label: 'Cook-In',
             spent: groceriesSpent,
             budget: groceriesBudget,
             progressColor: AppColors.secondary,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _CategoryRow(
-            icon: Icons.delivery_dining_outlined,
-            iconBg: AppColors.warningLight,
-            iconColor: const Color(0xFF92400E),
-            label: 'Delivery',
-            spent: deliverySpent,
-            budget: deliveryBudget,
-            progressColor: AppColors.warning,
           ),
         ],
       ),
@@ -552,8 +540,6 @@ class _TransactionRow extends StatelessWidget {
         return Icons.restaurant_outlined;
       case BudgetCategory.groceries:
         return Icons.local_grocery_store_outlined;
-      case BudgetCategory.delivery:
-        return Icons.delivery_dining_outlined;
     }
   }
 

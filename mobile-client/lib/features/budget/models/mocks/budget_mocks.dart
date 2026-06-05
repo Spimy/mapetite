@@ -23,9 +23,9 @@ abstract class BudgetMocks {
       ),
       BudgetTransaction(
         id: 'bm3',
-        category: BudgetCategory.delivery,
-        name: 'GrabFood',
-        amount: 45.00,
+        category: BudgetCategory.dining,
+        name: 'Mamak Corner',
+        amount: 15.50,
         dateTime: DateTime(y, m, _clamp(d - 2, 1), 19, 15),
       ),
       BudgetTransaction(
@@ -58,9 +58,9 @@ abstract class BudgetMocks {
       ),
       BudgetTransaction(
         id: 'bm8',
-        category: BudgetCategory.delivery,
-        name: 'Foodpanda',
-        amount: 32.00,
+        category: BudgetCategory.groceries,
+        name: 'Cold Storage',
+        amount: 63.40,
         dateTime: DateTime(y, m, _clamp(d - 12, 1), 12, 0),
       ),
     ];
