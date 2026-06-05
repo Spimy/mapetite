@@ -174,7 +174,7 @@ class ProfileDrawer extends StatelessWidget {
                       label: 'Budget Analytics',
                       onTap: () {
                         Navigator.of(context).pop();
-                        context.go(AppRoutes.budget);
+                        context.push(AppRoutes.budgetAnalytics);
                       },
                     ),
                   ],
