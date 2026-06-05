@@ -1,0 +1,24 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+{% endblock styles %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Create Promotion - {{ store.business_name }}
+{% endblock title %}
+
+{% block description %}
+  Create a new promotion for {{ store.business_name }}.
+{% endblock description %}
+
+{% block keywords %}
+  Create Promotion, {{ store.business_name }}, Promotion Creation, New Promotion, Promotion Form
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block dashboard_content %}
+  {% include "merchants/components/promotion-create-form.html" %}
+{% endblock dashboard_content %}

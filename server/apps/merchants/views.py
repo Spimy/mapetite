@@ -1,20 +1,21 @@
 import json
 from typing import Any
+from apps.merchants.paginator import Template404Paginator
+from apps.users.mixins import MerchantRequiredMixin
 from django.http.response import HttpResponse as HttpResponse
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import ListView, RedirectView, TemplateView, View, UpdateView
+from django.views.generic import CreateView, ListView, RedirectView, TemplateView, View, UpdateView
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
-from apps.merchants.paginator import Template404Paginator
-from apps.users.mixins import MerchantRequiredMixin
-from .models import StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
-from .forms import ItemCategoryForm, StoreItemForm
-from .serializers import StoreOperatingHourSerializer, StoreProfileSerializer
+from django.contrib import messages
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-
+from .models import Promotion, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
+from .forms import ItemCategoryForm, PromotionForm, StoreItemForm
+from .serializers import StoreOperatingHourSerializer, StoreProfileSerializer
+from .mixins import StoreContextMixin
 
 # Create your views here.
 # API views for merchants app
@@ -340,6 +341,75 @@ class DashboardItemUpdateView(MerchantRequiredMixin, UpdateView):
         
         return context
 
+
+class DashboardPromotionListView(MerchantRequiredMixin, StoreContextMixin, ListView):
+    template_name = "merchants/pages/promotions-dashboard.html"
+    model = Promotion
+    context_object_name = "promotions"
+
+    def get_queryset(self):
+        return Promotion.objects.filter(store=self.get_active_store()).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Inject the blank create form for the Popover
+        context['create_form'] = PromotionForm(store=self.get_active_store())
+        return context
+
+
+class PromotionCreateView(MerchantRequiredMixin, StoreContextMixin, CreateView):
+    model = Promotion
+    form_class = PromotionForm
+    template_name = 'merchants/pages/promotion-create-edit-dashboard.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['store'] = self.get_active_store()
+        return kwargs
+
+    def form_valid(self, form):
+        form.instance.store = self.get_active_store()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('merchants:dashboard_promotions', kwargs={'store_index': self.kwargs.get("store_index", 0)})
+
+
+class PromotionUpdateView(MerchantRequiredMixin, StoreContextMixin, UpdateView):
+    model = Promotion
+    form_class = PromotionForm
+    template_name = 'merchants/pages/promotion-create-edit-dashboard.html'
+
+    def get_queryset(self):
+        # Ensure can only edit promos for the active store
+        return Promotion.objects.filter(store=self.get_active_store())
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['store'] = self.get_active_store()
+        return kwargs
+
+    def get_success_url(self):
+        return reverse('merchants:dashboard_promotions', kwargs={'store_index': self.kwargs.get("store_index", 0)})
+
+
+class PromotionToggleActiveView(MerchantRequiredMixin, StoreContextMixin, View):
+    def post(self, request, store_index, pk):
+        promotion = get_object_or_404(Promotion, pk=pk, store=self.get_active_store())
+        
+        if promotion.is_active:
+            promotion.is_active = False
+            promotion.save()
+            messages.success(request, f"'{promotion.title}' has been paused.")
+        else:
+            if promotion.can_reactivate:
+                promotion.is_active = True
+                promotion.save()
+                messages.success(request, f"'{promotion.title}' is now active again.")
+            else:
+                messages.error(request, "Cannot reactivate an expired promotion.")
+                
+        return redirect('merchants:dashboard_promotions', store_index=store_index)
 
 class OnboardingView(MerchantRequiredMixin, TemplateView):
     template_name = "merchants/onboarding.html"

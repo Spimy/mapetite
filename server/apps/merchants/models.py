@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
+from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.utils import timezone
 
 
 # Create your models here.
@@ -91,6 +93,7 @@ class StoreOperatingHour(models.Model):
         ]
         return f"{self.store.business_name} - {days[self.day_of_week]}: {self.open_time} to {self.close_time}"
 
+
 class ItemCategory(models.Model):
     """
     Allows merchants to organise their offerings.
@@ -169,3 +172,112 @@ class StoreItem(models.Model):
     def __str__(self):
         status_label = self.StockStatus(self.stock_status).label
         return f"{self.name} ({status_label})"
+    
+
+class Promotion(models.Model):
+    class PromotionType(models.TextChoices):
+        PERCENTAGE = "PERCENTAGE", "Percentage Discount"
+        FLAT_AMOUNT = "FLAT_AMOUNT", "Flat Amount Discount"
+        FREE_ITEM = "FREE_ITEM", "Free Item with Purchase"
+        BUNDLE = "BUNDLE", "Bundle Deal"
+        
+    store = models.ForeignKey('StoreProfile', on_delete=models.CASCADE, related_name="promotions")
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, help_text="General description for customers.")
+    
+    promotion_type = models.CharField(
+        max_length=20, choices=PromotionType.choices, default=PromotionType.PERCENTAGE
+    )
+    
+    # THE NUMBERS (Used by PERCENTAGE, FLAT_AMOUNT, and as the PRICE for BUNDLES)
+    promotion_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Discount amount OR the total fixed price of the bundle."
+    )
+    minimum_purchase_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # ELIGIBILITY (Used by PERCENTAGE, FLAT_AMOUNT and FREE_ITEM)
+    eligible_items = models.ManyToManyField(
+        'StoreItem', blank=True, related_name="eligible_promotions",
+        help_text="Items this promo applies to. Leave blank for store-wide."
+    )
+    
+    # REWARDS (Used by FREE_ITEM)
+    reward_item = models.ForeignKey(
+        'StoreItem', on_delete=models.CASCADE, null=True, blank=True, related_name="rewarded_promotions",
+        help_text="The single item given away for free."
+    )
+
+    # BUNDLE DETAILS (Used by BUNDLE)
+    bundle_items = models.ManyToManyField(
+        'StoreItem', blank=True, related_name="bundled_promotions",
+        help_text="Select the actual items included in this bundle."
+    )
+    bundle_description = models.TextField(
+        blank=True, help_text="Extra info about the bundle (e.g., 'Serves 2-3 pax')."
+    )
+    
+    is_active = models.BooleanField(default=True)
+    
+    start_date = models.DateField()
+    end_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    @property
+    def can_reactivate(self):
+        """Returns True if the promotion has not expired yet."""
+        if not self.end_date:
+            return False
+        return self.end_date >= timezone.now().date()
+
+    def clean(self):
+        super().clean()
+        
+        # Validation for PERCENTAGE / FLAT AMOUNT
+        if self.promotion_type in [self.PromotionType.PERCENTAGE, self.PromotionType.FLAT_AMOUNT]:
+            if not self.promotion_amount:
+                raise ValidationError({"promotion_amount": "Amount is required for Percentage/Flat discounts."})
+            
+            # Clear fields belonging to other types
+            self.reward_item = None
+            self.bundle_description = ""
+
+        # Validation for FREE ITEM
+        elif self.promotion_type == self.PromotionType.FREE_ITEM:
+            if not self.reward_item:
+                raise ValidationError({"reward_item": "You must select a reward item for Free Item promotions."})
+            if self.promotion_amount:
+                raise ValidationError({"promotion_amount": "Free Item promotions should not have a discount amount."})
+            
+            # Clear fields belonging to other types
+            self.bundle_description = ""
+
+        # Validation for BUNDLE
+        elif self.promotion_type == self.PromotionType.BUNDLE:
+            if not self.promotion_amount:
+                raise ValidationError({"promotion_amount": "You must set a total price for the bundle in the 'amount' field."})
+            
+            # Explicitly reject minimum purchase amounts for bundles
+            if self.minimum_purchase_amount:
+                raise ValidationError({
+                    "minimum_purchase_amount": "Bundle deals cannot have a minimum purchase amount. They are sold as a standalone fixed price."
+                })
+            
+            # Clear fields belonging to other types
+            self.reward_item = None
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        if self.promotion_type == self.PromotionType.PERCENTAGE:
+            return f"{self.title} - {self.promotion_amount}% off"
+        elif self.promotion_type == self.PromotionType.FLAT_AMOUNT:
+            return f"{self.title} - ${self.promotion_amount} off"
+        elif self.promotion_type == self.PromotionType.FREE_ITEM:
+            return f"{self.title} - Free {self.reward_item.name if self.reward_item else 'Item'}"
+        elif self.promotion_type == self.PromotionType.BUNDLE:
+            return f"{self.title} - Bundle (${self.promotion_amount})"
+        return self.title

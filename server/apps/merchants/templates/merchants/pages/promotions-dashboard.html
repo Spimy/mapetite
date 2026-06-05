@@ -1,0 +1,276 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'merchants/css/pages/promotions-dashboard.css' %}" />
+{% endblock styles %}
+
+{% block title %}
+  Promotions - {{ store.business_name }}
+{% endblock title %}
+{% block description %}
+  Manage your promotions for {{ store.business_name }}.
+{% endblock description %}
+{% block keywords %}
+  Promotions, {{ store.business_name }}, Promotion Management
+{% endblock keywords %}
+
+{% block dashboard_content %}
+  <div class="promo-dashboard">
+
+    <header class="promo-dashboard__header">
+      <div class="promo-dashboard__title-wrap">
+        <h3 class="promo-dashboard__title">Promotions</h3>
+      </div>
+
+      <div class="promo-dashboard__actions">
+        <button class="btn btn--primary js-create-promo-trigger"
+                type="button"
+                popovertarget="promo-create-popover">Create Promotion</button>
+      </div>
+    </header>
+
+    <section class="promo-list" aria-label="Promotions">
+      {% for promo in promotions %}
+        <article class="promo-item {% if not promo.is_active %}promo-item--inactive{% endif %}">
+          <div class="promo-item__header">
+            <div class="promo-item__title-wrap">
+              <h3 class="promo-item__title">{{ promo.title }}</h3>
+
+              {% if promo.promotion_type == "PERCENTAGE" %}
+                <p class="promo-item__summary">{{ promo.promotion_amount }}% off</p>
+              {% elif promo.promotion_type == "FLAT_AMOUNT" %}
+                <p class="promo-item__summary">RM {{ promo.promotion_amount }} off</p>
+              {% elif promo.promotion_type == "FREE_ITEM" %}
+                <p class="promo-item__summary">Free {{ promo.reward_item.name }}</p>
+              {% elif promo.promotion_type == "BUNDLE" %}
+                <p class="promo-item__summary">RM {{ promo.promotion_amount }} per bundle</p>
+              {% endif %}
+            </div>
+
+            <span class="promo-item__type-pill promo-item__type-pill--{% if promo.promotion_type == 'PERCENTAGE' %}percentage{% elif promo.promotion_type == 'FLAT_AMOUNT' %}flat{% elif promo.promotion_type == 'FREE_ITEM' %}free{% else %}bundle{% endif %}">
+              {{ promo.get_promotion_type_display }}
+            </span>
+          </div>
+
+          <div class="promo-item__meta">
+            <p class="promo-item__dates">{{ promo.start_date }} - {{ promo.end_date }}</p>
+
+            {% if promo.bundle_description %}
+              <p class="promo-item__description">{{ promo.bundle_description }}</p>
+            {% elif promo.description %}
+              <p class="promo-item__description">{{ promo.description }}</p>
+            {% elif promo.minimum_purchase_amount %}
+              <p class="promo-item__description">Min. spend RM {{ promo.minimum_purchase_amount }}</p>
+            {% endif %}
+          </div>
+
+          <div class="promo-item__divider"></div>
+
+          <div class="promo-item__footer">
+            <div class="promo-item__status {% if promo.is_active %}promo-item__status--live{% elif promo.can_reactivate %}promo-item__status--paused{% else %}promo-item__status--expired{% endif %}">
+              <span class="promo-item__status-dot"></span>
+              {% if promo.is_active %}
+                Live
+              {% elif promo.can_reactivate %}
+                Paused
+              {% else %}
+                Expired
+              {% endif %}
+            </div>
+
+            <div class="promo-item__actions">
+              <a href="{% url 'merchants:dashboard_promotion_edit' current_index promo.id %}"
+                 class="promo-item__action-btn promo-item__action-btn--edit">Edit</a>
+
+              <form method="post"
+                    action="{% url 'merchants:dashboard_promotion_toggle' current_index promo.id %}"
+                    class="promo-item__toggle-form">
+                {% csrf_token %}
+                {% if promo.is_active %}
+                  <button type="submit"
+                          class="promo-item__action-btn promo-item__action-btn--pause">Pause</button>
+                {% else %}
+                  <button type="submit"
+                          class="promo-item__action-btn promo-item__action-btn--reactivate"
+                          {% if not promo.can_reactivate %}disabled{% endif %}>
+                    {% if promo.can_reactivate %}
+                      Reactivate
+                    {% else %}
+                      Expired
+                    {% endif %}
+                  </button>
+                {% endif %}
+              </form>
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div class="promo-list__empty-state">
+          <p>No promotions found.</p>
+        </div>
+      {% endfor %}
+    </section>
+
+    {% comment %} Add Promotion Popover {% endcomment %}
+    <div id="promo-create-popover" class="promo-popover" popover>
+      <div class="promo-popover__header">
+        <h4 class="promo-popover__title">Create New Promotion</h4>
+      </div>
+
+      <form method="post"
+            action="{% url 'merchants:dashboard_promotion_create' current_index %}"
+            class="promo-popover__form">
+        {% csrf_token %}
+
+        <div class="promo-popover__body">
+          <fieldset class="promo-form-group">
+
+            <div class="promo-form-group__field">
+              <label class="promo-form-group__label"
+                     for="{{ create_form.title.id_for_label }}">{{ create_form.title.label }}</label>
+              <div class="promo-form-group__control">{{ create_form.title }}</div>
+              {% if create_form.title.help_text %}
+                <p class="promo-form-group__helptext">{{ create_form.title.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <div class="promo-form-group__field">
+              <label class="promo-form-group__label"
+                     for="{{ create_form.description.id_for_label }}">
+                {{ create_form.description.label }} <span>(Optional)</span>
+              </label>
+              <div class="promo-form-group__control">{{ create_form.description }}</div>
+              {% if create_form.description.help_text %}
+                <p class="promo-form-group__helptext">{{ create_form.description.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <div class="promo-form-group__type-grid">
+              {% for radio in create_form.promotion_type %}
+                <label class="promo-form-group__type-card">
+                  {{ radio.tag }}
+                  <span class="promo-form-group__type-label">{{ radio.choice_label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+
+            <div class="promo-form__conditional promo-form__conditional--amount">
+              <div class="promo-form-group__field">
+                <label class="promo-form-group__label"
+                       for="{{ create_form.promotion_amount.id_for_label }}">
+                  {{ create_form.promotion_amount.label }}
+                </label>
+                <div class="promo-form-group__input-prefix promo-form-group__input-prefix--amount">
+                  <span class="promo-form-group__currency promo-form-group__currency--rm">RM</span>
+                  <div class="promo-form-group__control">{{ create_form.promotion_amount }}</div>
+                  <span class="promo-form-group__suffix promo-form-group__suffix--percent">%</span>
+                </div>
+                {% if create_form.promotion_amount.help_text %}
+                  <p class="promo-form-group__helptext">{{ create_form.promotion_amount.help_text }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="promo-form__conditional promo-form__conditional--eligibility">
+              <div class="promo-form-group__field">
+                <label class="promo-form-group__label"
+                       for="{{ create_form.minimum_purchase_amount.id_for_label }}">
+                  {{ create_form.minimum_purchase_amount.label }} <span>(Optional)</span>
+                </label>
+                <div class="promo-form-group__input-prefix promo-form-group__input-prefix--currency">
+                  <span class="promo-form-group__currency promo-form-group__currency--rm">RM</span>
+                  <div class="promo-form-group__control">{{ create_form.minimum_purchase_amount }}</div>
+                </div>
+                {% if create_form.minimum_purchase_amount.help_text %}
+                  <p class="promo-form-group__helptext">{{ create_form.minimum_purchase_amount.help_text }}</p>
+                {% endif %}
+              </div>
+              <div class="promo-form-group__field">
+                <label class="promo-form-group__label"
+                       for="{{ create_form.eligible_items.id_for_label }}">
+                  {{ create_form.eligible_items.label }} <span>(Optional)</span>
+                </label>
+                <div class="promo-form-group__control">{{ create_form.eligible_items }}</div>
+                {% if create_form.eligible_items.help_text %}
+                  <p class="promo-form-group__helptext">{{ create_form.eligible_items.help_text }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="promo-form__conditional promo-form__conditional--reward">
+              <div class="promo-form-group__field">
+                <label class="promo-form-group__label"
+                       for="{{ create_form.reward_item.id_for_label }}">{{ create_form.reward_item.label }}</label>
+                <div class="promo-form-group__control">{{ create_form.reward_item }}</div>
+                {% if create_form.reward_item.help_text %}
+                  <p class="promo-form-group__helptext">{{ create_form.reward_item.help_text }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="promo-form__conditional promo-form__conditional--bundle">
+              <div class="promo-form-group__field">
+                <label class="promo-form-group__label"
+                       for="{{ create_form.bundle_items.id_for_label }}">{{ create_form.bundle_items.label }}</label>
+                <div class="promo-form-group__control">{{ create_form.bundle_items }}</div>
+                {% if create_form.bundle_items.help_text %}
+                  <p class="promo-form-group__helptext">{{ create_form.bundle_items.help_text }}</p>
+                {% endif %}
+              </div>
+              <div class="promo-form-group__field">
+                <label class="promo-form-group__label"
+                       for="{{ create_form.bundle_description.id_for_label }}">
+                  {{ create_form.bundle_description.label }} <span>(Optional)</span>
+                </label>
+                <div class="promo-form-group__control">{{ create_form.bundle_description }}</div>
+                {% if create_form.bundle_description.help_text %}
+                  <p class="promo-form-group__helptext">{{ create_form.bundle_description.help_text }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="promo-form-group__row">
+              <div class="promo-form-group__field">
+                <label class="promo-form-group__label"
+                       for="{{ create_form.start_date.id_for_label }}">{{ create_form.start_date.label }}</label>
+                <div class="promo-form-group__control">{{ create_form.start_date }}</div>
+              </div>
+              <div class="promo-form-group__field">
+                <label class="promo-form-group__label"
+                       for="{{ create_form.end_date.id_for_label }}">{{ create_form.end_date.label }}</label>
+                <div class="promo-form-group__control">{{ create_form.end_date }}</div>
+              </div>
+            </div>
+
+          </fieldset>
+        </div>
+
+        <div class="promo-popover__actions">
+          <button type="submit" class="promo-popover__submit-btn">Save Promotion</button>
+          <button type="button"
+                  class="promo-popover__cancel-btn"
+                  popovertarget="promo-create-popover"
+                  popovertargetaction="hide">Cancel</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const createBtn = document.querySelector('.js-create-promo-trigger');
+      const popover = document.getElementById('promo-create-popover');
+
+      if (createBtn && popover && HTMLElement.prototype.hasOwnProperty('popover')) {
+          createBtn.addEventListener('click', function(e) {
+              e.preventDefault(); 
+              popover.showPopover();
+          });
+      }
+  });
+  </script>
+{% endblock dashboard_content %}

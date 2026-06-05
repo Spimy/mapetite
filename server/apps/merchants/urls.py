@@ -24,8 +24,11 @@ urlpatterns = [
         "dashboard/<int:store_index>/items/<int:pk>/", views.DashboardItemUpdateView.as_view(), name='dashboard_edit_item'
     ),
     path(
-        "dashboard/<int:store_index>/promotions/", views.DashboardView.as_view(), name="dashboard_promotions"
+        "dashboard/<int:store_index>/promotions/", views.DashboardPromotionListView.as_view(), name="dashboard_promotions"
     ),
+    path('dashboard/<int:store_index>/promotions/create/', views.PromotionCreateView.as_view(), name='dashboard_promotion_create'),
+    path('dashboard/<int:store_index>/promotions/<int:pk>/edit/', views.PromotionUpdateView.as_view(), name='dashboard_promotion_edit'),
+    path('dashboard/<int:store_index>/promotions/<int:pk>/toggle/', views.PromotionToggleActiveView.as_view(), name='dashboard_promotion_toggle'),
     path(
         "dashboard/<int:store_index>/locations-and-hours/", views.DashboardView.as_view(), name="dashboard_locations_and_hours"
     ),
