@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/theme/app_colors.dart';
+import '../../routes/app_router.dart';
 
 class AppDrawer extends StatelessWidget {
   final String displayName;
@@ -38,10 +39,10 @@ class AppDrawer extends StatelessWidget {
     final initials = displayName.isNotEmpty
         ? displayName[0].toUpperCase()
         : '?';
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         Navigator.of(context).pop();
-        context.push('/profile/edit');
+        context.push(AppRoutes.profileEdit);
       },
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -51,8 +52,8 @@ class AppDrawer extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 64,
-                  height: 64,
+                  width: AppSpacing.avatarXl,
+                  height: AppSpacing.avatarXl,
                   decoration: const BoxDecoration(
                     color: AppColors.primary,
                     shape: BoxShape.circle,
@@ -99,12 +100,12 @@ class AppDrawer extends StatelessWidget {
 
   Widget _buildNavItems(BuildContext context) {
     final items = [
-      _NavItem(Icons.restaurant_outlined, 'Restaurants', '/restaurants'),
-      _NavItem(Icons.local_grocery_store_outlined, 'Grocery Stores', '/groceries'),
-      _NavItem(Icons.menu_book_outlined, 'Recipes', '/cook-in'),
-      _NavItem(Icons.checklist_outlined, 'My List', '/list'),
-      _NavItem(Icons.map_outlined, 'Route Map', '/list/route'),
-      _NavItem(Icons.bar_chart, 'Budget Analytics', '/budget/analytics'),
+      const _NavItem(Icons.restaurant_outlined, 'Restaurants', AppRoutes.restaurants),
+      const _NavItem(Icons.local_grocery_store_outlined, 'Grocery Stores', AppRoutes.groceries),
+      const _NavItem(Icons.menu_book_outlined, 'Recipes', AppRoutes.cookIn),
+      const _NavItem(Icons.checklist_outlined, 'My List', AppRoutes.list),
+      const _NavItem(Icons.map_outlined, 'Route Map', AppRoutes.listRoute),
+      const _NavItem(Icons.bar_chart, 'Budget Analytics', AppRoutes.budgetAnalytics),
     ];
     return SingleChildScrollView(
       child: Column(
@@ -114,7 +115,7 @@ class AppDrawer extends StatelessWidget {
                   label: item.label,
                   onTap: () {
                     Navigator.of(context).pop();
-                    context.go(item.route);
+                    context.push(item.route);
                   },
                 ))
             .toList(),
@@ -128,7 +129,7 @@ class AppDrawer extends StatelessWidget {
       label: 'Settings',
       onTap: () {
         Navigator.of(context).pop();
-        context.push('/settings');
+        context.push(AppRoutes.settings);
       },
     );
   }

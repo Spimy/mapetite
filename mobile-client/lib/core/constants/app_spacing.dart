@@ -39,5 +39,6 @@ abstract class AppSpacing {
   static const double heroImageHeight = 220.0;
   static const double avatarSm = 32.0;
   static const double avatarMd = 48.0;
+  static const double avatarXl = 64.0;
   static const double avatarLg = 80.0;
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mapetite/shared/widgets/app_drawer.dart';
@@ -9,9 +8,9 @@ GoRouter _testRouter() {
     routes: [
       GoRoute(
         path: '/',
-        builder: (_, _) => Scaffold(
+        builder: (_, _) => const Scaffold(
           drawer: AppDrawer(displayName: 'Aisha', savedThisMonth: 47.50),
-          body: const Text('Home'),
+          body: Text('Home'),
         ),
       ),
       GoRoute(
@@ -54,9 +53,7 @@ void main() {
   group('AppDrawer', () {
     Future<void> openDrawer(WidgetTester tester) async {
       await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp.router(routerConfig: _testRouter()),
-        ),
+        MaterialApp.router(routerConfig: _testRouter()),
       );
       await tester.pumpAndSettle();
       final scaffoldState =
@@ -93,6 +90,22 @@ void main() {
     testWidgets('renders Settings footer item', (tester) async {
       await openDrawer(tester);
       expect(find.text('Settings'), findsOneWidget);
+    });
+
+    testWidgets('tapping Restaurants navigates to restaurants screen',
+        (tester) async {
+      await openDrawer(tester);
+      await tester.tap(find.text('Restaurants'));
+      await tester.pumpAndSettle();
+      expect(find.byType(Drawer), findsNothing);
+      expect(find.text('Restaurants'), findsOneWidget);
+    });
+
+    testWidgets('tapping header navigates to profile edit', (tester) async {
+      await openDrawer(tester);
+      await tester.tap(find.text('Account & Preferences'));
+      await tester.pumpAndSettle();
+      expect(find.text('Profile Edit'), findsOneWidget);
     });
   });
 }
