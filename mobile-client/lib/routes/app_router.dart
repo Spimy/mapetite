@@ -16,7 +16,12 @@ import '../features/budget/screens/spending_analytics_screen.dart';
 import '../features/budget/screens/transactions_screen.dart';
 import '../features/recipes/screens/recipe_listing_screen.dart';
 import '../features/recipes/screens/recipe_detail_screen.dart';
+import '../features/recipes/screens/create_recipe_screen.dart';
 import '../features/grocery/screens/grocery_list_screen.dart';
+import '../features/grocery_list/screens/grocery_list_screen.dart' as sl;
+import '../features/grocery_list/screens/route_optimiser_screen.dart';
+import '../features/groceries/screens/grocery_match_screen.dart';
+import '../features/groceries/screens/grocery_store_detail_screen.dart';
 import '../features/restaurants/screens/restaurant_listing_screen.dart';
 import '../features/restaurants/screens/restaurant_detail_screen.dart';
 
@@ -35,6 +40,7 @@ abstract class AppRoutes {
   static const String directions = '/directions';
   static const String recipes = '/recipes';
   static const String recipeDetail = '/recipes/:id';
+  static const String recipeCreate = '/recipes/create';
   static const String myList = '/my-list';
   static const String settings = '/settings';
 
@@ -112,40 +118,53 @@ final GoRouter appRouter = GoRouter(
 
     GoRoute(
       path: AppRoutes.notifications,
-      // TODO: Notifications list — deal alerts, order updates, nearby events
       builder: (context, state) => const _WipScreen(label: 'Notifications'),
     ),
     GoRoute(
       path: AppRoutes.directions,
-      // TODO: Map view with optimised route to selected restaurant / grocery
       builder: (context, state) => const _WipScreen(label: 'Get Directions'),
     ),
     GoRoute(
       path: AppRoutes.profile,
-      // TODO: Full profile page — account details, dietary preferences, history
       builder: (context, state) => const _WipScreen(label: 'Profile'),
     ),
+
+    // ── Recipes (cook-in flow) ────────────────────────────────────────────
     GoRoute(
       path: AppRoutes.recipes,
       builder: (context, state) => const RecipeListingScreen(),
       routes: [
         GoRoute(
+          path: 'create',
+          builder: (context, state) => const CreateRecipeScreen(),
+        ),
+        GoRoute(
           path: ':id',
           builder: (context, state) => RecipeDetailScreen(
             recipeId: state.pathParameters['id'] ?? '',
           ),
+          routes: [
+            GoRoute(
+              path: 'match',
+              builder: (context, state) => GroceryMatchScreen(
+                recipeId: state.pathParameters['id'] ?? '',
+              ),
+            ),
+          ],
         ),
       ],
     ),
+
     GoRoute(
       path: AppRoutes.myList,
       builder: (context, state) => const GroceryListScreen(),
     ),
     GoRoute(
       path: AppRoutes.settings,
-      // TODO: App preferences, notification settings, dietary filters
       builder: (context, state) => const _WipScreen(label: 'Settings'),
     ),
+
+    // ── Dine-in flow ──────────────────────────────────────────────────────
     GoRoute(
       path: AppRoutes.dineIn,
       builder: (context, state) => const RestaurantListingScreen(),
@@ -166,18 +185,32 @@ final GoRouter appRouter = GoRouter(
         ),
       ],
     ),
+
+    // ── Grocery stores ────────────────────────────────────────────────────
     GoRoute(
       path: AppRoutes.groceries,
       builder: (context, state) => const _WipScreen(label: 'Grocery Stores'),
+      routes: [
+        GoRoute(
+          path: ':id',
+          builder: (context, state) => GroceryStoreDetailScreen(
+            storeId: state.pathParameters['id'] ?? '',
+          ),
+        ),
+      ],
+    ),
+
+    // ── Shopping list flow ────────────────────────────────────────────────
+    GoRoute(
+      path: AppRoutes.listRoute,
+      builder: (context, state) => const RouteOptimiserScreen(),
     ),
     GoRoute(
       path: AppRoutes.list,
-      redirect: (_, _) => AppRoutes.myList,
+      builder: (context, state) => const sl.ShoppingListScreen(),
     ),
-    GoRoute(
-      path: AppRoutes.listRoute,
-      builder: (context, state) => const _WipScreen(label: 'Route Map'),
-    ),
+
+    // ── Main shell (bottom nav) ───────────────────────────────────────────
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return _MainShell(navigationShell: navigationShell);
@@ -218,8 +251,7 @@ final GoRouter appRouter = GoRouter(
                 GoRoute(
                   path: 'analytics',
                   builder: (context, state) => SpendingAnalyticsScreen(
-                    categoryFilter:
-                        state.uri.queryParameters['category'],
+                    categoryFilter: state.uri.queryParameters['category'],
                   ),
                 ),
                 GoRoute(
@@ -290,7 +322,7 @@ class _MainShell extends StatelessWidget {
   }
 }
 
-// ─── WIP Screen (top-level pages not yet built) ───────────────────────────────
+// ─── WIP Screen ───────────────────────────────────────────────────────────────
 
 class _WipScreen extends StatelessWidget {
   final String label;
@@ -305,7 +337,16 @@ class _WipScreen extends StatelessWidget {
         title: Text(label),
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.neutral,
-        leading: const BackButton(color: AppColors.primary),
+        leading: BackButton(
+          color: AppColors.primary,
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
       ),
       body: Center(
         child: Column(
