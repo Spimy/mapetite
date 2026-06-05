@@ -218,13 +218,13 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
 
         // Top Pick For You
         _buildSection(
-          title: 'Top Pick For You',
+          title: 'Today\'s Top Pick',
           titleIcon: const Icon(Icons.stars_rounded, color: AppColors.warning, size: 20),
           onSeeAll: null,
           trailing: _buildLocationPill(),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: _buildFeaturedCard(HomeFeedMocks.nearbyRestaurants.first),
+            child: _buildFeaturedCard(HomeFeedMocks.topPick),
           ),
         ),
 
@@ -282,20 +282,20 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
 
         const SizedBox(height: AppSpacing.xxl),
 
-        // Trending Recipes
+        // Cook-In Recipes
         _buildSection(
-          title: 'Trending Recipes',
+          title: 'Cook-In',
           onSeeAll: () => context.push(AppRoutes.recipes),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: HomeFeedMocks.trendingRecipes.length,
+              itemCount: HomeFeedMocks.cookInRecipes.length,
               separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
               itemBuilder: (_, i) => RecipeMiniCard(
-                recipe: HomeFeedMocks.trendingRecipes[i],
-                onTap: () => context.push('/recipes/${HomeFeedMocks.trendingRecipes[i].id}'),
+                recipe: HomeFeedMocks.cookInRecipes[i],
+                onTap: () => context.push('/recipes/${HomeFeedMocks.cookInRecipes[i].id}'),
               ),
             ),
           ),

@@ -2,106 +2,108 @@ import '../home_feed_models.dart';
 
 abstract class HomeFeedMocks {
   static const String userName = 'Aisha';
-  static const String userLocation = 'Bangsar';
-  static const int notificationCount = 3;
+  static const String userLocation = 'Sunway, Subang Jaya';
+  static const int notificationCount = 2;
 
+  // Top pick — used in "Today's Top Pick" featured card
+  static const RestaurantSummary topPick = RestaurantSummary(
+    id: 'r-top',
+    name: 'Green Bowl Cafe',
+    cuisine: 'Healthy Bowls',
+    distanceKm: 1.2,
+    rating: 4.8,
+    reviewCount: 214,
+    isOpen: true,
+    isHalal: true,
+    isVegan: false,
+    isClaimed: true,
+    walkMinutes: 15,
+    imageUrl: null,
+    matchScore: 97,
+  );
+
+  // Cook-In row — 2 recipe cards in horizontal scroll
+  static const List<RecipeSummary> cookInRecipes = [
+    RecipeSummary(
+      id: 'rc1',
+      name: 'Nasi Goreng Kampung',
+      cuisine: 'Malaysian',
+      prepMinutes: 30,
+      calories: 450,
+      isHalal: true,
+      isVegan: false,
+      authorName: 'Chef Hafiz',
+    ),
+    RecipeSummary(
+      id: 'rc2',
+      name: 'Mee Goreng Mamak',
+      cuisine: 'Malaysian',
+      prepMinutes: 25,
+      calories: 520,
+      isHalal: true,
+      isVegan: true,
+      authorName: 'Ramesh K.',
+    ),
+  ];
+
+  // Nearby Options — 2 compact rows
   static const List<RestaurantSummary> nearbyRestaurants = [
     RestaurantSummary(
       id: 'r1',
-      name: 'Nasi Kandar Pelita',
-      cuisine: 'Northern Malaysian',
+      name: 'Urban Eatery',
+      cuisine: 'Local Cuisine',
       distanceKm: 0.8,
-      rating: 4.7,
-      reviewCount: 128,
+      rating: 4.5,
+      reviewCount: 96,
       isOpen: true,
       isHalal: true,
       isVegan: false,
       isClaimed: true,
-      walkMinutes: 12,
-      brtRoute: null,
+      walkMinutes: 10,
       imageUrl: null,
-      matchScore: 94,
+      matchScore: 89,
     ),
     RestaurantSummary(
       id: 'r2',
-      name: 'Sushi Zanmai',
-      cuisine: 'Japanese',
-      distanceKm: 2.1,
-      rating: 4.5,
-      reviewCount: 89,
+      name: 'Fresh Daily Salad',
+      cuisine: 'Healthy',
+      distanceKm: 1.5,
+      rating: 4.9,
+      reviewCount: 61,
       isOpen: true,
       isHalal: false,
       isVegan: true,
-      isClaimed: true,
-      walkMinutes: 28,
-      brtRoute: 'Bangsar > KLCC',
-      imageUrl: null,
-      matchScore: 87,
-    ),
-    RestaurantSummary(
-      id: 'r3',
-      name: 'Kafe Old Town',
-      cuisine: 'Local Malaysian',
-      distanceKm: 0.5,
-      rating: 4.3,
-      reviewCount: 204,
-      isOpen: true,
-      isHalal: true,
-      isVegan: false,
       isClaimed: false,
-      walkMinutes: 7,
-      brtRoute: null,
+      walkMinutes: 18,
       imageUrl: null,
       matchScore: 82,
     ),
   ];
 
+  // Kept for compatibility — not shown on home screen in Phase 1
   static const List<GrocerySummary> nearbyGroceries = [
     GrocerySummary(
       id: 'g1',
-      name: 'Jaya Grocer',
+      name: 'Jaya Grocer Sunway Pyramid',
       type: 'Supermarket',
-      distanceKm: 1.5,
+      distanceKm: 0.6,
       isOpen: true,
       isClaimed: true,
     ),
     GrocerySummary(
       id: 'g2',
-      name: 'Mydin',
-      type: 'Hypermarket',
-      distanceKm: 2.8,
+      name: '99 Speedmart',
+      type: 'Convenience',
+      distanceKm: 0.2,
       isOpen: true,
       isClaimed: false,
-      closingTime: '10pm',
-    ),
-  ];
-
-  static const List<RecipeSummary> trendingRecipes = [
-    RecipeSummary(
-      id: 'r5',
-      name: 'Mee Goreng Mamak',
-      cuisine: 'Malaysian',
-      prepMinutes: 25,
-      calories: 490,
-      isHalal: true,
-      isVegan: false,
-      authorName: 'Ramesh K.',
-    ),
-    RecipeSummary(
-      id: 'r3',
-      name: 'Roti John',
-      cuisine: 'Malaysian',
-      prepMinutes: 20,
-      calories: 520,
-      isHalal: true,
-      isVegan: false,
-      authorName: 'Hafiz M.',
+      closingTime: '11pm',
     ),
   ];
 
   static const BudgetStatus currentBudget = BudgetStatus(
     monthlyLimit: 600,
     spent: 234,
-    month: 'May 2026',
+    month: 'June 2026',
   );
 }
