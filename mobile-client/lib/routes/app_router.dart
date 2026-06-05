@@ -50,6 +50,7 @@ abstract class AppRoutes {
   static const String dineIn = '/dine-in';
   static const String cookIn = '/cook-in';
   static const String restaurants = '/restaurants';
+  static const String restaurantDetail = '/restaurants/:id';
   static const String groceries = '/groceries';
   static const String list = '/list';
   static const String listRoute = '/list/route';
@@ -154,12 +155,14 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.restaurants,
       builder: (context, state) => const _WipScreen(label: 'Restaurants'),
-    ),
-    GoRoute(
-      path: '${AppRoutes.restaurants}/:id',
-      builder: (context, state) => _WipScreen(
-        label: 'Restaurant — ${state.pathParameters['id'] ?? ''}',
-      ),
+      routes: [
+        GoRoute(
+          path: ':id',
+          builder: (context, state) => _WipScreen(
+            label: 'Restaurant — ${state.pathParameters['id'] ?? ''}',
+          ),
+        ),
+      ],
     ),
     GoRoute(
       path: AppRoutes.groceries,

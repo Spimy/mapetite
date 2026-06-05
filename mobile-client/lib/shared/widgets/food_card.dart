@@ -363,6 +363,13 @@ class RecipeHorizontalCard extends StatelessWidget {
           color: AppColors.white,
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           border: Border.all(color: AppColors.border, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
@@ -431,8 +438,21 @@ class _RecipeImagePlaceholder extends StatelessWidget {
     return Container(
       color: AppColors.primaryLight,
       child: const Center(
-        child: Icon(Icons.restaurant, size: 40, color: AppColors.primary),
+        child: Icon(Icons.restaurant, size: AppSpacing.iconLg, color: AppColors.primary),
       ),
+    );
+  }
+}
+
+class _RestaurantThumbnailPlaceholder extends StatelessWidget {
+  const _RestaurantThumbnailPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.neutral100,
+      child: const Icon(Icons.restaurant,
+          color: AppColors.neutral400, size: 28),
     );
   }
 }
@@ -459,6 +479,13 @@ class NearbyRestaurantRow extends StatelessWidget {
           color: AppColors.white,
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           border: Border.all(color: AppColors.border, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -476,17 +503,10 @@ class NearbyRestaurantRow extends StatelessWidget {
                           highlightColor: AppColors.neutral200,
                           child: Container(color: AppColors.neutral100),
                         ),
-                        errorWidget: (_, _, _) => Container(
-                          color: AppColors.neutral100,
-                          child: const Icon(Icons.restaurant,
-                              color: AppColors.neutral400, size: 28),
-                        ),
+                        errorWidget: (_, _, _) =>
+                            const _RestaurantThumbnailPlaceholder(),
                       )
-                    : Container(
-                        color: AppColors.neutral100,
-                        child: const Icon(Icons.restaurant,
-                            color: AppColors.neutral400, size: 28),
-                      ),
+                    : const _RestaurantThumbnailPlaceholder(),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -512,8 +532,8 @@ class NearbyRestaurantRow extends StatelessWidget {
                   Row(
                     children: [
                       const Icon(Icons.star,
-                          size: 13, color: AppColors.warning),
-                      const SizedBox(width: 3),
+                          size: 14, color: AppColors.warning),
+                      const SizedBox(width: AppSpacing.xs),
                       Text(
                         restaurant.rating.toStringAsFixed(1),
                         style: AppTypography.body2
