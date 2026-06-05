@@ -375,7 +375,6 @@ class RecipeHorizontalCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
                 height: 100,
@@ -393,35 +392,42 @@ class RecipeHorizontalCard extends StatelessWidget {
                       )
                     : _RecipeImagePlaceholder(),
               ),
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      recipe.name,
-                      style: AppTypography.headline3,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      '${recipe.prepMinutes} min  ·  ${recipe.calories} kcal',
-                      style: AppTypography.body2
-                          .copyWith(color: AppColors.neutral600),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Wrap(
-                      spacing: AppSpacing.xs,
-                      runSpacing: AppSpacing.xs,
-                      children: [
-                        if (recipe.isHalal) const DietaryChip.halal(),
-                        if (recipe.isVegan) const DietaryChip.vegan(),
-                      ],
-                    ),
-                  ],
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        recipe.name,
+                        style: AppTypography.headline3,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        '${recipe.prepMinutes} min  ·  ${recipe.calories} kcal',
+                        style: AppTypography.body2
+                            .copyWith(color: AppColors.neutral600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: Row(
+                          children: [
+                            if (recipe.isHalal) const DietaryChip.halal(),
+                            if (recipe.isHalal && recipe.isVegan)
+                              const SizedBox(width: AppSpacing.xs),
+                            if (recipe.isVegan) const DietaryChip.vegan(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
