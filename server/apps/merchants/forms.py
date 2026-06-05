@@ -63,6 +63,7 @@ class StoreItemForm(forms.ModelForm):
             ("", [self[name] for name in META_FIELDS]),
         ]
 
+
 class ItemCategoryForm(forms.ModelForm):
     class Meta:
         model = ItemCategory
