@@ -202,13 +202,18 @@ class _MapExploreScreenState extends State<MapExploreScreen> {
             child: _buildMiniSheet(context),
           ),
 
-          // Callout card
+          // Callout card — centered, max 300dp wide
           if (_selectedMarker != null)
             Positioned(
               left: AppSpacing.lg,
               right: AppSpacing.lg,
-              bottom: 200,
-              child: _buildCalloutCard(context, _selectedMarker!),
+              bottom: 210,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 300),
+                  child: _buildCalloutCard(context, _selectedMarker!),
+                ),
+              ),
             ),
         ],
       ),
@@ -401,73 +406,148 @@ class _MapExploreScreenState extends State<MapExploreScreen> {
   }
 
   Widget _buildCalloutCard(BuildContext context, _MarkerData m) {
-    return Container(
-      width: 200,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.xxl),
-                child: Text(m.name,
-                    style: AppTypography.headline3,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis),
-              ),
-              const SizedBox(height: 4),
-              Text(m.type, style: AppTypography.body2),
-              const SizedBox(height: 2),
-              Text(m.distance,
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.neutral600)),
-              const SizedBox(height: AppSpacing.sm),
-              GestureDetector(
-                onTap: () {
-                  final route = m.isGrocery
-                      ? '/groceries/${m.id}'
-                      : '/restaurants/${m.id}';
-                  context.push(route);
-                },
-                child: Text(
-                  'View Details',
-                  style: AppTypography.label
-                      .copyWith(color: AppColors.secondary),
-                ),
-              ),
-            ],
-          ),
-          Positioned(
-            top: -4,
-            right: -4,
-            child: GestureDetector(
-              onTap: () => setState(() => _selectedMarkerId = null),
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: const BoxDecoration(
-                  color: AppColors.neutral100,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.close, size: 14, color: AppColors.neutral600),
+    final accentColor = m.isGrocery ? AppColors.secondary : AppColors.primary;
+    final accentLight =
+        m.isGrocery ? AppColors.secondaryLight : AppColors.primaryLight;
+    final typeIcon = m.isGrocery ? Icons.eco_outlined : Icons.restaurant;
+    final route =
+        m.isGrocery ? '/groceries/${m.id}' : '/restaurants/${m.id}';
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ── Coloured header strip ──────────────────────────────────────
+            Container(
+              height: 64,
+              color: accentColor,
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(typeIcon,
+                        size: AppSpacing.iconMd, color: AppColors.white),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          m.name,
+                          style: AppTypography.headline3.copyWith(
+                              color: AppColors.white,
+                              fontWeight: FontWeight.w700),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          m.type,
+                          style: AppTypography.body2.copyWith(
+                              color: Colors.white.withValues(alpha: 0.8)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => setState(() => _selectedMarkerId = null),
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close,
+                          size: 16, color: AppColors.white),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            // ── Body ──────────────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Distance pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: accentLight,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.place_outlined,
+                            size: 12, color: accentColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          m.distance,
+                          style: AppTypography.caption
+                              .copyWith(color: accentColor),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  // View Details button — full width, prominent
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: () => context.push(route),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accentColor,
+                        foregroundColor: AppColors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusMd),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('View Details',
+                              style: AppTypography.button),
+                          const SizedBox(width: AppSpacing.sm),
+                          const Icon(Icons.arrow_forward,
+                              size: 16, color: AppColors.white),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
