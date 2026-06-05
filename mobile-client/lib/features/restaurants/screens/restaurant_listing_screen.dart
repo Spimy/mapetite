@@ -318,7 +318,7 @@ class _RestaurantCard extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.transparent, AppColors.neutral.withValues(alpha: 0.8)],
+                colors: [Colors.transparent, Color(0xCC1F2937)],
                 stops: [0.4, 1.0],
               ),
             ),
