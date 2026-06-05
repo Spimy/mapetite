@@ -56,23 +56,18 @@ class LogoutDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xxl),
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SizedBox(
-                  width: 130,
+                Expanded(
                   child: AppButton(
                     label: 'Cancel',
                     variant: AppButtonVariant.outlined,
-                    isFullWidth: false,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
-                SizedBox(
-                  width: 150,
+                Expanded(
                   child: AppButton(
                     label: 'Sign Out',
-                    isFullWidth: false,
                     onPressed: () {
                       Navigator.of(context).pop();
                       // TODO: Clear auth token
