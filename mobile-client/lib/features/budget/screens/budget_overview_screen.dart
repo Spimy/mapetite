@@ -53,6 +53,7 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
         child: CustomScrollView(
           slivers: [
             _buildAppBar(context),
+            SliverToBoxAdapter(child: _buildMonthRow()),
             SliverPadding(
               padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.screenHorizontalPadding),
@@ -100,15 +101,28 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
               style:
                   AppTypography.headline1.copyWith(color: AppColors.primary)),
           const Spacer(),
-          _MonthSelector(
-            label: _monthLabel,
-            onPrev: () =>
-                setState(() => _selectedMonthOffset++),
-            onNext: _selectedMonthOffset > 0
-                ? () => setState(() => _selectedMonthOffset--)
-                : null,
-          ),
+          // Placeholder to balance the hamburger icon width
+          const SizedBox(width: AppSpacing.iconMd),
         ],
+      ),
+    );
+  }
+
+  // ─── Month Row (pinned below app bar) ─────────────────────────────────────
+
+  Widget _buildMonthRow() {
+    return Container(
+      color: AppColors.background,
+      padding: const EdgeInsets.only(
+          bottom: AppSpacing.sm, top: 2),
+      child: Center(
+        child: _MonthSelector(
+          label: _monthLabel,
+          onPrev: () => setState(() => _selectedMonthOffset++),
+          onNext: _selectedMonthOffset > 0
+              ? () => setState(() => _selectedMonthOffset--)
+              : null,
+        ),
       ),
     );
   }
