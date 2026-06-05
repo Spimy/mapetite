@@ -7,13 +7,16 @@ import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/discovery/screens/home_feed_screen.dart';
+import '../features/discovery/screens/search_screen.dart';
+import '../features/discovery/screens/category_browse_screen.dart';
+import '../features/discovery/screens/map_explore_screen.dart';
 import '../features/profile/screens/dietary_preferences_screen.dart';
 import '../features/profile/screens/budget_setup_screen.dart';
 import '../features/profile/screens/health_goals_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/budget/screens/budget_overview_screen.dart';
-import '../features/budget/screens/spending_analytics_screen.dart';
-import '../features/budget/screens/transactions_screen.dart';
+import '../features/budget/screens/budget_analytics_screen.dart';
+import '../features/budget/screens/transaction_log_screen.dart';
 import '../features/recipes/screens/recipe_listing_screen.dart';
 import '../features/recipes/screens/recipe_detail_screen.dart';
 import '../features/recipes/screens/create_recipe_screen.dart';
@@ -33,6 +36,7 @@ abstract class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
   static const String explore = '/explore';
+  static const String categories = '/categories';
   static const String map = '/map';
   static const String budget = '/budget';
   static const String profile = '/profile';
@@ -127,6 +131,12 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.profile,
       builder: (context, state) => const _WipScreen(label: 'Profile'),
+    ),
+
+    // ── Category browse (accessible from explore & drawer) ───────────────
+    GoRoute(
+      path: AppRoutes.categories,
+      builder: (context, state) => const CategoryBrowseScreen(),
     ),
 
     // ── Recipes (cook-in flow) ────────────────────────────────────────────
@@ -228,8 +238,7 @@ final GoRouter appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.explore,
-              builder: (context, state) =>
-                  const _PlaceholderScreen(label: 'Explore'),
+              builder: (context, state) => const SearchScreen(),
             ),
           ],
         ),
@@ -237,8 +246,7 @@ final GoRouter appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.map,
-              builder: (context, state) =>
-                  const _PlaceholderScreen(label: 'Map'),
+              builder: (context, state) => const MapExploreScreen(),
             ),
           ],
         ),
@@ -250,13 +258,13 @@ final GoRouter appRouter = GoRouter(
               routes: [
                 GoRoute(
                   path: 'analytics',
-                  builder: (context, state) => SpendingAnalyticsScreen(
-                    categoryFilter: state.uri.queryParameters['category'],
-                  ),
+                  builder: (context, state) =>
+                      const BudgetAnalyticsScreen(),
                 ),
                 GoRoute(
                   path: 'transactions',
-                  builder: (context, state) => const TransactionsScreen(),
+                  builder: (context, state) =>
+                      const TransactionLogScreen(),
                 ),
               ],
             ),
@@ -366,27 +374,6 @@ class _WipScreen extends StatelessWidget {
                   ?.copyWith(color: AppColors.neutral600),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Placeholder Screens (bottom nav shell tabs not yet built) ────────────────
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String label;
-
-  const _PlaceholderScreen({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Center(
-        child: Text(
-          '$label — coming soon',
-          style: Theme.of(context).textTheme.bodyLarge,
         ),
       ),
     );
