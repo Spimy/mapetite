@@ -31,6 +31,7 @@ class TransactionLogScreen extends StatefulWidget {
 class _TransactionLogScreenState extends State<TransactionLogScreen> {
   final _searchCtrl = TextEditingController();
   String _activeFilter = 'All';
+  bool _isExporting = false;
 
   final List<_TxData> _allTransactions = [
     const _TxData(
@@ -136,6 +137,61 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
     );
   }
 
+  Future<void> _exportTransactions() async {
+    setState(() => _isExporting = true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.white,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Text('Exporting transactions...',
+                style: AppTypography.body1.copyWith(color: AppColors.white)),
+          ],
+        ),
+        backgroundColor: AppColors.neutral700,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
+      ),
+    );
+    await Future.delayed(const Duration(milliseconds: 1800));
+    if (!mounted) return;
+    setState(() => _isExporting = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check, color: AppColors.white, size: 13),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Text('Transactions exported',
+                style: AppTypography.body1.copyWith(color: AppColors.white)),
+          ],
+        ),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,10 +212,29 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
               context.mounted ? Navigator.of(context).pop() : null,
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.ios_share,
-                size: AppSpacing.iconMd, color: AppColors.neutral),
-            onPressed: () {},
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.md),
+            child: GestureDetector(
+              onTap: _isExporting ? null : _exportTransactions,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.neutral100,
+                  shape: BoxShape.circle,
+                ),
+                child: _isExporting
+                    ? const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : const Icon(Icons.ios_share,
+                        size: AppSpacing.iconSm, color: AppColors.neutral),
+              ),
+            ),
           ),
         ],
       ),
