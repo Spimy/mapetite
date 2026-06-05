@@ -63,6 +63,8 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
                   _buildRingCard(budget),
                   const SizedBox(height: AppSpacing.lg),
                   _buildCategoriesCard(budget),
+                  const SizedBox(height: AppSpacing.md),
+                  _buildAnalyticsBanner(context),
                   const SizedBox(height: AppSpacing.lg),
                   _buildRecentTransactionsCard(context, budget),
                   const SizedBox(height: 100),
@@ -312,6 +314,53 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
             progressColor: AppColors.secondary,
           ),
         ],
+      ),
+    );
+  }
+
+  // ─── Analytics Banner ─────────────────────────────────────────────────────
+
+  Widget _buildAnalyticsBanner(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.budgetAnalytics),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.cardPadding,
+            vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.bar_chart_rounded,
+                  size: AppSpacing.iconSm, color: AppColors.white),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('View Spending Analytics',
+                      style: AppTypography.headline3
+                          .copyWith(color: AppColors.white)),
+                  Text('Charts, trends and AI insights',
+                      style: AppTypography.body2.copyWith(
+                          color: Colors.white.withValues(alpha: 0.7))),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios,
+                size: 14, color: AppColors.white),
+          ],
+        ),
       ),
     );
   }

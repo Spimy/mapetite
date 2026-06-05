@@ -24,20 +24,33 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen> {
 
   static const _dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  // Mock bar values per period
-  List<double> get _barValues {
+  // Dining Out bar values per period
+  List<double> get _diningValues {
     switch (_period) {
       case '7D':
-        return [45, 62, 28, 89, 55, 120, 21];
+        return [30, 45, 18, 60, 40, 85, 15];
       case '90D':
-        return [380, 420, 290, 510, 445, 360, 480];
+        return [220, 260, 180, 310, 270, 240, 290];
       default: // 30D
-        return [85, 110, 60, 145, 95, 120, 75];
+        return [55, 75, 40, 95, 65, 80, 50];
+    }
+  }
+
+  // Cook-In (groceries) bar values per period
+  List<double> get _cookInValues {
+    switch (_period) {
+      case '7D':
+        return [15, 17, 10, 29, 15, 35, 6];
+      case '90D':
+        return [160, 160, 110, 200, 175, 120, 190];
+      default: // 30D
+        return [30, 35, 20, 50, 30, 40, 25];
     }
   }
 
   double get _weekTotal =>
-      _barValues.fold(0.0, (s, v) => s + v);
+      _diningValues.fold(0.0, (s, v) => s + v) +
+      _cookInValues.fold(0.0, (s, v) => s + v);
 
   @override
   Widget build(BuildContext context) {
@@ -113,8 +126,12 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen> {
   // ─── Bar Chart Card ───────────────────────────────────────────────────────
 
   Widget _buildBarChartCard() {
-    final values = _barValues;
-    final maxVal = values.reduce((a, b) => a > b ? a : b);
+    final dining = _diningValues;
+    final cookIn = _cookInValues;
+    final maxVal = [
+      ...dining,
+      ...cookIn,
+    ].reduce((a, b) => a > b ? a : b);
     final today = _todayIndex;
 
     return _Card(
@@ -127,38 +144,55 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen> {
             'RM ${_weekTotal.toStringAsFixed(2)} this week',
             style: AppTypography.body2,
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.md),
+          // Legend
+          Row(
+            children: [
+              _LegendDot(color: AppColors.primary, label: 'Dine Out'),
+              const SizedBox(width: AppSpacing.lg),
+              _LegendDot(color: AppColors.secondary, label: 'Cook-In'),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
           SizedBox(
             height: 160,
             child: BarChart(
               BarChartData(
-                maxY: maxVal * 1.4,
-                barGroups: List.generate(values.length, (i) {
+                maxY: maxVal * 1.5,
+                groupsSpace: 6,
+                barGroups: List.generate(dining.length, (i) {
                   final isToday = i == today;
                   return BarChartGroupData(
                     x: i,
-                    showingTooltipIndicators: isToday ? [0] : [],
+                    barsSpace: 3,
+                    showingTooltipIndicators: isToday ? [0, 1] : [],
                     barRods: [
                       BarChartRodData(
-                        toY: values[i],
-                        color: isToday
-                            ? AppColors.primary
-                            : AppColors.secondary,
-                        width: 24,
+                        toY: dining[i],
+                        color: AppColors.primary,
+                        width: 10,
                         borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(AppSpacing.radiusMd)),
+                            top: Radius.circular(4)),
+                      ),
+                      BarChartRodData(
+                        toY: cookIn[i],
+                        color: AppColors.secondary,
+                        width: 10,
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(4)),
                       ),
                     ],
                   );
                 }),
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (_) => AppColors.primary,
+                    getTooltipColor: (_) => AppColors.neutral,
                     tooltipRoundedRadius: AppSpacing.radiusMd,
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final label = rodIndex == 0 ? 'Dine' : 'Cook';
                       return BarTooltipItem(
-                        'RM ${rod.toY.toStringAsFixed(0)}',
-                        AppTypography.label
+                        '$label RM${rod.toY.toStringAsFixed(0)}',
+                        AppTypography.caption
                             .copyWith(color: AppColors.white),
                       );
                     },
@@ -428,6 +462,31 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen> {
               )),
         ],
       ),
+    );
+  }
+}
+
+// ─── Legend Dot ──────────────────────────────────────────────────────────────
+
+class _LegendDot extends StatelessWidget {
+  final Color color;
+  final String label;
+
+  const _LegendDot({required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: AppTypography.caption),
+      ],
     );
   }
 }
