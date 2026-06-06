@@ -1,9 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_chip.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/pricing_badge.dart';
 import '../models/mocks/restaurant_mocks.dart';
@@ -17,15 +20,13 @@ class RestaurantListingScreen extends StatefulWidget {
       _RestaurantListingScreenState();
 }
 
-enum _DineInFilter { halal, openNow, vegan, bestValue, nearest }
+enum _DineInQuickFilter { halal, openNow, vegan, bestValue, nearest }
 
 class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
-  int _activeSortIndex = 0;
-  final List<String> _sortOptions = ['Best Match', 'Nearest', 'Budget', 'Cuisine'];
-  Set<String> _activeCuisines = {};
-  final Set<_DineInFilter> _activeFilters = {};
+  final Set<_DineInQuickFilter> _quickFilters = {};
   String _searchQuery = '';
   final _searchController = TextEditingController();
+  _RestaurantFilters _filters = const _RestaurantFilters();
 
   @override
   void dispose() {
@@ -36,7 +37,6 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
   List<RestaurantModel> get _restaurants {
     var list = RestaurantMocks.nearbyRestaurants;
 
-    // Search filter
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       list = list
@@ -46,48 +46,59 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
           .toList();
     }
 
-    // Cuisine filter
-    if (_activeCuisines.isNotEmpty) {
-      list = list.where((r) => _activeCuisines.contains(r.cuisineType)).toList();
-    }
-
-    // Quick filters
-    for (final filter in _activeFilters) {
-      switch (filter) {
-        case _DineInFilter.halal:
+    // Quick chips
+    for (final f in _quickFilters) {
+      switch (f) {
+        case _DineInQuickFilter.halal:
           list = list.where((r) => r.dietaryTags.contains('Halal')).toList();
-        case _DineInFilter.openNow:
+        case _DineInQuickFilter.openNow:
           list = list.where((r) => r.isOpen).toList();
-        case _DineInFilter.vegan:
+        case _DineInQuickFilter.vegan:
           list = list.where((r) => r.dietaryTags.contains('Vegan')).toList();
-        case _DineInFilter.bestValue:
+        case _DineInQuickFilter.bestValue:
           list = list.where((r) => r.pricingBracket == PricingBracket.budget).toList();
-        case _DineInFilter.nearest:
+        case _DineInQuickFilter.nearest:
           list = list.where((r) => r.distanceKm <= 1.0).toList();
       }
+    }
+
+    // Full filter sheet filters
+    if (_filters.cuisines.isNotEmpty) {
+      list = list.where((r) => _filters.cuisines.contains(r.cuisineType)).toList();
+    }
+    for (final d in _filters.dietary) {
+      list = list.where((r) => r.dietaryTags.contains(d)).toList();
+    }
+    if (_filters.underThirtyMinWalk) {
+      list = list.where((r) => r.walkMinutes <= 30).toList();
+    }
+    if (_filters.priceRange != null) {
+      list = list.where((r) => r.pricingBracket == _filters.priceRange).toList();
     }
 
     return list;
   }
 
-  void _toggleFilter(_DineInFilter f) {
+  int get _totalActiveFilterCount => _quickFilters.length + _filters.activeCount;
+
+  void _toggleQuickFilter(_DineInQuickFilter f) {
     setState(() {
-      if (_activeFilters.contains(f)) {
-        _activeFilters.remove(f);
+      if (_quickFilters.contains(f)) {
+        _quickFilters.remove(f);
       } else {
-        _activeFilters.add(f);
+        _quickFilters.add(f);
       }
     });
   }
 
-  void _openCuisineSheet() {
+  void _openFilterSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _CuisineFilterSheet(
-        activeCuisines: _activeCuisines,
-        onApply: (selected) => setState(() => _activeCuisines = selected),
+      builder: (_) => _RestaurantFilterSheet(
+        initialFilters: _filters,
+        onApply: (f) => setState(() => _filters = f),
       ),
     );
   }
@@ -170,7 +181,10 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
                     setState(() => _searchQuery = '');
                   },
                 )
-              : null,
+              : _FilterIconButton(
+                  count: _totalActiveFilterCount,
+                  onTap: _openFilterSheet,
+                ),
           contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
           filled: true,
           fillColor: AppColors.white,
@@ -194,11 +208,11 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
 
   Widget _buildFilterChips() {
     const chips = [
-      (_DineInFilter.halal,   Icons.check_circle_outline, 'Halal'),
-      (_DineInFilter.openNow, Icons.access_time_outlined, 'Open Now'),
-      (_DineInFilter.vegan,   Icons.eco,                  'Vegan'),
-      (_DineInFilter.bestValue, Icons.savings_outlined,   'Best Value'),
-      (_DineInFilter.nearest, Icons.near_me_outlined,     'Nearby < 1km'),
+      (_DineInQuickFilter.halal,     Icons.check_circle_outline, 'Halal'),
+      (_DineInQuickFilter.openNow,   Icons.access_time_outlined,  'Open Now'),
+      (_DineInQuickFilter.vegan,     Icons.eco,                   'Vegan'),
+      (_DineInQuickFilter.bestValue, Icons.savings_outlined,      'Best Value'),
+      (_DineInQuickFilter.nearest,   Icons.near_me_outlined,      'Nearby < 1km'),
     ];
 
     return SizedBox(
@@ -208,11 +222,11 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
         padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
         children: chips.map((def) {
           final (filter, icon, label) = def;
-          final isActive = _activeFilters.contains(filter);
+          final isActive = _quickFilters.contains(filter);
           return Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: GestureDetector(
-              onTap: () => _toggleFilter(filter),
+              onTap: () => _toggleQuickFilter(filter),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(
@@ -229,18 +243,13 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      icon,
-                      size: 13,
-                      color: isActive ? AppColors.white : AppColors.neutral600,
-                    ),
+                    Icon(icon, size: 13,
+                        color: isActive ? AppColors.white : AppColors.neutral600),
                     const SizedBox(width: 4),
-                    Text(
-                      label,
-                      style: AppTypography.label.copyWith(
-                        color: isActive ? AppColors.white : AppColors.neutral600,
-                      ),
-                    ),
+                    Text(label,
+                        style: AppTypography.label.copyWith(
+                          color: isActive ? AppColors.white : AppColors.neutral600,
+                        )),
                   ],
                 ),
               ),
@@ -282,27 +291,8 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
         ),
       ],
       bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(52),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: AppColors.white,
-            border: Border(
-              bottom: BorderSide(color: AppColors.border, width: 1),
-            ),
-          ),
-          child: _SortPillRow(
-            options: _sortOptions,
-            activeIndex: _activeSortIndex,
-            activeCuisineCount: _activeCuisines.length,
-            onChanged: (i) {
-              if (_sortOptions[i] == 'Cuisine') {
-                _openCuisineSheet();
-              } else {
-                setState(() => _activeSortIndex = i);
-              }
-            },
-          ),
-        ),
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: AppColors.border),
       ),
     );
   }
@@ -345,8 +335,8 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
               variant: AppButtonVariant.outlined,
               isFullWidth: false,
               onPressed: () => setState(() {
-                _activeFilters.clear();
-                _activeCuisines.clear();
+                _quickFilters.clear();
+                _filters = const _RestaurantFilters();
                 _searchController.clear();
                 _searchQuery = '';
               }),
@@ -358,111 +348,53 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
   }
 }
 
-// ── Sort Pill Row ─────────────────────────────────────────────────────────────
+// ── Filter Icon Button (with badge) ──────────────────────────────────────────
 
-class _SortPillRow extends StatelessWidget {
-  final List<String> options;
-  final int activeIndex;
-  final int activeCuisineCount;
-  final ValueChanged<int> onChanged;
+class _FilterIconButton extends StatelessWidget {
+  final int count;
+  final VoidCallback onTap;
 
-  const _SortPillRow({
-    required this.options,
-    required this.activeIndex,
-    required this.activeCuisineCount,
-    required this.onChanged,
-  });
+  const _FilterIconButton({required this.count, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm,
-      ),
-      child: Row(
-        children: options.asMap().entries.map((entry) {
-          final isActive = entry.key == activeIndex;
-          final label = entry.value;
-          final isCuisine = label == 'Cuisine';
-          return Padding(
-            padding: EdgeInsets.only(
-              right: entry.key < options.length - 1 ? AppSpacing.sm : 0,
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(
+              Icons.tune_rounded,
+              size: 20,
+              color: count > 0 ? AppColors.primary : AppColors.neutral400,
             ),
-            child: GestureDetector(
-              onTap: () => onChanged(entry.key),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    height: 36,
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: (isActive || (isCuisine && activeCuisineCount > 0))
-                          ? AppColors.primary
-                          : AppColors.white,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                      border: Border.all(
-                        color: (isActive || (isCuisine && activeCuisineCount > 0))
-                            ? AppColors.primary
-                            : AppColors.border,
+            if (count > 0)
+              Positioned(
+                top: -4,
+                right: -4,
+                child: Container(
+                  width: 14,
+                  height: 14,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$count',
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          label,
-                          style: AppTypography.body2.copyWith(
-                            color: (isActive || (isCuisine && activeCuisineCount > 0))
-                                ? AppColors.white
-                                : AppColors.neutral600,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (isCuisine) ...[
-                          const SizedBox(width: 2),
-                          Icon(
-                            Icons.expand_more,
-                            size: 14,
-                            color: (isActive || activeCuisineCount > 0)
-                                ? AppColors.white
-                                : AppColors.neutral600,
-                          ),
-                        ],
-                      ],
                     ),
                   ),
-                  if (isCuisine && activeCuisineCount > 0)
-                    Positioned(
-                      top: -4,
-                      right: -4,
-                      child: Container(
-                        width: 16,
-                        height: 16,
-                        decoration: const BoxDecoration(
-                          color: AppColors.error,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            '$activeCuisineCount',
-                            style: AppTypography.caption.copyWith(
-                              color: AppColors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
-            ),
-          );
-        }).toList(),
+          ],
+        ),
       ),
     );
   }
@@ -728,64 +660,95 @@ class _DietaryOverlayChip extends StatelessWidget {
   }
 }
 
-// ── Cuisine Filter Sheet ──────────────────────────────────────────────────────
+// ── Restaurant Filter Data ────────────────────────────────────────────────────
 
-class _CuisineFilterSheet extends StatefulWidget {
-  final Set<String> activeCuisines;
-  final ValueChanged<Set<String>> onApply;
+class _RestaurantFilters {
+  final Set<String> cuisines;
+  final Set<String> dietary;
+  final bool underThirtyMinWalk;
+  final PricingBracket? priceRange;
+  final Set<String> allergenFree;
 
-  const _CuisineFilterSheet({
-    required this.activeCuisines,
+  const _RestaurantFilters({
+    this.cuisines = const {},
+    this.dietary = const {},
+    this.underThirtyMinWalk = false,
+    this.priceRange,
+    this.allergenFree = const {},
+  });
+
+  int get activeCount =>
+      cuisines.length +
+      dietary.length +
+      (underThirtyMinWalk ? 1 : 0) +
+      (priceRange != null ? 1 : 0) +
+      allergenFree.length;
+}
+
+// ── Restaurant Filter Sheet ───────────────────────────────────────────────────
+
+class _RestaurantFilterSheet extends StatefulWidget {
+  final _RestaurantFilters initialFilters;
+  final ValueChanged<_RestaurantFilters> onApply;
+
+  const _RestaurantFilterSheet({
+    required this.initialFilters,
     required this.onApply,
   });
 
   @override
-  State<_CuisineFilterSheet> createState() => _CuisineFilterSheetState();
+  State<_RestaurantFilterSheet> createState() => _RestaurantFilterSheetState();
 }
 
-class _CuisineFilterSheetState extends State<_CuisineFilterSheet> {
-  static const _allCuisines = [
-    ('🍛', 'Mamak'),
-    ('☕', 'Kopitiam'),
-    ('🍱', 'Japanese'),
-    ('🥘', 'Chinese'),
-    ('🍛', 'Indian'),
-    ('🍚', 'Malay'),
-    ('🍔', 'Western'),
-    ('🐟', 'Seafood'),
-    ('🥗', 'Vegetarian'),
-    ('🍜', 'Korean'),
-  ];
-
-  late Set<String> _selected;
+class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
+  late Set<String> _cuisines;
+  late Set<String> _dietary;
+  late bool _underThirtyMin;
+  late PricingBracket? _priceRange;
+  late Set<String> _allergenFree;
 
   @override
   void initState() {
     super.initState();
-    _selected = Set.from(widget.activeCuisines);
+    final f = widget.initialFilters;
+    _cuisines = Set.from(f.cuisines);
+    _dietary = Set.from(f.dietary);
+    _underThirtyMin = f.underThirtyMinWalk;
+    _priceRange = f.priceRange;
+    _allergenFree = Set.from(f.allergenFree);
   }
+
+  bool get _hasActive =>
+      _cuisines.isNotEmpty ||
+      _dietary.isNotEmpty ||
+      _underThirtyMin ||
+      _priceRange != null ||
+      _allergenFree.isNotEmpty;
+
+  void _clearAll() => setState(() {
+        _cuisines.clear();
+        _dietary.clear();
+        _underThirtyMin = false;
+        _priceRange = null;
+        _allergenFree.clear();
+      });
 
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.75,
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
       child: Container(
         decoration: const BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppSpacing.radiusXl),
-          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle + header
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0,
-              ),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
               child: Column(
                 children: [
                   Center(
@@ -802,103 +765,174 @@ class _CuisineFilterSheetState extends State<_CuisineFilterSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Filter by Cuisine', style: AppTypography.headline2),
-                      if (_selected.isNotEmpty)
+                      Text('Filter Restaurants', style: AppTypography.headline2),
+                      if (_hasActive)
                         GestureDetector(
-                          onTap: () => setState(() => _selected.clear()),
-                          child: Text(
-                            'Clear all',
-                            style: AppTypography.body2
-                                .copyWith(color: AppColors.primary),
-                          ),
+                          onTap: _clearAll,
+                          child: Text('Clear all',
+                              style: AppTypography.body2.copyWith(color: AppColors.primary)),
                         ),
                     ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            // Cuisine grid
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: _allCuisines.map((c) {
-                    final (emoji, name) = c;
-                    final isActive = _selected.contains(name);
-                    return GestureDetector(
-                      onTap: () => setState(() {
-                        if (isActive) {
-                          _selected.remove(name);
-                        } else {
-                          _selected.add(name);
-                        }
+                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cuisine
+                    Text('Cuisine', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    _CuisineIconGrid(
+                      active: _cuisines,
+                      onToggle: (c) => setState(() {
+                        if (_cuisines.contains(c)) _cuisines.remove(c);
+                        else _cuisines.add(c);
                       }),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    // Dietary
+                    Text('Dietary', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: [
+                        _IconFilterChip(
+                          label: 'Halal',
+                          isActive: _dietary.contains('Halal'),
+                          onToggle: () => setState(() {
+                            if (_dietary.contains('Halal')) _dietary.remove('Halal');
+                            else _dietary.add('Halal');
+                          }),
+                          svgAsset: 'assets/icons/dietary/halal-icon.svg',
                         ),
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? AppColors.primaryLight
-                              : AppColors.neutral100,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusFull),
-                          border: Border.all(
-                            color: isActive
-                                ? AppColors.primary
-                                : AppColors.border,
-                            width: isActive ? 1.5 : 1,
-                          ),
+                        _IconFilterChip(
+                          label: 'Vegan',
+                          isActive: _dietary.contains('Vegan'),
+                          onToggle: () => setState(() {
+                            if (_dietary.contains('Vegan')) _dietary.remove('Vegan');
+                            else _dietary.add('Vegan');
+                          }),
+                          icon: Icons.eco,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(emoji,
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(width: AppSpacing.xs),
-                            Text(
-                              name,
-                              style: AppTypography.body2.copyWith(
-                                color: isActive
-                                    ? AppColors.primary
-                                    : AppColors.neutral600,
-                                fontWeight: isActive
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                              ),
-                            ),
-                          ],
+                        _IconFilterChip(
+                          label: 'Vegetarian',
+                          isActive: _dietary.contains('Vegetarian'),
+                          onToggle: () => setState(() {
+                            if (_dietary.contains('Vegetarian')) _dietary.remove('Vegetarian');
+                            else _dietary.add('Vegetarian');
+                          }),
+                          icon: Icons.spa,
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    // Distance / Time
+                    Text('Distance', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: [
+                        _IconFilterChip(
+                          label: 'Under 30 min walk',
+                          isActive: _underThirtyMin,
+                          onToggle: () => setState(() => _underThirtyMin = !_underThirtyMin),
+                          icon: Icons.directions_walk,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    // Price Range
+                    Text('Price Range', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Budget RM 5–10  ·  Mid RM 10–20  ·  Premium RM 20+',
+                      style: AppTypography.caption,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: [
+                        _IconFilterChip(
+                          label: 'Budget (RM 5–10)',
+                          isActive: _priceRange == PricingBracket.budget,
+                          onToggle: () => setState(() =>
+                              _priceRange = _priceRange == PricingBracket.budget ? null : PricingBracket.budget),
+                          icon: Icons.savings_outlined,
+                        ),
+                        _IconFilterChip(
+                          label: 'Mid (RM 10–20)',
+                          isActive: _priceRange == PricingBracket.mid,
+                          onToggle: () => setState(() =>
+                              _priceRange = _priceRange == PricingBracket.mid ? null : PricingBracket.mid),
+                          icon: Icons.account_balance_wallet_outlined,
+                        ),
+                        _IconFilterChip(
+                          label: 'Premium (RM 20+)',
+                          isActive: _priceRange == PricingBracket.premium,
+                          onToggle: () => setState(() =>
+                              _priceRange = _priceRange == PricingBracket.premium ? null : PricingBracket.premium),
+                          icon: Icons.diamond_outlined,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    // Allergen-free
+                    Text('Allergen-free (Free from)', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: AppConstants.allergenOptions.map((allergen) {
+                        return _IconFilterChip(
+                          label: allergen,
+                          isActive: _allergenFree.contains(allergen),
+                          onToggle: () => setState(() {
+                            if (_allergenFree.contains(allergen)) _allergenFree.remove(allergen);
+                            else _allergenFree.add(allergen);
+                          }),
+                          icon: AppChip.allergenIconMap[allergen] ?? Icons.warning_amber,
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
                 ),
               ),
             ),
-            // Apply button
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xxxl,
+                AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl,
               ),
               child: SizedBox(
                 width: double.infinity,
                 height: AppSpacing.buttonHeight,
                 child: ElevatedButton(
                   onPressed: () {
-                    widget.onApply(Set.from(_selected));
+                    widget.onApply(_RestaurantFilters(
+                      cuisines: Set.from(_cuisines),
+                      dietary: Set.from(_dietary),
+                      underThirtyMinWalk: _underThirtyMin,
+                      priceRange: _priceRange,
+                      allergenFree: Set.from(_allergenFree),
+                    ));
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusLg),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                     ),
                     elevation: 0,
                   ),
@@ -909,6 +943,127 @@ class _CuisineFilterSheetState extends State<_CuisineFilterSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Icon Filter Chip ──────────────────────────────────────────────────────────
+
+class _IconFilterChip extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onToggle;
+  final IconData? icon;
+  final String? svgAsset;
+
+  const _IconFilterChip({
+    required this.label,
+    required this.isActive,
+    required this.onToggle,
+    this.icon,
+    this.svgAsset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final contentColor = isActive ? AppColors.primary : AppColors.neutral600;
+    return GestureDetector(
+      onTap: onToggle,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.primaryLight : AppColors.neutral100,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(
+            color: isActive ? AppColors.primary : AppColors.border,
+            width: isActive ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (svgAsset != null)
+              SvgPicture.asset(svgAsset!, width: 13, height: 13,
+                  colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn))
+            else if (icon != null)
+              Icon(icon, size: 13, color: contentColor),
+            const SizedBox(width: 4),
+            Text(label,
+                style: AppTypography.label.copyWith(
+                  color: contentColor,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Cuisine Icon Grid ─────────────────────────────────────────────────────────
+
+class _CuisineIconGrid extends StatelessWidget {
+  final Set<String> active;
+  final ValueChanged<String> onToggle;
+
+  const _CuisineIconGrid({required this.active, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const columns = 4;
+        const totalSpacing = (columns - 1) * AppSpacing.sm;
+        final chipWidth = (constraints.maxWidth - totalSpacing) / columns;
+        return Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: AppConstants.cuisineCategories.map((cuisine) {
+            final isActive = active.contains(cuisine);
+            final icon = AppConstants.cuisineIcons[cuisine] ?? Icons.restaurant;
+            return GestureDetector(
+              onTap: () => onToggle(cuisine),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: chipWidth,
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.sm + 2,
+                  horizontal: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: isActive ? AppColors.primaryLight : AppColors.neutral100,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  border: Border.all(
+                    color: isActive ? AppColors.primary : AppColors.border,
+                    width: isActive ? 1.5 : 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: 22,
+                        color: isActive ? AppColors.primary : AppColors.neutral600),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(cuisine,
+                        style: AppTypography.caption.copyWith(
+                          color: isActive ? AppColors.primary : AppColors.neutral600,
+                          fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                          height: 1.2,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 }
