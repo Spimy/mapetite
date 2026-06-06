@@ -4,6 +4,25 @@
     margin-bottom: 2rem;
   }
 
+  .settings__message {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 2px solid transparent;
+    margin-bottom: 1.5rem;
+    font-weight: var(--font-weight-heading);
+    color: var(--color-white);
+    
+    &.settings__message--success {
+      border-color: color-mix(in srgb, var(--color-success) 80%, black);
+      background-color: color-mix(in srgb, var(--color-success) 80%, transparent);
+    }
+
+    &.settings__message--error {
+      border-color: color-mix(in srgb, var(--color-error) 80%, black);
+      background-color: color-mix(in srgb, var(--color-error) 80%, transparent);
+    }
+  }
+
   .settings__card {
     background: var(--color-white);
     border: 1px solid var(--color-border);

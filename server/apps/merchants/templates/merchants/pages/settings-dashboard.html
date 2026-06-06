@@ -25,6 +25,12 @@
   <div class="settings">
     <h1 class="settings__title">Account Settings</h1>
 
+    {% if messages %}
+      {% for message in messages %}
+        <div class="settings__message settings__message--{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
     <section class="settings__card">
       <h2 class="settings__subtitle">Profile Information</h2>
 
