@@ -402,7 +402,7 @@ class DashboardPromotionListView(MerchantRequiredMixin, StoreContextMixin, ListV
         return self.get(request, *args, **kwargs)
 
 
-class PromotionUpdateView(MerchantRequiredMixin, StoreContextMixin, UpdateView):
+class DashboardPromotionUpdateView(MerchantRequiredMixin, StoreContextMixin, UpdateView):
     model = Promotion
     form_class = PromotionForm
     template_name = 'merchants/pages/promotion-edit-dashboard.html'
