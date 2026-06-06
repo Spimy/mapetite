@@ -33,6 +33,10 @@
             </select>
             {% if request.resolver_match.view_name == 'merchants:dashboard_edit_item' %}
               <input type="hidden" name="current_route" value="merchants:dashboard_items" />
+            {% elif request.resolver_match.view_name == 'merchants:dashboard_promotion_edit' %}
+              <input type="hidden"
+                     name="current_route"
+                     value="merchants:dashboard_promotions" />
             {% else %}
               <input type="hidden"
                      name="current_route"
@@ -72,7 +76,7 @@
           <li class="sidebar__nav-item">
             <a class="sidebar__nav-link"
                href="{% url 'merchants:dashboard_promotions' current_index %}"
-               {% if request.resolver_match.view_name == 'merchants:dashboard_promotions' %}aria-current="page"{% endif %}>
+               {% if request.resolver_match.view_name == 'merchants:dashboard_promotions' or request.resolver_match.view_name == 'merchants:dashboard_promotion_edit' %}aria-current="page"{% endif %}>
               <span class="sidebar__nav-icon">{% include "icons/tag.html" %}</span>
               <span class="sidebar__nav-text">Promotions</span>
             </a>
