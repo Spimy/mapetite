@@ -794,7 +794,7 @@ class _StatChip extends StatelessWidget {
 // ─── Friend Selector Sheet ────────────────────────────────────────────────────
 
 const _kMockFriends = [
-  ('Aisha Rahman', 'A'),
+  ('Joshua Bonham', 'J'),
   ('Ben Lim', 'B'),
   ('Chloe Tan', 'C'),
   ('David Wong', 'D'),

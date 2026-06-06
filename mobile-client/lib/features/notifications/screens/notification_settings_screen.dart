@@ -33,7 +33,11 @@ class _NotificationSettingsScreenState
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () {
-            if (context.canPop()) context.pop();
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/settings');
+            }
           },
         ),
         title: Text(

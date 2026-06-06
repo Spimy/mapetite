@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
@@ -206,10 +207,15 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
         titleTextStyle:
             AppTypography.headline1.copyWith(color: AppColors.primary),
         title: const Text('Transactions'),
-        leading: BackButton(
-          color: AppColors.primary,
-          onPressed: () =>
-              context.mounted ? Navigator.of(context).pop() : null,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/budget');
+            }
+          },
         ),
         actions: [
           Padding(

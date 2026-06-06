@@ -141,7 +141,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 if (context.canPop()) {
                   context.pop();
                 } else {
-                  context.go(AppRoutes.dineIn);
+                  context.go(AppRoutes.restaurants);
                 }
               },
               tooltip: 'Back',
@@ -800,7 +800,7 @@ class _ShareOption extends StatelessWidget {
 // ── Friend Selector Sheet ─────────────────────────────────────────────────────
 
 const _kMockFriends = [
-  ('Aisha Rahman', 'A'),
+  ('Joshua Bonham', 'J'),
   ('Ben Lim', 'B'),
   ('Chloe Tan', 'C'),
   ('David Wong', 'D'),

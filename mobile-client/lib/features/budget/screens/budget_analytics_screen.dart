@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
@@ -66,6 +67,16 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen> {
         titleTextStyle:
             AppTypography.headline1.copyWith(color: AppColors.primary),
         title: const Text('Analytics'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/budget');
+            }
+          },
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

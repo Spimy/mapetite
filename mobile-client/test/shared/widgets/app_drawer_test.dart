@@ -9,7 +9,7 @@ GoRouter _testRouter() {
       GoRoute(
         path: '/',
         builder: (_, _) => const Scaffold(
-          drawer: AppDrawer(displayName: 'Aisha', savedThisMonth: 47.50),
+          drawer: AppDrawer(displayName: 'Joshua', savedThisMonth: 47.50),
           body: Text('Home'),
         ),
       ),
@@ -64,7 +64,7 @@ void main() {
 
     testWidgets('renders display name in header', (tester) async {
       await openDrawer(tester);
-      expect(find.text('Aisha'), findsOneWidget);
+      expect(find.text('Joshua'), findsOneWidget);
     });
 
     testWidgets('renders "Account & Preferences" subtitle', (tester) async {

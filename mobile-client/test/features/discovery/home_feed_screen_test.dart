@@ -402,7 +402,7 @@ void main() {
     testWidgets('renders personalised greeting with user name', (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pumpAndSettle();
-      expect(find.text('Hi, Aisha.'), findsOneWidget);
+      expect(find.text('Hi, Joshua.'), findsOneWidget);
     });
 
     testWidgets('renders contextual meal-time second line', (tester) async {

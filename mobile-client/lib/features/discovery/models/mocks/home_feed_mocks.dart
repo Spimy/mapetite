@@ -1,7 +1,7 @@
 import '../home_feed_models.dart';
 
 abstract class HomeFeedMocks {
-  static const String userName = 'Aisha';
+  static const String userName = 'Joshua';
   static const String userLocation = 'Bangsar';
   static const double budgetRemaining = 366.0;
   static const int unreadNotifications = 2;

@@ -93,10 +93,10 @@ class AppSettingsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Aisha Salleh', style: AppTypography.headline2),
+                  Text('Joshua Bonham', style: AppTypography.headline2),
                   const SizedBox(height: AppSpacing.xxs),
                   Text(
-                    'aisha.salleh@example.com',
+                    'joshua.bonham@example.com',
                     style: AppTypography.body2.copyWith(color: AppColors.neutral600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

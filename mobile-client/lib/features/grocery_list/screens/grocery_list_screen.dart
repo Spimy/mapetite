@@ -111,11 +111,15 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
       surfaceTintColor: AppColors.white,
       elevation: 0,
       scrolledUnderElevation: 0,
-      leading: Builder(
-        builder: (ctx) => IconButton(
-          icon: const Icon(Icons.menu, color: AppColors.neutral),
-          onPressed: () => Scaffold.of(ctx).openDrawer(),
-        ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/home');
+          }
+        },
       ),
       title: Row(
         mainAxisSize: MainAxisSize.min,
