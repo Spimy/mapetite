@@ -22,10 +22,39 @@ class SearchScreen extends StatefulWidget {
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
+class _ExploreFilterState {
+  final Set<String> categories;
+  final Set<String> dietary;
+  final String? priceRange;
+
+  const _ExploreFilterState({
+    this.categories = const {},
+    this.dietary = const {},
+    this.priceRange,
+  });
+
+  int get activeCount =>
+      categories.length + dietary.length + (priceRange != null ? 1 : 0);
+
+  _ExploreFilterState copyWith({
+    Set<String>? categories,
+    Set<String>? dietary,
+    String? priceRange,
+    bool clearPrice = false,
+  }) {
+    return _ExploreFilterState(
+      categories: categories ?? this.categories,
+      dietary: dietary ?? this.dietary,
+      priceRange: clearPrice ? null : (priceRange ?? this.priceRange),
+    );
+  }
+}
+
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   int _activeTab = 0;
+  _ExploreFilterState _filterState = const _ExploreFilterState();
 
   static const List<String> _tabs = ['Restaurants', 'Recipes', 'Groceries'];
 
@@ -44,6 +73,18 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   bool get _isSearching => _searchQuery.isNotEmpty;
+
+  void _openExploreFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ExploreFilterSheet(
+        filterState: _filterState,
+        onApply: (updated) => setState(() => _filterState = updated),
+      ),
+    );
+  }
 
   List<RestaurantModel> get _filteredResults {
     final q = _searchQuery.toLowerCase();
@@ -82,7 +123,8 @@ class _SearchScreenState extends State<SearchScreen> {
               pinned: true,
               delegate: _SearchBarDelegate(
                 searchController: _searchController,
-                onFilterTap: () {},
+                onFilterTap: _openExploreFilterSheet,
+                activeFilterCount: _filterState.activeCount,
               ),
             ),
 
@@ -158,7 +200,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
         SizedBox(
-          height: 220,
+          height: 244,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -429,10 +471,12 @@ class _SearchScreenState extends State<SearchScreen> {
 class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
   final TextEditingController searchController;
   final VoidCallback onFilterTap;
+  final int activeFilterCount;
 
   const _SearchBarDelegate({
     required this.searchController,
     required this.onFilterTap,
+    this.activeFilterCount = 0,
   });
 
   @override
@@ -442,7 +486,8 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => 80;
 
   @override
-  bool shouldRebuild(_SearchBarDelegate oldDelegate) => false;
+  bool shouldRebuild(_SearchBarDelegate oldDelegate) =>
+      oldDelegate.activeFilterCount != activeFilterCount;
 
   @override
   Widget build(
@@ -483,21 +528,48 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
                 ),
               ),
             ),
-            Container(
-              width: 1,
-              height: 24,
-              color: AppColors.border,
-              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            ),
             // Filter button — matches recipe screen _FilterIconButton style
             GestureDetector(
               onTap: onFilterTap,
-              child: const Padding(
-                padding: EdgeInsets.all(AppSpacing.sm),
-                child: Icon(
-                  Icons.tune_rounded,
-                  size: 20,
-                  color: AppColors.primary,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      Icons.tune_rounded,
+                      size: 20,
+                      color: activeFilterCount > 0
+                          ? AppColors.primary
+                          : AppColors.neutral400,
+                    ),
+                    if (activeFilterCount > 0)
+                      Positioned(
+                        top: -4,
+                        right: -4,
+                        child: Container(
+                          width: 14,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '$activeFilterCount',
+                              style: AppTypography.caption.copyWith(
+                                color: AppColors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -917,6 +989,271 @@ class _SearchResultCard extends StatelessWidget {
           ),
           PricingBadge(bracket: restaurant.pricingBracket),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Explore Filter Sheet ─────────────────────────────────────────────────────
+
+class _ExploreFilterSheet extends StatefulWidget {
+  final _ExploreFilterState filterState;
+  final ValueChanged<_ExploreFilterState> onApply;
+
+  const _ExploreFilterSheet({
+    required this.filterState,
+    required this.onApply,
+  });
+
+  @override
+  State<_ExploreFilterSheet> createState() => _ExploreFilterSheetState();
+}
+
+class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
+  static const _categories = ['Restaurants', 'Recipes', 'Groceries'];
+  static const _dietaryOptions = ['Halal', 'Vegan', 'Vegetarian'];
+  static const _priceOptions = [
+    ('Budget', 'RM 5–10'),
+    ('Mid', 'RM 10–20'),
+    ('Premium', 'RM 20+'),
+  ];
+
+  late Set<String> _categories2;
+  late Set<String> _dietary;
+  late String? _priceRange;
+
+  @override
+  void initState() {
+    super.initState();
+    _categories2 = Set.from(widget.filterState.categories);
+    _dietary = Set.from(widget.filterState.dietary);
+    _priceRange = widget.filterState.priceRange;
+  }
+
+  bool get _hasFilters =>
+      _categories2.isNotEmpty || _dietary.isNotEmpty || _priceRange != null;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+      ),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppSpacing.radiusXl),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle + header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0,
+              ),
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 32,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.neutral200,
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusFull),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Filter', style: AppTypography.headline2),
+                      if (_hasFilters)
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            _categories2.clear();
+                            _dietary.clear();
+                            _priceRange = null;
+                          }),
+                          child: Text(
+                            'Clear all',
+                            style: AppTypography.body2
+                                .copyWith(color: AppColors.primary),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Category
+                    Text(
+                      'Category',
+                      style: AppTypography.headline3
+                          .copyWith(color: AppColors.neutral600),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: _categories.map((cat) {
+                        final isActive = _categories2.contains(cat);
+                        return _FilterChip(
+                          label: cat,
+                          isActive: isActive,
+                          onTap: () => setState(() {
+                            if (isActive) {
+                              _categories2.remove(cat);
+                            } else {
+                              _categories2.add(cat);
+                            }
+                          }),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    // Dietary
+                    Text(
+                      'Dietary',
+                      style: AppTypography.headline3
+                          .copyWith(color: AppColors.neutral600),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: _dietaryOptions.map((d) {
+                        final isActive = _dietary.contains(d);
+                        return _FilterChip(
+                          label: d,
+                          isActive: isActive,
+                          onTap: () => setState(() {
+                            if (isActive) {
+                              _dietary.remove(d);
+                            } else {
+                              _dietary.add(d);
+                            }
+                          }),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    // Price range
+                    Text(
+                      'Price Range',
+                      style: AppTypography.headline3
+                          .copyWith(color: AppColors.neutral600),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: _priceOptions.map((p) {
+                        final (key, label) = p;
+                        final isActive = _priceRange == key;
+                        return _FilterChip(
+                          label: label,
+                          isActive: isActive,
+                          onTap: () => setState(() {
+                            _priceRange = isActive ? null : key;
+                          }),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                ),
+              ),
+            ),
+            // Apply button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: AppSpacing.buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () {
+                    widget.onApply(
+                      _ExploreFilterState(
+                        categories: Set.from(_categories2),
+                        dietary: Set.from(_dietary),
+                        priceRange: _priceRange,
+                      ),
+                    );
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusLg),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text('Apply Filters', style: AppTypography.button),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Reusable filter chip ─────────────────────────────────────────────────────
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.primaryLight : AppColors.neutral100,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(
+            color: isActive ? AppColors.primary : AppColors.border,
+            width: isActive ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.body2.copyWith(
+            color: isActive ? AppColors.primary : AppColors.neutral600,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
       ),
     );
   }
