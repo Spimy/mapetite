@@ -1,11 +1,19 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/dietary_chip.dart';
+import '../../../shared/widgets/food_card.dart';
 import '../../../shared/widgets/pricing_badge.dart';
 import '../../restaurants/models/mocks/restaurant_mocks.dart';
 import '../../restaurants/models/restaurant_model.dart';
+import '../models/home_feed_models.dart';
+import '../models/mocks/explore_mocks.dart';
+import '../models/mocks/home_feed_mocks.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -15,36 +23,30 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final _searchCtrl = TextEditingController();
-  int _activeCategoryIndex = 0;
-  final Set<String> _selectedDietary = {'Halal'};
-  double _radius = 2.0;
-  final List<String> _recentSearches = [
-    'Nasi lemak near me',
-    'Halal sushi',
-    'Recipe mee goreng',
-  ];
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  int _activeTab = 0;
 
-  static const _categories = ['Restaurants', 'Recipes', 'Groceries'];
-  static const _dietaryOptions = ['Halal', 'Vegan', 'Vegetarian'];
+  static const List<String> _tabs = ['Restaurants', 'Recipes', 'Groceries'];
 
   @override
   void initState() {
     super.initState();
-    _searchCtrl.addListener(() => setState(() {}));
+    _searchController.addListener(() {
+      setState(() => _searchQuery = _searchController.text.trim());
+    });
   }
 
   @override
   void dispose() {
-    _searchCtrl.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  bool get _isSearching => _searchCtrl.text.trim().isNotEmpty;
+  bool get _isSearching => _searchQuery.isNotEmpty;
 
   List<RestaurantModel> get _filteredResults {
-    final q = _searchCtrl.text.trim().toLowerCase();
-    if (q.isEmpty) return [];
+    final q = _searchQuery.toLowerCase();
     return RestaurantMocks.nearbyRestaurants
         .where((r) =>
             r.name.toLowerCase().contains(q) ||
@@ -57,355 +59,800 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStickyHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xxl),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCategoryTabs(),
-                    if (!_isSearching) ...[
-                      const SizedBox(height: AppSpacing.lg),
-                      _buildDietarySection(),
-                      const SizedBox(height: AppSpacing.lg),
-                      _buildRadiusCard(),
-                      const SizedBox(height: AppSpacing.lg),
-                      _buildRecentSearchesSection(),
-                    ] else ...[
-                      const SizedBox(height: AppSpacing.lg),
-                      _buildResultsSection(),
-                    ],
-                  ],
+        child: CustomScrollView(
+          slivers: [
+            // "Explore" display heading — scrolls away
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.lg,
+                  right: AppSpacing.lg,
+                  top: AppSpacing.xxxl,
+                  bottom: 0,
+                ),
+                child: Text(
+                  'Explore',
+                  style: AppTypography.display.copyWith(color: AppColors.neutral),
                 ),
               ),
             ),
+
+            // Sticky search bar
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _SearchBarDelegate(
+                searchController: _searchController,
+                onFilterTap: () {},
+              ),
+            ),
+
+            // Content: discovery sections or search results
+            if (!_isSearching) ..._buildDiscoverySections()
+            else ..._buildSearchResultsSections(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStickyHeader() {
-    return Container(
-      color: AppColors.background,
-      padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Explore',
-            style: AppTypography.display.copyWith(color: AppColors.primary),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Container(
-            height: 56,
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: AppSpacing.lg),
-                const Icon(Icons.search,
-                    size: AppSpacing.iconSm, color: AppColors.neutral400),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: TextField(
-                    controller: _searchCtrl,
-                    style: AppTypography.body1,
-                    decoration: InputDecoration(
-                      hintText:
-                          'Search restaurants, recipes, grocery stores...',
-                      hintStyle: AppTypography.body1
-                          .copyWith(color: AppColors.neutral400),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                ),
-                Container(width: 1, height: 24, color: AppColors.border),
-                const SizedBox(width: AppSpacing.md),
-                const Icon(Icons.tune,
-                    size: AppSpacing.iconMd, color: AppColors.primary),
-                const SizedBox(width: AppSpacing.lg),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  // ─── Discovery sections (empty search) ───────────────────────────────────────
+
+  List<Widget> _buildDiscoverySections() {
+    return [
+      // Section 1: Near You Right Now
+      SliverToBoxAdapter(child: _buildNearYouSection()),
+
+      // Section 2: Browse by Category
+      SliverToBoxAdapter(child: _buildCategorySection()),
+
+      // Section 3: Recipes to Try
+      SliverToBoxAdapter(child: _buildRecipesSection()),
+
+      // Section 4: Grocery Stores
+      SliverToBoxAdapter(child: _buildGrocerySection()),
+
+      const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl)),
+    ];
   }
 
-  Widget _buildCategoryTabs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: List.generate(_categories.length, (i) {
-          final active = _activeCategoryIndex == i;
-          return Padding(
-            padding: EdgeInsets.only(
-                right: i < _categories.length - 1 ? AppSpacing.sm : 0),
-            child: GestureDetector(
-              onTap: () => setState(() => _activeCategoryIndex = i),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.lg, vertical: AppSpacing.sm + 2),
-                decoration: BoxDecoration(
-                  color: active ? AppColors.primary : AppColors.white,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                  border: Border.all(
-                      color: active ? AppColors.primary : AppColors.border),
-                ),
-                child: Text(
-                  _categories[i],
-                  style: AppTypography.label.copyWith(
-                    color: active ? AppColors.white : AppColors.neutral,
-                    fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
+  // ─── Search active sections ───────────────────────────────────────────────────
+
+  List<Widget> _buildSearchResultsSections() {
+    return [
+      SliverToBoxAdapter(child: _buildTabFilterRow()),
+      SliverToBoxAdapter(child: _buildResultsList()),
+    ];
   }
 
-  Widget _buildDietarySection() {
+  // ─── Section 1: Near You Right Now ───────────────────────────────────────────
+
+  Widget _buildNearYouSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Dietary Preference',
-            style: AppTypography.headline3
-                .copyWith(color: AppColors.neutral700)),
-        const SizedBox(height: AppSpacing.sm),
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          children: _dietaryOptions.map((opt) {
-            final sel = _selectedDietary.contains(opt);
-            return GestureDetector(
-              onTap: () => setState(() {
-                sel
-                    ? _selectedDietary.remove(opt)
-                    : _selectedDietary.add(opt);
-              }),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md, vertical: 6),
-                decoration: BoxDecoration(
-                  color: sel ? AppColors.primary : AppColors.white,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                  border: Border.all(
-                      color: sel ? AppColors.primary : AppColors.border),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.xxl, AppSpacing.lg, AppSpacing.md,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Near You Right Now',
+                style: AppTypography.headline2.copyWith(color: AppColors.neutral),
+              ),
+              TextButton(
+                onPressed: () => context.go('/restaurants'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.secondary,
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(48, 48),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (sel) ...[
-                      const Icon(Icons.check,
-                          size: 13, color: AppColors.white),
-                      const SizedBox(width: 4),
-                    ],
-                    Text(
-                      opt,
-                      style: AppTypography.label.copyWith(
-                        color: sel ? AppColors.white : AppColors.neutral,
-                        fontWeight:
-                            sel ? FontWeight.w600 : FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'See all',
+                  style: AppTypography.body2.copyWith(color: AppColors.secondary),
                 ),
               ),
-            );
-          }).toList(),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 220,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            itemCount: ExploreMocks.nearbyVenues.length,
+            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
+            itemBuilder: (_, i) => _NearbyVenueCard(
+              venue: ExploreMocks.nearbyVenues[i],
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildRadiusCard() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text('Search Area', style: AppTypography.headline3),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.radiusFull),
-                ),
-                child: Text(
-                  'Within ${_radius.toStringAsFixed(1)} km',
-                  style: AppTypography.label
-                      .copyWith(color: AppColors.primary),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          SliderTheme(
-            data: SliderThemeData(
-              trackHeight: 8,
-              thumbShape: const _AppSliderThumb(),
-              overlayShape:
-                  const RoundSliderOverlayShape(overlayRadius: 16),
-              activeTrackColor: AppColors.primary,
-              inactiveTrackColor: AppColors.neutral100,
-              thumbColor: AppColors.white,
-              overlayColor: AppColors.primary.withValues(alpha: 0.12),
-            ),
-            child: Slider(
-              value: _radius,
-              min: 0.5,
-              max: 10.0,
-              onChanged: (v) => setState(() => _radius = v),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Nearby',
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.neutral400)),
-              Text('Citywide',
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.neutral400)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  // ─── Section 2: Browse by Category ──────────────────────────────────────────
 
-  Widget _buildRecentSearchesSection() {
+  Widget _buildCategorySection() {
+    const row1 = [
+      _CategoryDef('🍛', 'Mamak', Color(0xFFFFF3E0), Color(0xFFFFCC80), '/dine-in?cuisine=mamak'),
+      _CategoryDef('🥗', 'Healthy', Color(0xFFE8F5E9), Color(0xFFA5D6A7), '/dine-in?cuisine=healthy'),
+      _CategoryDef('🥐', 'Bakery', Color(0xFFFFFDE7), Color(0xFFFFE082), '/dine-in?cuisine=bakery'),
+      _CategoryDef('🌶️', 'Spicy', Color(0xFFFFEBEE), Color(0xFFEF9A9A), '/dine-in?cuisine=spicy'),
+    ];
+    const row2 = [
+      _CategoryDef('🍣', 'Japanese', Color(0xFFE0F7FA), Color(0xFF80DEEA), '/dine-in?cuisine=japanese'),
+      _CategoryDef('🐟', 'Seafood', Color(0xFFE3F2FD), Color(0xFF90CAF9), '/dine-in?cuisine=seafood'),
+      _CategoryDef('☕', 'Cafe', Color(0xFFF3E5F5), Color(0xFFCE93D8), '/dine-in?cuisine=cafe'),
+      _CategoryDef('🛒', 'Groceries', AppColors.secondaryLight, AppColors.secondaryLight, '/groceries'),
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text('Recent Searches', style: AppTypography.headline2),
-            const Spacer(),
-            if (_recentSearches.isNotEmpty)
-              GestureDetector(
-                onTap: () => setState(() => _recentSearches.clear()),
-                child: Text('CLEAR',
-                    style: AppTypography.label
-                        .copyWith(color: AppColors.neutral600)),
-              ),
-          ],
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.xxl, AppSpacing.lg, AppSpacing.md,
+          ),
+          child: Text(
+            'Browse by Category',
+            style: AppTypography.headline2.copyWith(color: AppColors.neutral),
+          ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        if (_recentSearches.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-            child: Center(
-              child: Text('No recent searches', style: AppTypography.body2),
+        SizedBox(
+          height: 224,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Column(
+              children: [
+                Row(
+                  children: row1.map((def) => Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.md),
+                    child: _CategoryCard(def: def, onTap: () => context.go(def.route)),
+                  )).toList(),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: row2.map((def) => Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.md),
+                    child: _CategoryCard(def: def, onTap: () => context.go(def.route)),
+                  )).toList(),
+                ),
+              ],
             ),
-          )
-        else
-          Container(
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── Section 3: Recipes to Try ──────────────────────────────────────────────
+
+  Widget _buildRecipesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.xxl, AppSpacing.lg, AppSpacing.md,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recipes to Try',
+                style: AppTypography.headline2.copyWith(color: AppColors.neutral),
+              ),
+              TextButton(
+                onPressed: () => context.go('/cook-in'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.secondary,
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(48, 48),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'Browse all',
+                  style: AppTypography.body2.copyWith(color: AppColors.secondary),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 220,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            itemCount: HomeFeedMocks.cookInRecipes.length,
+            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
+            itemBuilder: (_, i) {
+              final recipe = HomeFeedMocks.cookInRecipes[i];
+              return SizedBox(
+                width: 160,
+                child: RecipeHorizontalCard(
+                  recipe: recipe,
+                  onTap: () => context.go('/cook-in'),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── Section 4: Grocery Stores Near You ──────────────────────────────────────
+
+  Widget _buildGrocerySection() {
+    const stores = HomeFeedMocks.nearbyGroceries;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.xxl, AppSpacing.lg, AppSpacing.md,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Grocery Stores Near You',
+                style: AppTypography.headline2.copyWith(color: AppColors.neutral),
+              ),
+              TextButton(
+                onPressed: () => context.go('/groceries'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.secondary,
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(48, 48),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'See all',
+                  style: AppTypography.body2.copyWith(color: AppColors.secondary),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Container(
             decoration: BoxDecoration(
               color: AppColors.white,
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
               border: Border.all(color: AppColors.border),
             ),
             child: Column(
-              children: List.generate(_recentSearches.length, (i) {
-                final q = _recentSearches[i];
-                return _buildRecentRow(q, i < _recentSearches.length - 1);
+              children: List.generate(stores.length, (i) {
+                return _GroceryRow(
+                  store: stores[i],
+                  showDivider: i < stores.length - 1,
+                );
               }),
             ),
           ),
+        ),
       ],
     );
   }
 
-  Widget _buildRecentRow(String query, bool showDivider) {
-    return Container(
-      height: 48,
-      decoration: showDivider
-          ? const BoxDecoration(
-              border: Border(
-                  bottom: BorderSide(color: AppColors.border, width: 1)))
-          : null,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Row(
-        children: [
-          const Icon(Icons.history,
-              size: AppSpacing.iconSm, color: AppColors.neutral400),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() {
-                _searchCtrl.text = query;
-                _searchCtrl.selection = TextSelection.fromPosition(
-                    TextPosition(offset: query.length));
-              }),
-              child: Text(query, style: AppTypography.body1),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close,
-                size: AppSpacing.iconSm, color: AppColors.neutral400),
-            onPressed: () => setState(() => _recentSearches.remove(query)),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-          ),
-        ],
+  // ─── Search active: tab filter row ───────────────────────────────────────────
+
+  Widget _buildTabFilterRow() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0,
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(_tabs.length, (i) {
+            final isActive = _activeTab == i;
+            return Padding(
+              padding: EdgeInsets.only(
+                right: i < _tabs.length - 1 ? AppSpacing.sm : 0,
+              ),
+              child: GestureDetector(
+                onTap: () => setState(() => _activeTab = i),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.sm + 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isActive ? AppColors.primary : AppColors.white,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                    border: Border.all(
+                      color: isActive ? AppColors.primary : AppColors.border,
+                    ),
+                  ),
+                  child: Text(
+                    _tabs[i],
+                    style: AppTypography.label.copyWith(
+                      color: isActive ? AppColors.white : AppColors.neutral,
+                      fontWeight:
+                          isActive ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
       ),
     );
   }
 
-  Widget _buildResultsSection() {
+  // ─── Search active: results list ─────────────────────────────────────────────
+
+  Widget _buildResultsList() {
     final results = _filteredResults;
     if (results.isEmpty) {
-      return AppEmptyState(
-        icon: Icons.search_off,
-        title: "No results for '${_searchCtrl.text.trim()}'",
-        description: 'Try clearing some filters or expanding your radius.',
-        ctaLabel: 'Clear Filters',
-        onCta: () => setState(() {
-          _searchCtrl.clear();
-          _selectedDietary.clear();
-          _radius = 2.0;
-        }),
+      return Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.xxl),
+        child: AppEmptyState(
+          icon: Icons.search_off,
+          title: 'No results for "$_searchQuery"',
+          description: 'Try clearing some filters or expanding your search.',
+          ctaLabel: 'Clear Search',
+          onCta: () => setState(() {
+            _searchQuery = '';
+            _searchController.clear();
+          }),
+        ),
       );
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: results
-          .map((r) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                child: _buildResultCard(r),
-              ))
-          .toList(),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxl,
+      ),
+      child: Column(
+        children: results
+            .map((r) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                  child: _SearchResultCard(restaurant: r),
+                ))
+            .toList(),
+      ),
     );
   }
+}
 
-  Widget _buildResultCard(RestaurantModel r) {
+// ─── Sticky Search Bar Delegate ───────────────────────────────────────────────
+
+class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
+  final TextEditingController searchController;
+  final VoidCallback onFilterTap;
+
+  const _SearchBarDelegate({
+    required this.searchController,
+    required this.onFilterTap,
+  });
+
+  @override
+  double get minExtent => 80;
+
+  @override
+  double get maxExtent => 80;
+
+  @override
+  bool shouldRebuild(_SearchBarDelegate oldDelegate) => false;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: AppColors.background,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      child: Container(
+        height: 56,
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: AppSpacing.lg),
+            const Icon(Icons.search, color: AppColors.neutral400, size: 20),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: TextField(
+                controller: searchController,
+                style: AppTypography.body1,
+                decoration: InputDecoration(
+                  hintText: 'Search restaurants, recipes, grocery stores...',
+                  hintStyle: AppTypography.body1.copyWith(
+                    color: AppColors.neutral400,
+                  ),
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 24,
+              color: AppColors.border,
+              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            ),
+            // Filter button — matches recipe screen _FilterIconButton style
+            GestureDetector(
+              onTap: onFilterTap,
+              child: const Padding(
+                padding: EdgeInsets.all(AppSpacing.sm),
+                child: Icon(
+                  Icons.tune_rounded,
+                  size: 20,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Nearby Venue Card ────────────────────────────────────────────────────────
+
+class _NearbyVenueCard extends StatelessWidget {
+  final NearbyVenueSummary venue;
+
+  const _NearbyVenueCard({required this.venue});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 200,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image with "Open" badge
+              SizedBox(
+                height: 140,
+                width: double.infinity,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    venue.imageUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: venue.imageUrl!,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Shimmer.fromColors(
+                              baseColor: AppColors.neutral100,
+                              highlightColor: AppColors.white,
+                              child: Container(color: AppColors.neutral100),
+                            ),
+                            errorWidget: (context, url, err) => Container(
+                              color: AppColors.neutral100,
+                              child: const Center(
+                                child: Icon(Icons.restaurant,
+                                    size: 32, color: AppColors.neutral400),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: AppColors.neutral100,
+                            child: const Center(
+                              child: Icon(Icons.restaurant,
+                                  size: 32, color: AppColors.neutral400),
+                            ),
+                          ),
+                    if (venue.isOpen)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusSm),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Text(
+                                'Open',
+                                style: AppTypography.label.copyWith(
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              // Card body
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            venue.name,
+                            style: AppTypography.headline3,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        PricingBadge(
+                          bracket: ExploreMocks.pricingBracketFor(venue),
+                          customLabel: venue.pricingBracket,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      venue.cuisineType,
+                      style: AppTypography.body2.copyWith(
+                        color: AppColors.neutral600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight.withValues(alpha: 0.5),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusSm),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.directions_walk,
+                                size: 14,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '${venue.distanceKm.toStringAsFixed(1)} km',
+                                style: AppTypography.label.copyWith(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        const Icon(
+                          Icons.star,
+                          size: 14,
+                          color: AppColors.warning,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          venue.rating.toStringAsFixed(1),
+                          style: AppTypography.label.copyWith(
+                            color: AppColors.neutral,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Category Card ────────────────────────────────────────────────────────────
+
+class _CategoryDef {
+  final String emoji;
+  final String label;
+  final Color bgColor;
+  final Color borderColor;
+  final String route;
+
+  const _CategoryDef(
+      this.emoji, this.label, this.bgColor, this.borderColor, this.route);
+}
+
+class _CategoryCard extends StatelessWidget {
+  final _CategoryDef def;
+  final VoidCallback onTap;
+
+  const _CategoryCard({required this.def, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        width: 100,
+        height: 100,
+        child: Container(
+          decoration: BoxDecoration(
+            color: def.bgColor,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: def.borderColor),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(def.emoji, style: const TextStyle(fontSize: 32)),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                def.label,
+                style: AppTypography.label.copyWith(color: AppColors.neutral),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Grocery Row ─────────────────────────────────────────────────────────────
+
+class _GroceryRow extends StatelessWidget {
+  final GrocerySummary store;
+  final bool showDivider;
+
+  const _GroceryRow({required this.store, required this.showDivider});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 64),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
+      decoration: showDivider
+          ? const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: AppColors.border, width: 1),
+              ),
+            )
+          : null,
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              color: AppColors.secondaryLight,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.local_grocery_store_outlined,
+              color: AppColors.secondary,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  store.name,
+                  style: AppTypography.body1.copyWith(
+                    color: AppColors.neutral,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '${store.type} · ${store.distanceKm.toStringAsFixed(1)}km',
+                  style: AppTypography.body2.copyWith(
+                    color: AppColors.neutral600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          if (store.isOpen)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text(
+                    'Open',
+                    style: AppTypography.label.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Search Result Card ───────────────────────────────────────────────────────
+
+class _SearchResultCard extends StatelessWidget {
+  final RestaurantModel restaurant;
+
+  const _SearchResultCard({required this.restaurant});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -424,100 +871,53 @@ class _SearchScreenState extends State<SearchScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
               color: AppColors.neutral100,
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             ),
-            child: const Icon(Icons.restaurant,
-                size: 32, color: AppColors.neutral400),
+            child: const Icon(Icons.restaurant, size: 28, color: AppColors.neutral400),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(r.name, style: AppTypography.headline3),
-                const SizedBox(height: 2),
-                Text(r.cuisineType, style: AppTypography.body2),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 4,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
+                Text(
+                  restaurant.name,
+                  style: AppTypography.headline3,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  restaurant.cuisineType,
+                  style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.location_on_outlined,
-                            size: 12, color: AppColors.neutral400),
-                        const SizedBox(width: 2),
-                        Text('${r.distanceKm.toStringAsFixed(1)} km',
-                            style: AppTypography.caption),
-                      ],
+                    const Icon(Icons.location_on_outlined,
+                        size: 12, color: AppColors.neutral400),
+                    const SizedBox(width: 2),
+                    Text(
+                      '${restaurant.distanceKm.toStringAsFixed(1)} km',
+                      style: AppTypography.caption,
                     ),
-                    ...r.dietaryTags.take(2).map((tag) => Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
-                            borderRadius: BorderRadius.circular(
-                                AppSpacing.radiusFull),
-                          ),
-                          child: Text(tag,
-                              style: AppTypography.caption.copyWith(
-                                  color: AppColors.primary)),
-                        )),
-                    PricingBadge(bracket: r.pricingBracket),
+                    const SizedBox(width: AppSpacing.sm),
+                    if (restaurant.dietaryTags.contains('Halal'))
+                      const DietaryChip.halal(),
                   ],
                 ),
               ],
             ),
           ),
+          PricingBadge(bracket: restaurant.pricingBracket),
         ],
       ),
-    );
-  }
-}
-
-class _AppSliderThumb extends SliderComponentShape {
-  const _AppSliderThumb();
-
-  @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => const Size(24, 24);
-
-  @override
-  void paint(
-    PaintingContext context,
-    Offset center, {
-    required Animation<double> activationAnimation,
-    required Animation<double> enableAnimation,
-    required bool isDiscrete,
-    required TextPainter labelPainter,
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required TextDirection textDirection,
-    required double value,
-    required double textScaleFactor,
-    required Size sizeWithOverflow,
-  }) {
-    final canvas = context.canvas;
-    canvas.drawCircle(
-      center,
-      13,
-      Paint()
-        ..color = Colors.black.withValues(alpha: 0.12)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
-    );
-    canvas.drawCircle(center, 12, Paint()..color = AppColors.white);
-    canvas.drawCircle(
-      center,
-      12,
-      Paint()
-        ..color = AppColors.primary
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
     );
   }
 }
