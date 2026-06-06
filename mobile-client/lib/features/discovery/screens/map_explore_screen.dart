@@ -33,8 +33,10 @@ class MapExploreScreen extends StatefulWidget {
 
 class _MapExploreScreenState extends State<MapExploreScreen> {
   final MapController _mapController = MapController();
+  final TextEditingController _searchController = TextEditingController();
   int _activeFilterIndex = 0;
   String? _selectedMarkerId;
+  String _searchQuery = '';
 
   static const LatLng _center = LatLng(3.0731, 101.6069);
 
@@ -94,15 +96,34 @@ class _MapExploreScreenState extends State<MapExploreScreen> {
 
   static const _filterLabels = ['All', 'Restaurants', 'Groceries'];
 
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _searchQuery = _searchController.text.toLowerCase());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   List<_MarkerData> get _visibleMarkers {
-    switch (_activeFilterIndex) {
-      case 1:
-        return _allMarkers.where((m) => !m.isGrocery).toList();
-      case 2:
-        return _allMarkers.where((m) => m.isGrocery).toList();
-      default:
-        return _allMarkers;
+    var markers = switch (_activeFilterIndex) {
+      1 => _allMarkers.where((m) => !m.isGrocery).toList(),
+      2 => _allMarkers.where((m) => m.isGrocery).toList(),
+      _ => _allMarkers,
+    };
+    if (_searchQuery.isNotEmpty) {
+      markers = markers
+          .where((m) =>
+              m.name.toLowerCase().contains(_searchQuery) ||
+              m.type.toLowerCase().contains(_searchQuery))
+          .toList();
     }
+    return markers;
   }
 
   _MarkerData? get _selectedMarker => _selectedMarkerId != null
@@ -222,32 +243,46 @@ class _MapExploreScreenState extends State<MapExploreScreen> {
   }
 
   Widget _buildSearchBar(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.go('/explore'),
-      child: Container(
-        height: 56,
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 2),
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Row(
+        children: [
+          const Icon(Icons.search,
+              size: AppSpacing.iconSm, color: AppColors.neutral400),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              style: AppTypography.body1,
+              decoration: InputDecoration(
+                hintText: 'Search nearby...',
+                hintStyle: AppTypography.body1
+                    .copyWith(color: AppColors.neutral400),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
             ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Row(
-          children: [
-            const Icon(Icons.search,
-                size: AppSpacing.iconSm, color: AppColors.neutral400),
-            const SizedBox(width: AppSpacing.md),
-            Text('Search nearby...',
-                style: AppTypography.body1
-                    .copyWith(color: AppColors.neutral400)),
-          ],
-        ),
+          ),
+          if (_searchQuery.isNotEmpty)
+            GestureDetector(
+              onTap: () => _searchController.clear(),
+              child: const Icon(Icons.close,
+                  size: AppSpacing.iconSm, color: AppColors.neutral400),
+            ),
+        ],
       ),
     );
   }
