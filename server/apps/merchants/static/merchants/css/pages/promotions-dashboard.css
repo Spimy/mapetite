@@ -120,8 +120,8 @@
   }
 
   .promo-item__type-badge--bundle {
-    background-color: color-mix(in srgb, #f7d77a 32%, var(--color-white));
-    color: #a85d00;
+    background-color: color-mix(in srgb, var(--color-warning) 10%, var(--color-white));
+    color: color-mix(in srgb, var(--color-warning) 80%, var(--color-neutral));
   }
 
   .promo-item__meta {
