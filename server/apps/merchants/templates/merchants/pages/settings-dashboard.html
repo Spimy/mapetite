@@ -1,0 +1,75 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'merchants/css/pages/settings-dashboard.css' %}" />
+{% endblock styles %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Settings - {{ store.business_name }}
+{% endblock title %}
+
+{% block description %}
+  Manage your store's settings. Update business information, contact details, and customize your storefront preferences.
+{% endblock description %}
+
+{% block keywords %}
+  store settings, business information, contact details, storefront preferences, Mapetite merchant tools
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block dashboard_content %}
+  <div class="settings">
+    <h1 class="settings__title">Account Settings</h1>
+
+    <section class="settings__card">
+      <h2 class="settings__subtitle">Profile Information</h2>
+
+      <div class="settings__avatar-container">
+        {% if user.user_profile.avatar %}
+          <img class="settings__avatar-img"
+               src="{{ user.user_profile.avatar.url }}"
+               alt="Profile Picture"
+               width="80"
+               height="80" />
+        {% else %}
+          <div class="settings__avatar-placeholder">
+            {% if user.first_name or user.last_name %}
+              {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
+            {% else %}
+              {{ user.username|slice:":1" }}
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      <form method="post" enctype="multipart/form-data" class="settings__form">
+        {% csrf_token %}
+        {% for field in user_form %}
+          <div class="settings__group">
+            <label class="settings__label">{{ field.label }}</label>
+            {{ field }}
+          </div>
+        {% endfor %}
+        <button type="submit" name="submit_user_info" class="btn">Save Profile</button>
+      </form>
+    </section>
+
+    <section class="settings__card">
+      <h2 class="settings__subtitle">Security</h2>
+      <form method="post" class="settings__form">
+        {% csrf_token %}
+        {% for field in password_form %}
+          <div class="settings__group">
+            <label class="settings__label">{{ field.label }}</label>
+            {{ field }}
+          </div>
+        {% endfor %}
+        <button type="submit" name="submit_password" class="btn">Change Password</button>
+      </form>
+    </section>
+  </div>
+{% endblock dashboard_content %}
