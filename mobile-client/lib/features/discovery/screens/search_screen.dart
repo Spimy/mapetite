@@ -228,14 +228,14 @@ class _SearchScreenState extends State<SearchScreen> {
               TextButton(
                 onPressed: () => context.go('/restaurants'),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.secondary,
+                  foregroundColor: AppColors.primary,
                   padding: EdgeInsets.zero,
                   minimumSize: const Size(48, 48),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
                   'See all',
-                  style: AppTypography.body2.copyWith(color: AppColors.secondary),
+                  style: AppTypography.body2.copyWith(color: AppColors.primary),
                 ),
               ),
             ],
@@ -341,14 +341,14 @@ class _SearchScreenState extends State<SearchScreen> {
               TextButton(
                 onPressed: () => context.go('/cook-in'),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.secondary,
+                  foregroundColor: AppColors.primary,
                   padding: EdgeInsets.zero,
                   minimumSize: const Size(48, 48),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
                   'Browse all',
-                  style: AppTypography.body2.copyWith(color: AppColors.secondary),
+                  style: AppTypography.body2.copyWith(color: AppColors.primary),
                 ),
               ),
             ],
@@ -398,14 +398,14 @@ class _SearchScreenState extends State<SearchScreen> {
               TextButton(
                 onPressed: () => context.go('/groceries'),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.secondary,
+                  foregroundColor: AppColors.primary,
                   padding: EdgeInsets.zero,
                   minimumSize: const Size(48, 48),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
                   'See all',
-                  style: AppTypography.body2.copyWith(color: AppColors.secondary),
+                  style: AppTypography.body2.copyWith(color: AppColors.primary),
                 ),
               ),
             ],

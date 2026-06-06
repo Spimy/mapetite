@@ -416,7 +416,7 @@ class RecipeHorizontalCard extends StatelessWidget {
                       const SizedBox(height: AppSpacing.xs),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics: const BouncingScrollPhysics(),
                         child: Row(
                           children: [
                             if (recipe.isHalal) const DietaryChip.halal(),
