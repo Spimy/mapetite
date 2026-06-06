@@ -1,6 +1,7 @@
 import json
-from typing import Any
+from typing import Any, cast
 from apps.merchants.paginator import Template404Paginator
+from apps.users.models import User
 from apps.users.forms import UserInfoForm
 from apps.users.mixins import MerchantRequiredMixin
 from django.http.response import HttpResponse as HttpResponse
@@ -436,9 +437,15 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Pass forms to the template
-        context['user_form'] = UserInfoForm(instance=self.request.user.user_profile) # type: ignore
-        context['password_form'] = PasswordChangeForm(user=self.request.user) # type: ignore
+        user = cast(User, self.request.user)
+        
+        context['user_form'] = UserInfoForm(instance=getattr(user, 'user_profile'))
+        
+        password_form = PasswordChangeForm(user=user)
+        for field in password_form.fields.values():
+            field.widget.attrs.pop('autofocus', None)            
+        context['password_form'] = password_form
+        
         return context
 
     def post(self, request, *args, **kwargs):
