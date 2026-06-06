@@ -30,6 +30,8 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
   late Animation<double> _fadeAnim;
   late Animation<Offset> _cardAnim1;
   late Animation<Offset> _cardAnim2;
+  late AnimationController _shimmerController;
+  late Animation<double> _shimmerAnim;
 
   @override
   void initState() {
@@ -57,12 +59,22 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
       curve: const Interval(0.15, 0.85, curve: Curves.easeOutCubic),
     ));
 
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: false);
+
+    _shimmerAnim = Tween<double>(begin: -1.5, end: 2.5).animate(
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
+    );
+
     _animController.forward();
   }
 
   @override
   void dispose() {
     _animController.dispose();
+    _shimmerController.dispose();
     super.dispose();
   }
 
@@ -234,56 +246,167 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     );
   }
 
-  // ─── AI nudge pill ───────────────────────────────────────────────────────────
+  // ─── AI nudge card ───────────────────────────────────────────────────────────
 
   Widget _buildAiNudgePill() {
     return FadeTransition(
       opacity: _fadeAnim,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.primaryLight.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(color: AppColors.primaryLight),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.auto_awesome,
-                  color: AppColors.white,
-                  size: 16,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: RichText(
-                  text: TextSpan(
-                    style: AppTypography.body2.copyWith(
-                      color: AppColors.neutral700,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          child: AnimatedBuilder(
+            animation: _shimmerAnim,
+            builder: (context, child) {
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5)],
+                  ),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
                     ),
-                    children: [
-                      const TextSpan(text: 'Based on your preferences, '),
-                      TextSpan(
-                        text: 'Dine-In',
-                        style: AppTypography.headline3.copyWith(
-                          color: AppColors.primary,
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    // Shimmer sweep overlay
+                    Positioned.fill(
+                      child: Transform.translate(
+                        offset: Offset(
+                          _shimmerAnim.value *
+                              MediaQuery.of(context).size.width,
+                          0,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                Colors.white.withValues(alpha: 0),
+                                Colors.white.withValues(alpha: 0.18),
+                                Colors.white.withValues(alpha: 0),
+                              ],
+                              stops: const [0.3, 0.5, 0.7],
+                            ),
+                          ),
                         ),
                       ),
-                      const TextSpan(text: ' is your best bet right now.'),
-                    ],
-                  ),
+                    ),
+                    // Left accent bar
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 3,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(AppSpacing.radiusXl),
+                            bottomLeft: Radius.circular(AppSpacing.radiusXl),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Content
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg + 3,
+                        AppSpacing.md + 2,
+                        AppSpacing.lg,
+                        AppSpacing.md + 2,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Glow orb
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primary.withValues(alpha: 0.85),
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.35),
+                                  blurRadius: 12,
+                                  spreadRadius: 1,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.auto_awesome,
+                              color: AppColors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'AI SUGGESTION',
+                                  style: AppTypography.caption.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                RichText(
+                                  text: TextSpan(
+                                    style: AppTypography.body1.copyWith(
+                                      color: AppColors.neutral700,
+                                      height: 1.3,
+                                    ),
+                                    children: [
+                                      const TextSpan(
+                                          text: 'Based on your preferences, '),
+                                      TextSpan(
+                                        text: 'Dine-In',
+                                        style: AppTypography.body1.copyWith(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      const TextSpan(
+                                          text: ' is your best bet right now.'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -432,26 +555,49 @@ class _DineInCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        height: 180,
+        height: 190,
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(color: AppColors.primary, width: 2),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF065F46), Color(0xFF0D7A5E)],
+            ),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF065F46).withValues(alpha: 0.32),
+                blurRadius: 20,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg - 2),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
             child: Stack(
               children: [
-                // Decorative blob
+                // Decorative blob top-right
                 Positioned(
-                  top: -20,
-                  right: -20,
+                  top: -24,
+                  right: -24,
                   child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryLight,
+                    width: 88,
+                    height: 88,
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                // Smaller blob bottom-left
+                Positioned(
+                  bottom: -16,
+                  left: -16,
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: AppColors.white.withValues(alpha: 0.06),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -466,13 +612,13 @@ class _DineInCard extends StatelessWidget {
                       Container(
                         width: 48,
                         height: 48,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryLight,
+                        decoration: BoxDecoration(
+                          color: AppColors.white.withValues(alpha: 0.18),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.restaurant_outlined,
-                          color: AppColors.primary,
+                          color: AppColors.white,
                           size: 24,
                         ),
                       ),
@@ -482,19 +628,19 @@ class _DineInCard extends StatelessWidget {
                           Text(
                             'Dine-In',
                             style: AppTypography.headline2.copyWith(
-                              color: AppColors.primary,
+                              color: AppColors.white,
                             ),
                           ),
                           const SizedBox(height: AppSpacing.xxs),
                           Text(
                             'Find a restaurant',
                             style: AppTypography.body2.copyWith(
-                              color: AppColors.neutral600,
+                              color: AppColors.white.withValues(alpha: 0.75),
                             ),
                           ),
                           const SizedBox(height: AppSpacing.md),
-                          const Divider(
-                            color: AppColors.primaryLight,
+                          Divider(
+                            color: AppColors.white.withValues(alpha: 0.2),
                             height: 1,
                             thickness: 1,
                           ),
@@ -504,13 +650,13 @@ class _DineInCard extends StatelessWidget {
                               const Icon(
                                 Icons.location_on,
                                 size: 16,
-                                color: AppColors.primary,
+                                color: AppColors.white,
                               ),
                               const SizedBox(width: AppSpacing.xs),
                               Text(
                                 '3 nearby',
                                 style: AppTypography.headline3.copyWith(
-                                  color: AppColors.primary,
+                                  color: AppColors.white,
                                 ),
                               ),
                             ],
@@ -525,15 +671,22 @@ class _DineInCard extends StatelessWidget {
                   top: 12,
                   right: 12,
                   child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: const Icon(
                       Icons.check,
-                      color: AppColors.white,
+                      color: AppColors.primary,
                       size: 14,
                     ),
                   ),
@@ -558,72 +711,99 @@ class _CookInCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        height: 180,
+        height: 190,
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+            border: Border.all(color: AppColors.border, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+            child: Stack(
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: const BoxDecoration(
-                    color: AppColors.secondaryLight,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.soup_kitchen_outlined,
-                    color: AppColors.secondary,
-                    size: 24,
+                // Subtle decorative blob
+                Positioned(
+                  top: -20,
+                  right: -20,
+                  child: Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryLight.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Cook-In',
-                      style: AppTypography.headline2.copyWith(
-                        color: AppColors.neutral,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      'Pick a recipe',
-                      style: AppTypography.body2.copyWith(
-                        color: AppColors.neutral600,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    const Divider(
-                      color: AppColors.border,
-                      height: 1,
-                      thickness: 1,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.menu_book_outlined,
-                          size: 16,
-                          color: AppColors.neutral600,
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: const BoxDecoration(
+                          color: AppColors.secondaryLight,
+                          shape: BoxShape.circle,
                         ),
-                        const SizedBox(width: AppSpacing.xs),
-                        Text(
-                          '4 saved',
-                          style: AppTypography.headline3.copyWith(
-                            color: AppColors.neutral600,
+                        child: const Icon(
+                          Icons.soup_kitchen_outlined,
+                          color: AppColors.secondary,
+                          size: 24,
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Cook-In',
+                            style: AppTypography.headline2.copyWith(
+                              color: AppColors.neutral,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            'Pick a recipe',
+                            style: AppTypography.body2.copyWith(
+                              color: AppColors.neutral600,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          const Divider(
+                            color: AppColors.border,
+                            height: 1,
+                            thickness: 1,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.menu_book_outlined,
+                                size: 16,
+                                color: AppColors.neutral600,
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Text(
+                                '4 saved',
+                                style: AppTypography.headline3.copyWith(
+                                  color: AppColors.neutral600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
