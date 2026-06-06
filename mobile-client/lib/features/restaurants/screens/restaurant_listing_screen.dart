@@ -17,17 +17,67 @@ class RestaurantListingScreen extends StatefulWidget {
       _RestaurantListingScreenState();
 }
 
+enum _DineInFilter { halal, openNow, vegan, bestValue, nearest }
+
 class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
   int _activeSortIndex = 0;
   final List<String> _sortOptions = ['Best Match', 'Nearest', 'Budget', 'Cuisine'];
   Set<String> _activeCuisines = {};
+  final Set<_DineInFilter> _activeFilters = {};
+  String _searchQuery = '';
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   List<RestaurantModel> get _restaurants {
-    final all = RestaurantMocks.nearbyRestaurants;
-    if (_activeCuisines.isEmpty) return all;
-    return all
-        .where((r) => _activeCuisines.contains(r.cuisineType))
-        .toList();
+    var list = RestaurantMocks.nearbyRestaurants;
+
+    // Search filter
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      list = list
+          .where((r) =>
+              r.name.toLowerCase().contains(q) ||
+              r.cuisineType.toLowerCase().contains(q))
+          .toList();
+    }
+
+    // Cuisine filter
+    if (_activeCuisines.isNotEmpty) {
+      list = list.where((r) => _activeCuisines.contains(r.cuisineType)).toList();
+    }
+
+    // Quick filters
+    for (final filter in _activeFilters) {
+      switch (filter) {
+        case _DineInFilter.halal:
+          list = list.where((r) => r.dietaryTags.contains('Halal')).toList();
+        case _DineInFilter.openNow:
+          list = list.where((r) => r.isOpen).toList();
+        case _DineInFilter.vegan:
+          list = list.where((r) => r.dietaryTags.contains('Vegan')).toList();
+        case _DineInFilter.bestValue:
+          list = list.where((r) => r.pricingBracket == PricingBracket.budget).toList();
+        case _DineInFilter.nearest:
+          list = list.where((r) => r.distanceKm <= 1.0).toList();
+      }
+    }
+
+    return list;
+  }
+
+  void _toggleFilter(_DineInFilter f) {
+    setState(() {
+      if (_activeFilters.contains(f)) {
+        _activeFilters.remove(f);
+      } else {
+        _activeFilters.add(f);
+      }
+    });
   }
 
   void _openCuisineSheet() {
@@ -44,37 +94,40 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final restaurants = _restaurants;
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: _restaurants.isEmpty
+      body: restaurants.isEmpty
           ? _buildEmptyBody(context)
-          : _buildFeedBody(context),
+          : _buildFeedBody(context, restaurants),
     );
   }
 
-  Widget _buildFeedBody(BuildContext context) {
+  Widget _buildFeedBody(BuildContext context, List<RestaurantModel> restaurants) {
     return CustomScrollView(
       slivers: [
         _buildSliverAppBar(context),
+        SliverToBoxAdapter(child: _buildSearchBar()),
+        SliverToBoxAdapter(child: _buildFilterChips()),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xxl,
+            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxl,
           ),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 return Padding(
                   padding: EdgeInsets.only(
-                    bottom: index < _restaurants.length - 1 ? AppSpacing.lg : 0,
+                    bottom: index < restaurants.length - 1 ? AppSpacing.lg : 0,
                   ),
                   child: _RestaurantCard(
-                    restaurant: _restaurants[index],
+                    restaurant: restaurants[index],
                     onTap: () =>
-                        context.push('/restaurants/${_restaurants[index].id}'),
+                        context.push('/restaurants/${restaurants[index].id}'),
                   ),
                 );
               },
-              childCount: _restaurants.length,
+              childCount: restaurants.length,
             ),
           ),
         ),
@@ -86,11 +139,115 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
     return CustomScrollView(
       slivers: [
         _buildSliverAppBar(context),
+        SliverToBoxAdapter(child: _buildSearchBar()),
+        SliverToBoxAdapter(child: _buildFilterChips()),
         SliverFillRemaining(
           hasScrollBody: false,
           child: _buildEmptyState(),
         ),
       ],
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0,
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (v) => setState(() => _searchQuery = v),
+        style: AppTypography.body1,
+        decoration: InputDecoration(
+          hintText: 'Search restaurants or cuisine...',
+          hintStyle: AppTypography.body1.copyWith(color: AppColors.neutral400),
+          prefixIcon: const Icon(Icons.search, color: AppColors.neutral400, size: 20),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.close, size: 18, color: AppColors.neutral400),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                )
+              : null,
+          contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
+          filled: true,
+          fillColor: AppColors.white,
+          isDense: true,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    const chips = [
+      (_DineInFilter.halal,   Icons.check_circle_outline, 'Halal'),
+      (_DineInFilter.openNow, Icons.access_time_outlined, 'Open Now'),
+      (_DineInFilter.vegan,   Icons.eco,                  'Vegan'),
+      (_DineInFilter.bestValue, Icons.savings_outlined,   'Best Value'),
+      (_DineInFilter.nearest, Icons.near_me_outlined,     'Nearby < 1km'),
+    ];
+
+    return SizedBox(
+      height: 44,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
+        children: chips.map((def) {
+          final (filter, icon, label) = def;
+          final isActive = _activeFilters.contains(filter);
+          return Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: GestureDetector(
+              onTap: () => _toggleFilter(filter),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs + 2,
+                ),
+                decoration: BoxDecoration(
+                  color: isActive ? AppColors.primary : AppColors.white,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  border: Border.all(
+                    color: isActive ? AppColors.primary : AppColors.border,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      icon,
+                      size: 13,
+                      color: isActive ? AppColors.white : AppColors.neutral600,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      label,
+                      style: AppTypography.label.copyWith(
+                        color: isActive ? AppColors.white : AppColors.neutral600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -103,7 +260,13 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
       scrolledUnderElevation: 0,
       toolbarHeight: AppSpacing.appBarHeight,
       leading: IconButton(
-        onPressed: () => context.pop(),
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/home');
+          }
+        },
         icon: const Icon(Icons.arrow_back, color: AppColors.primary),
         tooltip: 'Back',
       ),
@@ -166,22 +329,27 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'No restaurants nearby',
+              'No restaurants found',
               style: AppTypography.headline2,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              "We couldn't find restaurants matching your preferences within 2 km. Try adjusting your filters.",
+              "Try adjusting your search or filters.",
               style: AppTypography.body1.copyWith(color: AppColors.neutral600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xl),
             AppButton(
-              label: 'Adjust Filters',
+              label: 'Clear Filters',
               variant: AppButtonVariant.outlined,
               isFullWidth: false,
-              onPressed: () {},
+              onPressed: () => setState(() {
+                _activeFilters.clear();
+                _activeCuisines.clear();
+                _searchController.clear();
+                _searchQuery = '';
+              }),
             ),
           ],
         ),
