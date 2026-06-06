@@ -33,7 +33,7 @@ abstract class AppColors {
 
   // Surface
   static const Color white = Color(0xFFFFFFFF);
-  static const Color background = Color(0xFFF0FDF4);
+  static const Color background = Color(0xFFFAFAF8);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color border = Color(0xFFE5E7EB);
 
