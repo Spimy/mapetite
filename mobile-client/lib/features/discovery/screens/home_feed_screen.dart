@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
@@ -9,9 +10,7 @@ import '../../../core/constants/app_typography.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/dietary_chip.dart';
-import '../../../shared/widgets/food_card.dart';
 import '../../../shared/widgets/loading_indicator.dart';
-import '../widgets/mode_choice_sheet.dart';
 import '../models/home_feed_models.dart';
 import '../models/mocks/home_feed_mocks.dart';
 import '../providers/home_feed_providers.dart';
@@ -25,13 +24,62 @@ class HomeFeedScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeFeedScreen> createState() => _HomeFeedScreenState();
 }
 
-class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
-  String _greeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning.';
-    if (hour < 17) return 'Good afternoon.';
-    return 'Good evening.';
+class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _cardAnim1;
+  late Animation<Offset> _cardAnim2;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+
+    _cardAnim1 = Tween<Offset>(
+      begin: const Offset(0, 0.05),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.0, 0.7, curve: Curves.easeOutCubic),
+    ));
+
+    _cardAnim2 = Tween<Offset>(
+      begin: const Offset(0, 0.05),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: const Interval(0.15, 0.85, curve: Curves.easeOutCubic),
+    ));
+
+    _animController.forward();
   }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  // ─── Greeting logic ──────────────────────────────────────────────────────────
+
+  String _greetingLine2() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 10) return "Good morning — what's for breakfast?";
+    if (hour >= 10 && hour < 11) return "It's brunch o'clock — where to?";
+    if (hour >= 11 && hour < 14) return "It's lunchtime — what are you feeling?";
+    if (hour >= 14 && hour < 17) return "Afternoon — time for a treat?";
+    if (hour >= 17 && hour < 21) return "Dinner time — where to tonight?";
+    if (hour >= 21 && hour < 23) return "Evening — still hungry?";
+    return "Late night — there's always supper.";
+  }
+
+  // ─── Build ───────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -58,11 +106,10 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
           ),
         ),
       ),
-      floatingActionButton: feed.hasValue ? _buildFAB() : null,
     );
   }
 
-  // ─── App Bar ────────────────────────────────────────────────────────────────
+  // ─── App Bar ─────────────────────────────────────────────────────────────────
 
   Widget _buildAppBar() {
     return SliverAppBar(
@@ -73,61 +120,65 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
       surfaceTintColor: AppColors.white,
       automaticallyImplyLeading: false,
       titleSpacing: 0,
-      title: DecoratedBox(
-        decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: AppColors.border, width: 1),
-          ),
-        ),
-        child: SizedBox(
-          height: AppSpacing.appBarHeight,
-          child: Row(
-            children: [
-              Builder(
-                builder: (ctx) => IconButton(
-                  icon: const Icon(Icons.menu, color: AppColors.neutral),
-                  onPressed: () => Scaffold.of(ctx).openDrawer(),
-                  tooltip: 'Open menu',
-                ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: AppColors.border),
+      ),
+      title: SizedBox(
+        height: AppSpacing.appBarHeight,
+        child: Row(
+          children: [
+            Builder(
+              builder: (ctx) => IconButton(
+                icon: const Icon(Icons.menu, color: AppColors.primary),
+                onPressed: () => Scaffold.of(ctx).openDrawer(),
+                tooltip: 'Open menu',
               ),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    'Home',
-                    style: AppTypography.headline1
-                        .copyWith(color: AppColors.primary),
+            ),
+            const Expanded(
+              child: Center(
+                child: Text(
+                  'Mapetite',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
-              _BellButton(onTap: () => context.push(AppRoutes.notifications)),
-            ],
-          ),
+            ),
+            _BellButton(
+              onTap: () => context.push(AppRoutes.notifications),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // ─── Content ────────────────────────────────────────────────────────────────
+  // ─── Content ─────────────────────────────────────────────────────────────────
 
   Widget _buildContent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildGreeting(),
+        _buildGreetingSection(),
+        const SizedBox(height: AppSpacing.md),
+        _buildAiNudgePill(),
+        const SizedBox(height: AppSpacing.lg),
+        _buildModeCards(),
         const SizedBox(height: AppSpacing.xxl),
         _buildTopPickSection(),
         const SizedBox(height: AppSpacing.xxl),
-        _buildCookInSection(),
-        const SizedBox(height: AppSpacing.xxl),
         _buildNearbySection(),
-        const SizedBox(height: AppSpacing.xxl),
+        const SizedBox(height: AppSpacing.xxxl),
       ],
     );
   }
 
-  // ─── Greeting ───────────────────────────────────────────────────────────────
+  // ─── Greeting section ────────────────────────────────────────────────────────
 
-  Widget _buildGreeting() {
+  Widget _buildGreetingSection() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
@@ -138,18 +189,149 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(_greeting(), style: AppTypography.display),
-          const SizedBox(height: AppSpacing.xs),
           Text(
-            'Ready to explore healthy options today?',
-            style: AppTypography.body1.copyWith(color: AppColors.neutral600),
+            'Hi, ${HomeFeedMocks.userName}.',
+            style: AppTypography.display.copyWith(color: AppColors.neutral),
+          ),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(
+            _greetingLine2(),
+            style: AppTypography.display.copyWith(
+              color: AppColors.neutral,
+              fontWeight: FontWeight.w400,
+              fontSize: 22,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Row(
+            children: [
+              Text(
+                'RM ${HomeFeedMocks.budgetRemaining.toStringAsFixed(0)}',
+                style: AppTypography.button.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                'left this month · ',
+                style: AppTypography.body1.copyWith(color: AppColors.neutral600),
+              ),
+              const Icon(
+                Icons.location_on_outlined,
+                size: 14,
+                color: AppColors.neutral600,
+              ),
+              const SizedBox(width: 2),
+              Text(
+                HomeFeedMocks.userLocation,
+                style: AppTypography.body1.copyWith(color: AppColors.neutral600),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // ─── Today's Top Pick ───────────────────────────────────────────────────────
+  // ─── AI nudge pill ───────────────────────────────────────────────────────────
+
+  Widget _buildAiNudgePill() {
+    return FadeTransition(
+      opacity: _fadeAnim,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: AppColors.primaryLight),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.auto_awesome,
+                  color: AppColors.white,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    style: AppTypography.body2.copyWith(
+                      color: AppColors.neutral700,
+                    ),
+                    children: [
+                      const TextSpan(text: 'Based on your preferences, '),
+                      TextSpan(
+                        text: 'Dine-In',
+                        style: AppTypography.headline3.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const TextSpan(text: ' is your best bet right now.'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Mode Cards ──────────────────────────────────────────────────────────────
+
+  Widget _buildModeCards() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Row(
+        children: [
+          Expanded(
+            child: FadeTransition(
+              opacity: _fadeAnim,
+              child: SlideTransition(
+                position: _cardAnim1,
+                child: _DineInCard(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    context.go(AppRoutes.dineIn);
+                  },
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: FadeTransition(
+              opacity: _fadeAnim,
+              child: SlideTransition(
+                position: _cardAnim2,
+                child: _CookInCard(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    context.go(AppRoutes.cookIn);
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Today's Top Pick ────────────────────────────────────────────────────────
 
   Widget _buildTopPickSection() {
     final restaurant = HomeFeedMocks.topPick;
@@ -158,28 +340,30 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Today's Top Pick", style: AppTypography.headline2),
+          Text(
+            "Today's Top Pick",
+            style: AppTypography.headline2.copyWith(color: AppColors.neutral),
+          ),
           const SizedBox(height: AppSpacing.md),
           GestureDetector(
-            key: const Key('top_pick_card'),
-            onTap: () => context.push(AppRoutes.dineIn),
+            onTap: () => context.go(AppRoutes.dineIn),
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.white,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                border: Border.all(color: AppColors.border, width: 1),
+                border: Border.all(color: AppColors.border),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _TopPickImage(restaurant: restaurant),
+                  _TopPickHeroImage(restaurant: restaurant),
                   _TopPickBody(restaurant: restaurant),
                 ],
               ),
@@ -190,58 +374,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
     );
   }
 
-  // ─── Cook Something? ────────────────────────────────────────────────────────
-
-  Widget _buildCookInSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Cook Something?', style: AppTypography.headline3),
-              TextButton(
-                onPressed: () => context.push(AppRoutes.cookIn),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.secondary,
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Text(
-                  'Browse Recipes',
-                  style:
-                      AppTypography.body2.copyWith(color: AppColors.secondary),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        SizedBox(
-          height: 250,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            itemCount: HomeFeedMocks.cookInRecipes.length,
-            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
-            itemBuilder: (_, i) {
-              final r = HomeFeedMocks.cookInRecipes[i];
-              return RecipeHorizontalCard(
-                recipe: r,
-                onTap: () => context.push(AppRoutes.cookIn),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ─── Nearby Options ─────────────────────────────────────────────────────────
+  // ─── Nearby Options ──────────────────────────────────────────────────────────
 
   Widget _buildNearbySection() {
     return Padding(
@@ -252,57 +385,260 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Nearby Options', style: AppTypography.headline3),
+              Text(
+                'Nearby Options',
+                style: AppTypography.headline2.copyWith(color: AppColors.neutral),
+              ),
               TextButton(
-                onPressed: () => context.go(AppRoutes.restaurants),
+                onPressed: () => context.go(AppRoutes.map),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
+                  minimumSize: const Size(48, 48),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
-                  'See All',
+                  'View map',
                   style: AppTypography.body2.copyWith(color: AppColors.primary),
                 ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          ...HomeFeedMocks.nearbyRestaurants.take(2).map(
-                (r) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: NearbyRestaurantRow(
-                    restaurant: r,
-                    onTap: () =>
-                        context.go('${AppRoutes.restaurants}/${r.id}'),
-                  ),
-                ),
+          ...HomeFeedMocks.nearbyOptions.map(
+            (r) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: _NearbyRow(
+                restaurant: r,
+                onTap: () =>
+                    context.go('${AppRoutes.restaurants}/${r.id}'),
               ),
+            ),
+          ),
         ],
       ),
     );
   }
+}
 
-  // ─── FAB ────────────────────────────────────────────────────────────────────
+// ─── Dine-In Card ─────────────────────────────────────────────────────────────
 
-  Widget _buildFAB() {
-    return FloatingActionButton(
-      onPressed: () => showModeChoiceSheet(context),
-      backgroundColor: AppColors.primary,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+class _DineInCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _DineInCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        height: 180,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: AppColors.primary, width: 2),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg - 2),
+            child: Stack(
+              children: [
+                // Decorative blob
+                Positioned(
+                  top: -20,
+                  right: -20,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryLight,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                // Main content
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryLight,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.restaurant_outlined,
+                          color: AppColors.primary,
+                          size: 24,
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Dine-In',
+                            style: AppTypography.headline2.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            'Find a restaurant',
+                            style: AppTypography.body2.copyWith(
+                              color: AppColors.neutral600,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          const Divider(
+                            color: AppColors.primaryLight,
+                            height: 1,
+                            thickness: 1,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Text(
+                                '3 nearby',
+                                style: AppTypography.headline3.copyWith(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Check badge
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: AppColors.white,
+                      size: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-      child: const Icon(Icons.add, color: AppColors.white),
     );
   }
 }
 
-// ─── Top Pick sub-widgets ────────────────────────────────────────────────────
+// ─── Cook-In Card ─────────────────────────────────────────────────────────────
 
-class _TopPickImage extends StatelessWidget {
+class _CookInCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _CookInCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        height: 180,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: const BoxDecoration(
+                    color: AppColors.secondaryLight,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.soup_kitchen_outlined,
+                    color: AppColors.secondary,
+                    size: 24,
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cook-In',
+                      style: AppTypography.headline2.copyWith(
+                        color: AppColors.neutral,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      'Pick a recipe',
+                      style: AppTypography.body2.copyWith(
+                        color: AppColors.neutral600,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    const Divider(
+                      color: AppColors.border,
+                      height: 1,
+                      thickness: 1,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.menu_book_outlined,
+                          size: 16,
+                          color: AppColors.neutral600,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          '4 saved',
+                          style: AppTypography.headline3.copyWith(
+                            color: AppColors.neutral600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Top Pick sub-widgets ─────────────────────────────────────────────────────
+
+class _TopPickHeroImage extends StatelessWidget {
   final RestaurantSummary restaurant;
-  const _TopPickImage({required this.restaurant});
+  const _TopPickHeroImage({required this.restaurant});
 
   @override
   Widget build(BuildContext context) {
@@ -311,7 +647,7 @@ class _TopPickImage extends StatelessWidget {
         top: Radius.circular(AppSpacing.radiusLg),
       ),
       child: SizedBox(
-        height: 192,
+        height: 128,
         width: double.infinity,
         child: Stack(
           fit: StackFit.expand,
@@ -320,33 +656,66 @@ class _TopPickImage extends StatelessWidget {
                 ? CachedNetworkImage(
                     imageUrl: restaurant.imageUrl!,
                     fit: BoxFit.cover,
-                    placeholder: (_, _) => Shimmer.fromColors(
-                      baseColor: AppColors.neutral100,
-                      highlightColor: AppColors.neutral200,
-                      child: Container(color: AppColors.neutral100),
+                    placeholder: (_, _) => const CardShimmer(height: 128),
+                    errorWidget: (_, _, _) => Container(
+                      color: AppColors.neutral100,
+                      child: const Center(
+                        child: Icon(
+                          Icons.restaurant,
+                          size: 32,
+                          color: AppColors.neutral400,
+                        ),
+                      ),
                     ),
-                    errorWidget: (_, _, _) =>
-                        Container(color: AppColors.neutral100),
                   )
                 : Container(
                     color: AppColors.neutral100,
                     child: const Center(
                       child: Icon(
                         Icons.restaurant,
-                        size: AppSpacing.iconLg,
+                        size: 32,
                         color: AppColors.neutral400,
                       ),
                     ),
                   ),
+            if (restaurant.isHalal)
+              const Positioned(
+                top: 12,
+                left: 12,
+                child: DietaryChip.halal(),
+              ),
             Positioned(
-              top: 8,
-              left: 8,
-              child: Row(
-                children: [
-                  if (restaurant.isHalal) const DietaryChip.halal(),
-                  const SizedBox(width: AppSpacing.xs),
-                  const _HealthyChip(),
-                ],
+              top: 12,
+              right: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppColors.success,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(
+                      'Est. RM 25',
+                      style: AppTypography.label.copyWith(
+                        color: AppColors.neutral,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -367,49 +736,40 @@ class _TopPickBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            restaurant.name,
-            style: AppTypography.headline2,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: AppSpacing.xs),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Flexible(
+              Expanded(
                 child: Text(
-                  restaurant.cuisine,
-                  style: AppTypography.body2
-                      .copyWith(color: AppColors.neutral600),
+                  restaurant.name,
+                  style: AppTypography.headline3,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              const Icon(Icons.star, size: 13, color: AppColors.warning),
-              const SizedBox(width: 3),
-              Text(
-                restaurant.rating.toStringAsFixed(1),
-                style:
-                    AppTypography.body2.copyWith(color: AppColors.neutral600),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.star, size: 14, color: AppColors.warning),
+                  const SizedBox(width: 2),
+                  Text(
+                    restaurant.rating.toStringAsFixed(1),
+                    style: AppTypography.body2.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.neutral,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              const Icon(
-                Icons.location_on,
-                size: 13,
-                color: AppColors.neutral400,
-              ),
-              const SizedBox(width: 3),
-              Text(
-                '${restaurant.distanceKm.toStringAsFixed(1)} km away',
-                style:
-                    AppTypography.body2.copyWith(color: AppColors.neutral600),
-              ),
-            ],
+          Text(
+            '${restaurant.cuisine} · ${restaurant.distanceKm.toStringAsFixed(1)}km away',
+            style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -417,7 +777,129 @@ class _TopPickBody extends StatelessWidget {
   }
 }
 
-// ─── Bell Button with Badge ──────────────────────────────────────────────────
+// ─── Nearby Row ───────────────────────────────────────────────────────────────
+
+class _NearbyRow extends StatelessWidget {
+  final RestaurantSummary restaurant;
+  final VoidCallback onTap;
+
+  const _NearbyRow({required this.restaurant, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              child: SizedBox(
+                width: 64,
+                height: 64,
+                child: restaurant.imageUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: restaurant.imageUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: AppColors.neutral100,
+                          highlightColor: AppColors.white,
+                          child: Container(color: AppColors.neutral100),
+                        ),
+                        errorWidget: (context, url, err) => Container(
+                          color: AppColors.neutral100,
+                          child: const Icon(Icons.restaurant,
+                              size: 24, color: AppColors.neutral400),
+                        ),
+                      )
+                    : Container(
+                        color: AppColors.neutral100,
+                        child: const Icon(Icons.restaurant,
+                            size: 24, color: AppColors.neutral400),
+                      ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    restaurant.name,
+                    style: AppTypography.headline3,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    '${restaurant.cuisine} · ${restaurant.distanceKm.toStringAsFixed(1)}km',
+                    style: AppTypography.body2.copyWith(
+                      color: AppColors.neutral600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  if (restaurant.isHalal)
+                    const DietaryChip.halal()
+                  else if (restaurant.isVegan)
+                    const DietaryChip.vegan(),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (restaurant.pricingBracket != null)
+                  Text(
+                    restaurant.pricingBracket!,
+                    style: AppTypography.headline3.copyWith(
+                      color: AppColors.neutral,
+                    ),
+                  ),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.directions_walk,
+                      size: 12,
+                      color: AppColors.neutral400,
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      '${restaurant.walkMinutes}m',
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.neutral400,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Bell Button with Badge ───────────────────────────────────────────────────
 
 class _BellButton extends ConsumerWidget {
   final VoidCallback onTap;
@@ -433,7 +915,7 @@ class _BellButton extends ConsumerWidget {
       icon: Stack(
         clipBehavior: Clip.none,
         children: [
-          const Icon(Icons.notifications_outlined, color: AppColors.neutral),
+          const Icon(Icons.notifications_outlined, color: AppColors.primary),
           if (count > 0)
             Positioned(
               top: -4,
@@ -457,28 +939,6 @@ class _BellButton extends ConsumerWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _HealthyChip extends StatelessWidget {
-  const _HealthyChip();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.success,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      child: Text(
-        'Healthy',
-        style: AppTypography.label.copyWith(color: AppColors.white),
       ),
     );
   }

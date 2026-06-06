@@ -33,10 +33,13 @@ class ShimmerLoader extends StatelessWidget {
 }
 
 class CardShimmer extends StatelessWidget {
-  const CardShimmer({super.key});
+  final double? height;
+
+  const CardShimmer({super.key, this.height});
 
   @override
   Widget build(BuildContext context) {
+    final imageH = height ?? AppSpacing.cardImageHeight;
     return Shimmer.fromColors(
       baseColor: AppColors.neutral100,
       highlightColor: AppColors.white,
@@ -46,15 +49,15 @@ class CardShimmer extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           border: Border.all(color: AppColors.border),
         ),
-        child: const Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              height: AppSpacing.cardImageHeight,
+              height: imageH,
               width: double.infinity,
-              child: ColoredBox(color: AppColors.neutral100),
+              child: const ColoredBox(color: AppColors.neutral100),
             ),
-            Padding(
+            const Padding(
               padding: EdgeInsets.all(AppSpacing.cardPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

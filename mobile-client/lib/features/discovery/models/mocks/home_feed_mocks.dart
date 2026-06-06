@@ -2,33 +2,69 @@ import '../home_feed_models.dart';
 
 abstract class HomeFeedMocks {
   static const String userName = 'Aisha';
-  static const String userLocation = 'Sunway, Subang Jaya';
-  static const int notificationCount = 2;
+  static const String userLocation = 'Bangsar';
+  static const double budgetRemaining = 366.0;
+  static const int unreadNotifications = 2;
 
-  // Top pick — used in "Today's Top Pick" featured card
   static const RestaurantSummary topPick = RestaurantSummary(
-    id: 'r-top',
-    name: 'Green Bowl Cafe',
-    cuisine: 'Healthy Bowls',
-    distanceKm: 1.2,
+    id: 'r_botanica',
+    name: 'Botanica + Co',
+    cuisine: 'Fresh salads & hearty bowls',
+    distanceKm: 0.8,
     rating: 4.8,
-    reviewCount: 214,
+    reviewCount: 142,
     isOpen: true,
     isHalal: true,
     isVegan: false,
     isClaimed: true,
-    walkMinutes: 15,
+    walkMinutes: 10,
+    pricingBracket: 'RM 20+',
     imageUrl: null,
-    matchScore: 97,
+    matchScore: 94,
   );
 
-  // Cook-In row — 2 recipe cards in horizontal scroll
+  static const List<RestaurantSummary> nearbyOptions = [
+    RestaurantSummary(
+      id: 'r_fishbowl',
+      name: 'The Fish Bowl',
+      cuisine: 'Healthy · Poke',
+      distanceKm: 1.2,
+      rating: 4.6,
+      reviewCount: 89,
+      isOpen: true,
+      isHalal: false,
+      isVegan: false,
+      isClaimed: true,
+      walkMinutes: 15,
+      pricingBracket: 'RM 10-20',
+      imageUrl: null,
+      matchScore: 87,
+    ),
+    RestaurantSummary(
+      id: 'r_pulp',
+      name: 'Pulp by PPP',
+      cuisine: 'Cafe · Pastries',
+      distanceKm: 0.5,
+      rating: 4.7,
+      reviewCount: 213,
+      isOpen: true,
+      isHalal: true,
+      isVegan: false,
+      isClaimed: true,
+      walkMinutes: 6,
+      pricingBracket: 'RM 10-20',
+      imageUrl: null,
+      matchScore: 82,
+    ),
+  ];
+
+  // Legacy fields retained for backward compatibility with other screens
   static const List<RecipeSummary> cookInRecipes = [
     RecipeSummary(
       id: 'rc1',
       name: 'Nasi Goreng Kampung',
       cuisine: 'Malaysian',
-      prepMinutes: 30,
+      prepMinutes: 25,
       calories: 450,
       isHalal: true,
       isVegan: false,
@@ -38,55 +74,22 @@ abstract class HomeFeedMocks {
       id: 'rc2',
       name: 'Mee Goreng Mamak',
       cuisine: 'Malaysian',
-      prepMinutes: 25,
-      calories: 520,
+      prepMinutes: 20,
+      calories: 380,
       isHalal: true,
       isVegan: true,
       authorName: 'Ramesh K.',
     ),
   ];
 
-  // Nearby Options — 2 compact rows
-  static const List<RestaurantSummary> nearbyRestaurants = [
-    RestaurantSummary(
-      id: 'r1',
-      name: 'Urban Eatery',
-      cuisine: 'Local Cuisine',
-      distanceKm: 0.8,
-      rating: 4.5,
-      reviewCount: 96,
-      isOpen: true,
-      isHalal: true,
-      isVegan: false,
-      isClaimed: true,
-      walkMinutes: 10,
-      imageUrl: null,
-      matchScore: 89,
-    ),
-    RestaurantSummary(
-      id: 'r2',
-      name: 'Fresh Daily Salad',
-      cuisine: 'Healthy',
-      distanceKm: 1.5,
-      rating: 4.9,
-      reviewCount: 61,
-      isOpen: true,
-      isHalal: false,
-      isVegan: true,
-      isClaimed: false,
-      walkMinutes: 18,
-      imageUrl: null,
-      matchScore: 82,
-    ),
-  ];
+  static const List<RestaurantSummary> nearbyRestaurants = nearbyOptions;
 
-  // Kept for compatibility — not shown on home screen in Phase 1
   static const List<GrocerySummary> nearbyGroceries = [
     GrocerySummary(
       id: 'g1',
-      name: 'Jaya Grocer Sunway Pyramid',
+      name: 'Jaya Grocer',
       type: 'Supermarket',
-      distanceKm: 0.6,
+      distanceKm: 1.5,
       isOpen: true,
       isClaimed: true,
     ),
@@ -94,7 +97,7 @@ abstract class HomeFeedMocks {
       id: 'g2',
       name: '99 Speedmart',
       type: 'Convenience',
-      distanceKm: 0.2,
+      distanceKm: 0.4,
       isOpen: true,
       isClaimed: false,
       closingTime: '11pm',

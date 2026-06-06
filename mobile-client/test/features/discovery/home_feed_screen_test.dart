@@ -113,6 +113,14 @@ GoRouter _testRouter() => GoRouter(
           ],
         ),
         GoRoute(
+          path: '/map',
+          builder: (_, _) => const Scaffold(body: Text('Map')),
+        ),
+        GoRoute(
+          path: '/notifications',
+          builder: (_, _) => const Scaffold(body: Text('Notifications')),
+        ),
+        GoRoute(
           path: '/profile/edit',
           builder: (_, _) => const Scaffold(body: Text('ProfileEdit')),
         ),
@@ -391,14 +399,41 @@ void main() {
   });
 
   group('HomeFeedScreen — new layout', () {
-    testWidgets('renders greeting section', (tester) async {
+    testWidgets('renders personalised greeting with user name', (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pumpAndSettle();
-      expect(
-        find.textContaining(
-            RegExp(r'Good (morning|afternoon|evening)\.')),
-        findsOneWidget,
+      expect(find.text('Hi, Aisha.'), findsOneWidget);
+    });
+
+    testWidgets('renders contextual meal-time second line', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pumpAndSettle();
+      // Any one of the contextual greeting lines should appear
+      final greetingFinder = find.textContaining(
+        RegExp(
+          r"(breakfast|brunch|lunchtime|treat|tonight|hungry|supper)",
+          caseSensitive: false,
+        ),
       );
+      expect(greetingFinder, findsOneWidget);
+    });
+
+    testWidgets('renders Dine-In mode card', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pumpAndSettle();
+      expect(find.text('Dine-In'), findsOneWidget);
+    });
+
+    testWidgets('renders Cook-In mode card', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pumpAndSettle();
+      expect(find.text('Cook-In'), findsOneWidget);
+    });
+
+    testWidgets('renders AI nudge pill icon', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
     });
 
     testWidgets("renders Today's Top Pick section header", (tester) async {
@@ -407,73 +442,51 @@ void main() {
       expect(find.text("Today's Top Pick"), findsOneWidget);
     });
 
-    testWidgets('renders Cook Something? section header', (tester) async {
-      await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
-      expect(find.text('Cook Something?'), findsOneWidget);
-    });
-
-    testWidgets('renders Browse Recipes button', (tester) async {
-      await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
-      expect(find.text('Browse Recipes'), findsOneWidget);
-    });
-
     testWidgets('renders Nearby Options section header', (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pumpAndSettle();
       expect(find.text('Nearby Options'), findsOneWidget);
     });
 
-    testWidgets('renders See All button', (tester) async {
+    testWidgets('renders View map button', (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pumpAndSettle();
-      expect(find.text('See All'), findsOneWidget);
+      expect(find.text('View map'), findsOneWidget);
     });
 
-    testWidgets('renders FAB', (tester) async {
+    testWidgets('does not render FAB', (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pumpAndSettle();
-      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.byType(FloatingActionButton), findsNothing);
     });
 
-    testWidgets('FAB tap opens mode choice sheet', (tester) async {
+    testWidgets('Dine-In card tap navigates to /dine-in', (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(FloatingActionButton));
-      await tester.pumpAndSettle();
-      expect(find.text('What do you want to do?'), findsOneWidget);
-    });
-
-    testWidgets('top pick card tap navigates to /dine-in', (tester) async {
-      await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('top_pick_card')));
+      await tester.tap(find.text('Dine-In'));
       await tester.pumpAndSettle();
       expect(find.text('DineIn'), findsOneWidget);
     });
 
-    testWidgets('Browse Recipes tap navigates to cook-in', (tester) async {
+    testWidgets('Cook-In card tap navigates to /cook-in', (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Browse Recipes'));
+      await tester.tap(find.text('Cook-In'));
       await tester.pumpAndSettle();
-      // /cook-in redirects to /recipes in real router; in test router it goes to CookIn
       expect(find.text('CookIn'), findsOneWidget);
     });
 
-    testWidgets('See All tap navigates to /restaurants', (tester) async {
+    testWidgets('View map tap navigates to /map', (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pumpAndSettle();
-      // Scroll down to bring Nearby Options section into viewport
       await tester.drag(
         find.byType(CustomScrollView).first,
-        const Offset(0, -1000),
+        const Offset(0, -600),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('See All'));
+      await tester.tap(find.text('View map'));
       await tester.pumpAndSettle();
-      expect(find.text('Restaurants'), findsOneWidget);
+      expect(find.text('Map'), findsOneWidget);
     });
   });
 

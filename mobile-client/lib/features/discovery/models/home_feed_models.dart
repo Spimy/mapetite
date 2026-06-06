@@ -16,6 +16,7 @@ class RestaurantSummary {
   final String? brtRoute;
   final String? imageUrl;
   final double matchScore;
+  final String? pricingBracket;
 
   const RestaurantSummary({
     required this.id,
@@ -32,6 +33,34 @@ class RestaurantSummary {
     this.brtRoute,
     this.imageUrl,
     required this.matchScore,
+    this.pricingBracket,
+  });
+}
+
+@immutable
+class NearbyVenueSummary {
+  final String id;
+  final String name;
+  final String cuisineType;
+  final double distanceKm;
+  final double rating;
+  final bool isOpen;
+  final bool isHalal;
+  final bool isVegan;
+  final String pricingBracket;
+  final String? imageUrl;
+
+  const NearbyVenueSummary({
+    required this.id,
+    required this.name,
+    required this.cuisineType,
+    required this.distanceKm,
+    required this.rating,
+    required this.isOpen,
+    required this.isHalal,
+    required this.isVegan,
+    required this.pricingBracket,
+    this.imageUrl,
   });
 }
 
