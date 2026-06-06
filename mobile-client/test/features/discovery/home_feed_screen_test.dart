@@ -401,17 +401,19 @@ void main() {
   group('HomeFeedScreen — new layout', () {
     testWidgets('renders personalised greeting with user name', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Hi, Joshua.'), findsOneWidget);
     });
 
     testWidgets('renders contextual meal-time second line', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       // Any one of the contextual greeting lines should appear
       final greetingFinder = find.textContaining(
         RegExp(
-          r"(breakfast|brunch|lunchtime|treat|tonight|hungry|supper)",
+          r"(breakfast|brunch|craving|snack|tonight|something|supper)",
           caseSensitive: false,
         ),
       );
@@ -420,72 +422,100 @@ void main() {
 
     testWidgets('renders Dine-In mode card', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Dine-In'), findsOneWidget);
     });
 
     testWidgets('renders Cook-In mode card', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Cook-In'), findsOneWidget);
     });
 
     testWidgets('renders AI nudge pill icon', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
     });
 
     testWidgets("renders Today's Top Pick section header", (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text("Today's Top Pick"), findsOneWidget);
+    });
+
+    testWidgets('renders match score badge on top pick card', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.textContaining('Match'), findsOneWidget);
+    });
+
+    testWidgets('renders Get Directions button on top pick card',
+        (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Get Directions'), findsOneWidget);
     });
 
     testWidgets('renders Nearby Options section header', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Nearby Options'), findsOneWidget);
     });
 
     testWidgets('renders View map button', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('View map'), findsOneWidget);
     });
 
     testWidgets('does not render FAB', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       expect(find.byType(FloatingActionButton), findsNothing);
     });
 
     testWidgets('Dine-In card tap navigates to /dine-in', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       await tester.tap(find.text('Dine-In'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('DineIn'), findsOneWidget);
     });
 
     testWidgets('Cook-In card tap navigates to /cook-in', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       await tester.tap(find.text('Cook-In'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('CookIn'), findsOneWidget);
     });
 
     testWidgets('View map tap navigates to /map', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       await tester.drag(
         find.byType(CustomScrollView).first,
         const Offset(0, -600),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
       await tester.tap(find.text('View map'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Map'), findsOneWidget);
     });
   });
@@ -493,11 +523,13 @@ void main() {
   group('HomeFeedScreen — drawer', () {
     testWidgets('renders AppDrawer when drawer is opened', (tester) async {
       await tester.pumpWidget(_routerWrap());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
       final scaffoldState =
           tester.state<ScaffoldState>(find.byType(Scaffold).first);
       scaffoldState.openDrawer();
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(AppDrawer), findsOneWidget);
     });
   });

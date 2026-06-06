@@ -437,35 +437,40 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Today's Top Pick",
-            style: AppTypography.headline2.copyWith(color: AppColors.neutral),
+          Row(
+            children: [
+              const Icon(Icons.stars, color: AppColors.warning, size: 22),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                "Today's Top Pick",
+                style:
+                    AppTypography.headline2.copyWith(color: AppColors.neutral),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.md),
-          GestureDetector(
-            onTap: () => context.push(
-              '${AppRoutes.restaurants}/${HomeFeedMocks.topPick.id}',
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              border: Border.all(color: AppColors.border),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                border: Border.all(color: AppColors.border),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _TopPickHeroImage(restaurant: restaurant),
-                  _TopPickBody(restaurant: restaurant),
-                ],
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _TopPickHeroImage(restaurant: restaurant),
+                _TopPickBody(
+                  restaurant: restaurant,
+                  area: HomeFeedMocks.userLocation,
+                ),
+              ],
             ),
           ),
         ],
@@ -815,7 +820,7 @@ class _TopPickHeroImage extends StatelessWidget {
         top: Radius.circular(AppSpacing.radiusLg),
       ),
       child: SizedBox(
-        height: 128,
+        height: 192,
         width: double.infinity,
         child: Stack(
           fit: StackFit.expand,
@@ -824,7 +829,7 @@ class _TopPickHeroImage extends StatelessWidget {
                 ? CachedNetworkImage(
                     imageUrl: restaurant.imageUrl!,
                     fit: BoxFit.cover,
-                    placeholder: (_, _) => const CardShimmer(height: 128),
+                    placeholder: (_, _) => const CardShimmer(height: 192),
                     errorWidget: (_, _, _) => Container(
                       color: AppColors.neutral100,
                       child: const Center(
@@ -846,12 +851,40 @@ class _TopPickHeroImage extends StatelessWidget {
                       ),
                     ),
                   ),
-            if (restaurant.isHalal)
-              const Positioned(
-                top: 12,
-                left: 12,
-                child: DietaryChip.halal(),
+            // Top-left: dietary chip + cuisine label chip
+            Positioned(
+              top: 12,
+              left: 12,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (restaurant.isHalal) const DietaryChip.halal(),
+                  if (restaurant.isHalal) const SizedBox(width: AppSpacing.xs),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 120),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs + 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary,
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusSm),
+                      ),
+                      child: Text(
+                        restaurant.cuisine,
+                        style: AppTypography.label
+                            .copyWith(color: AppColors.white),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ],
               ),
+            ),
+            // Top-right: match score pill
             Positioned(
               top: 12,
               right: 12,
@@ -862,27 +895,14 @@ class _TopPickHeroImage extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.white.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: AppColors.success,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(
-                      'Est. RM 25',
-                      style: AppTypography.label.copyWith(
-                        color: AppColors.neutral,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Match ${restaurant.matchScore.toInt()}%',
+                  style: AppTypography.label.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -895,7 +915,8 @@ class _TopPickHeroImage extends StatelessWidget {
 
 class _TopPickBody extends StatelessWidget {
   final RestaurantSummary restaurant;
-  const _TopPickBody({required this.restaurant});
+  final String area;
+  const _TopPickBody({required this.restaurant, required this.area});
 
   @override
   Widget build(BuildContext context) {
@@ -905,39 +926,87 @@ class _TopPickBody extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
                   restaurant.name,
-                  style: AppTypography.headline3,
+                  style: AppTypography.headline2,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.star, size: 14, color: AppColors.warning),
-                  const SizedBox(width: 2),
-                  Text(
-                    restaurant.rating.toStringAsFixed(1),
-                    style: AppTypography.body2.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.neutral,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.star, size: 14, color: AppColors.warning),
+                      const SizedBox(width: 2),
+                      Text(
+                        restaurant.rating.toStringAsFixed(1),
+                        style: AppTypography.body2.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.neutral,
+                        ),
+                      ),
+                    ],
                   ),
+                  if (restaurant.pricingBracket != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      restaurant.pricingBracket!,
+                      style: AppTypography.label.copyWith(
+                        color: AppColors.neutral600,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          Text(
-            '${restaurant.cuisine} · ${restaurant.distanceKm.toStringAsFixed(1)}km away',
-            style: AppTypography.body2.copyWith(color: AppColors.neutral600),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Row(
+            children: [
+              const Icon(
+                Icons.location_on_outlined,
+                size: 14,
+                color: AppColors.neutral600,
+              ),
+              const SizedBox(width: 2),
+              Expanded(
+                child: Text(
+                  '${restaurant.distanceKm.toStringAsFixed(1)} km away · $area',
+                  style:
+                      AppTypography.body2.copyWith(color: AppColors.neutral600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SizedBox(
+            width: double.infinity,
+            height: AppSpacing.buttonHeight,
+            child: ElevatedButton.icon(
+              onPressed: () => context.push(
+                '${AppRoutes.restaurants}/${restaurant.id}',
+              ),
+              icon: const Icon(Icons.directions, size: 18),
+              label: const Text('Get Directions'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                ),
+              ),
+            ),
           ),
         ],
       ),
