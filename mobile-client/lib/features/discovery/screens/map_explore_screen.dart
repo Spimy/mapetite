@@ -271,6 +271,9 @@ class _MapExploreScreenState extends State<MapExploreScreen> {
                 hintStyle: AppTypography.body1
                     .copyWith(color: AppColors.neutral400),
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
                 filled: false,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
