@@ -884,7 +884,7 @@ class _TopPickHeroImage extends StatelessWidget {
                 ],
               ),
             ),
-            // Top-right: match score pill
+            // Top-right: match score pill with AI sparkle
             Positioned(
               top: 12,
               right: 12,
@@ -897,12 +897,23 @@ class _TopPickHeroImage extends StatelessWidget {
                   color: AppColors.white.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                 ),
-                child: Text(
-                  'Match ${restaurant.matchScore.toInt()}%',
-                  style: AppTypography.label.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome,
+                      size: 11,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      'Match ${restaurant.matchScore.toInt()}%',
+                      style: AppTypography.label.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -996,8 +1007,8 @@ class _TopPickBody extends StatelessWidget {
               onPressed: () => context.push(
                 '${AppRoutes.restaurants}/${restaurant.id}',
               ),
-              icon: const Icon(Icons.directions, size: 18),
-              label: const Text('Get Directions'),
+              icon: const Icon(Icons.restaurant, size: 18),
+              label: const Text("Let's Eat!"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.white,

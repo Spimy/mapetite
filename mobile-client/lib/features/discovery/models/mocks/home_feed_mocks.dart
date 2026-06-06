@@ -9,7 +9,7 @@ abstract class HomeFeedMocks {
   static const RestaurantSummary topPick = RestaurantSummary(
     id: 'r_botanica',
     name: 'Botanica + Co',
-    cuisine: 'Fresh salads & hearty bowls',
+    cuisine: 'Healthy',
     distanceKm: 0.8,
     rating: 4.8,
     reviewCount: 142,

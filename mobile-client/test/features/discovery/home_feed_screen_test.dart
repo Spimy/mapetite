@@ -438,7 +438,7 @@ void main() {
       await tester.pumpWidget(_routerWrap());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
+      expect(find.byIcon(Icons.auto_awesome), findsAtLeastNWidgets(1));
     });
 
     testWidgets("renders Today's Top Pick section header", (tester) async {
@@ -455,12 +455,11 @@ void main() {
       expect(find.textContaining('Match'), findsOneWidget);
     });
 
-    testWidgets('renders Get Directions button on top pick card',
-        (tester) async {
+    testWidgets("renders Let's Eat! button on top pick card", (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      expect(find.text('Get Directions'), findsOneWidget);
+      expect(find.text("Let's Eat!"), findsOneWidget);
     });
 
     testWidgets('renders Nearby Options section header', (tester) async {
