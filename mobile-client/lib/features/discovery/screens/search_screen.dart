@@ -75,6 +75,43 @@ class _SearchScreenState extends State<SearchScreen> {
 
   bool get _isSearching => _searchQuery.isNotEmpty;
 
+  // ── Filter helpers ────────────────────────────────────────────────────────
+
+  bool get _showAll => _filterState.categories.isEmpty;
+  bool get _showRestaurants =>
+      _showAll || _filterState.categories.contains('Restaurants');
+  bool get _showRecipes =>
+      _showAll || _filterState.categories.contains('Recipes');
+  bool get _showGroceries =>
+      _showAll || _filterState.categories.contains('Groceries');
+
+  List<NearbyVenueSummary> get _filteredVenues {
+    var venues = ExploreMocks.nearbyVenues;
+    final dietary = _filterState.dietary;
+    if (dietary.contains('Halal')) {
+      venues = venues.where((v) => v.isHalal).toList();
+    }
+    if (dietary.contains('Vegan')) {
+      venues = venues.where((v) => v.isVegan).toList();
+    }
+    if (dietary.contains('Vegetarian')) {
+      venues = venues.where((v) => v.isVegan || v.isHalal).toList();
+    }
+    final price = _filterState.priceRange;
+    if (price != null) {
+      venues = venues.where((v) {
+        final b = ExploreMocks.pricingBracketFor(v);
+        return switch (price) {
+          'Budget' => b == PricingBracket.budget,
+          'Mid' => b == PricingBracket.mid,
+          'Premium' => b == PricingBracket.premium,
+          _ => true,
+        };
+      }).toList();
+    }
+    return venues;
+  }
+
   void _openExploreFilterSheet() {
     showModalBottomSheet(
       context: context,
@@ -142,17 +179,20 @@ class _SearchScreenState extends State<SearchScreen> {
 
   List<Widget> _buildDiscoverySections() {
     return [
-      // Section 1: Near You Right Now
-      SliverToBoxAdapter(child: _buildNearYouSection()),
-
-      // Section 2: Browse by Category
+      // Section 1: Browse by Category (always visible)
       SliverToBoxAdapter(child: _buildCategorySection()),
 
-      // Section 3: Recipes to Try
-      SliverToBoxAdapter(child: _buildRecipesSection()),
+      // Section 2: Near You Right Now (filtered)
+      if (_showRestaurants)
+        SliverToBoxAdapter(child: _buildNearYouSection(_filteredVenues)),
 
-      // Section 4: Grocery Stores
-      SliverToBoxAdapter(child: _buildGrocerySection()),
+      // Section 3: Recipes to Try (filtered)
+      if (_showRecipes)
+        SliverToBoxAdapter(child: _buildRecipesSection()),
+
+      // Section 4: Grocery Stores (filtered)
+      if (_showGroceries)
+        SliverToBoxAdapter(child: _buildGrocerySection()),
 
       const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl)),
     ];
@@ -169,7 +209,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   // ─── Section 1: Near You Right Now ───────────────────────────────────────────
 
-  Widget _buildNearYouSection() {
+  Widget _buildNearYouSection(List<NearbyVenueSummary> venues) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -200,18 +240,26 @@ class _SearchScreenState extends State<SearchScreen> {
             ],
           ),
         ),
-        SizedBox(
-          height: 244,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            itemCount: ExploreMocks.nearbyVenues.length,
-            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
-            itemBuilder: (_, i) => _NearbyVenueCard(
-              venue: ExploreMocks.nearbyVenues[i],
+        if (venues.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg, vertical: AppSpacing.xl),
+            child: Text(
+              'No restaurants match your filters.',
+              style: AppTypography.body2.copyWith(color: AppColors.neutral400),
+            ),
+          )
+        else
+          SizedBox(
+            height: 244,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              itemCount: venues.length,
+              separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
+              itemBuilder: (_, i) => _NearbyVenueCard(venue: venues[i]),
             ),
           ),
-        ),
       ],
     );
   }
@@ -306,7 +354,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
         SizedBox(
-          height: 220,
+          height: 224,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -1000,6 +1048,8 @@ class _SearchResultCard extends StatelessWidget {
 }
 
 // ─── Explore Filter Sheet ─────────────────────────────────────────────────────
+// Matches recipe_listing_screen _FilterBottomSheet exactly:
+// icon-grid for Category, _IconFilterChip pills for Dietary + Price.
 
 class _ExploreFilterSheet extends StatefulWidget {
   final _ExploreFilterState filterState;
@@ -1019,6 +1069,13 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
   late Set<String> _selectedDietary;
   late String? _priceRange;
 
+  // Category icon-grid definitions — same structure as _CuisineIconGrid
+  static const _categoryItems = [
+    (Icons.restaurant, 'Restaurants'),
+    (Icons.menu_book_outlined, 'Recipes'),
+    (Icons.local_grocery_store_outlined, 'Groceries'),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -1032,15 +1089,9 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
       _selectedDietary.isNotEmpty ||
       _priceRange != null;
 
-  void _toggle(Set<String> set, String value) {
-    setState(() {
-      if (set.contains(value)) {
-        set.remove(value);
-      } else {
-        set.add(value);
-      }
-    });
-  }
+  void _toggleSet(Set<String> set, String value) => setState(() {
+        set.contains(value) ? set.remove(value) : set.add(value);
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -1099,7 +1150,7 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
               ),
             ),
 
-            // ── Scrollable body ──────────────────────────────────────────────
+            // ── Scrollable content ───────────────────────────────────────────
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(
@@ -1107,41 +1158,83 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Category
+                    // ── Category — icon grid (matches _CuisineIconGrid) ──────
                     Text('Category',
                         style: AppTypography.headline3
                             .copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: [
-                        _ExploreFilterChip(
-                          label: 'Restaurants',
-                          icon: Icons.restaurant_outlined,
-                          isActive: _selectedCategories.contains('Restaurants'),
-                          onToggle: () =>
-                              _toggle(_selectedCategories, 'Restaurants'),
-                        ),
-                        _ExploreFilterChip(
-                          label: 'Recipes',
-                          icon: Icons.menu_book_outlined,
-                          isActive: _selectedCategories.contains('Recipes'),
-                          onToggle: () =>
-                              _toggle(_selectedCategories, 'Recipes'),
-                        ),
-                        _ExploreFilterChip(
-                          label: 'Groceries',
-                          icon: Icons.local_grocery_store_outlined,
-                          isActive: _selectedCategories.contains('Groceries'),
-                          onToggle: () =>
-                              _toggle(_selectedCategories, 'Groceries'),
-                        ),
-                      ],
-                    ),
+                    LayoutBuilder(builder: (context, constraints) {
+                      const columns = 3;
+                      const totalSpacing = (columns - 1) * AppSpacing.sm;
+                      final tileW =
+                          (constraints.maxWidth - totalSpacing) / columns;
+                      return Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: _categoryItems.map((item) {
+                          final (icon, label) = item;
+                          final isActive =
+                              _selectedCategories.contains(label);
+                          return GestureDetector(
+                            onTap: () =>
+                                _toggleSet(_selectedCategories, label),
+                            child: AnimatedContainer(
+                              duration:
+                                  const Duration(milliseconds: 180),
+                              width: tileW,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: AppSpacing.sm + 2,
+                                horizontal: AppSpacing.xs,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? AppColors.primaryLight
+                                    : AppColors.neutral100,
+                                borderRadius: BorderRadius.circular(
+                                    AppSpacing.radiusMd),
+                                border: Border.all(
+                                  color: isActive
+                                      ? AppColors.primary
+                                      : AppColors.border,
+                                  width: isActive ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    icon,
+                                    size: 22,
+                                    color: isActive
+                                        ? AppColors.primary
+                                        : AppColors.neutral600,
+                                  ),
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    label,
+                                    style: AppTypography.caption.copyWith(
+                                      color: isActive
+                                          ? AppColors.primary
+                                          : AppColors.neutral600,
+                                      fontWeight: isActive
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
+                                      height: 1.2,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }),
                     const SizedBox(height: AppSpacing.lg),
 
-                    // Dietary
+                    // ── Dietary — icon+text pills (matches _IconFilterChip) ──
                     Text('Dietary',
                         style: AppTypography.headline3
                             .copyWith(color: AppColors.neutral600)),
@@ -1150,30 +1243,34 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
                       spacing: AppSpacing.sm,
                       runSpacing: AppSpacing.sm,
                       children: [
-                        _ExploreFilterChip(
+                        _ExploreIconChip(
                           label: 'Halal',
-                          svgAsset: 'assets/icons/dietary/halal-icon.svg',
+                          svgAsset:
+                              'assets/icons/dietary/halal-icon.svg',
                           isActive: _selectedDietary.contains('Halal'),
-                          onToggle: () => _toggle(_selectedDietary, 'Halal'),
+                          onToggle: () =>
+                              _toggleSet(_selectedDietary, 'Halal'),
                         ),
-                        _ExploreFilterChip(
+                        _ExploreIconChip(
                           label: 'Vegan',
                           icon: Icons.eco,
                           isActive: _selectedDietary.contains('Vegan'),
-                          onToggle: () => _toggle(_selectedDietary, 'Vegan'),
+                          onToggle: () =>
+                              _toggleSet(_selectedDietary, 'Vegan'),
                         ),
-                        _ExploreFilterChip(
+                        _ExploreIconChip(
                           label: 'Vegetarian',
                           icon: Icons.spa,
-                          isActive: _selectedDietary.contains('Vegetarian'),
+                          isActive:
+                              _selectedDietary.contains('Vegetarian'),
                           onToggle: () =>
-                              _toggle(_selectedDietary, 'Vegetarian'),
+                              _toggleSet(_selectedDietary, 'Vegetarian'),
                         ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
 
-                    // Price Range
+                    // ── Price Range ──────────────────────────────────────────
                     Text('Price Range',
                         style: AppTypography.headline3
                             .copyWith(color: AppColors.neutral600)),
@@ -1182,29 +1279,26 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
                       spacing: AppSpacing.sm,
                       runSpacing: AppSpacing.sm,
                       children: [
-                        _ExploreFilterChip(
+                        _ExploreIconChip(
                           label: 'Budget (RM 5–10)',
                           icon: Icons.savings_outlined,
                           isActive: _priceRange == 'Budget',
-                          onToggle: () => setState(() =>
-                              _priceRange =
-                                  _priceRange == 'Budget' ? null : 'Budget'),
+                          onToggle: () => setState(() => _priceRange =
+                              _priceRange == 'Budget' ? null : 'Budget'),
                         ),
-                        _ExploreFilterChip(
+                        _ExploreIconChip(
                           label: 'Mid (RM 10–20)',
                           icon: Icons.account_balance_wallet_outlined,
                           isActive: _priceRange == 'Mid',
-                          onToggle: () => setState(() =>
-                              _priceRange =
-                                  _priceRange == 'Mid' ? null : 'Mid'),
+                          onToggle: () => setState(() => _priceRange =
+                              _priceRange == 'Mid' ? null : 'Mid'),
                         ),
-                        _ExploreFilterChip(
+                        _ExploreIconChip(
                           label: 'Premium (RM 20+)',
                           icon: Icons.diamond_outlined,
                           isActive: _priceRange == 'Premium',
-                          onToggle: () => setState(() =>
-                              _priceRange =
-                                  _priceRange == 'Premium' ? null : 'Premium'),
+                          onToggle: () => setState(() => _priceRange =
+                              _priceRange == 'Premium' ? null : 'Premium'),
                         ),
                       ],
                     ),
@@ -1223,13 +1317,11 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
                 height: AppSpacing.buttonHeight,
                 child: ElevatedButton(
                   onPressed: () {
-                    widget.onApply(
-                      _ExploreFilterState(
-                        categories: Set.from(_selectedCategories),
-                        dietary: Set.from(_selectedDietary),
-                        priceRange: _priceRange,
-                      ),
-                    );
+                    widget.onApply(_ExploreFilterState(
+                      categories: Set.from(_selectedCategories),
+                      dietary: Set.from(_selectedDietary),
+                      priceRange: _priceRange,
+                    ));
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
@@ -1252,16 +1344,16 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
   }
 }
 
-// ─── Explore Filter Chip — matches recipe _IconFilterChip exactly ─────────────
+// ─── Icon+label pill chip — identical styling to recipe _IconFilterChip ────────
 
-class _ExploreFilterChip extends StatelessWidget {
+class _ExploreIconChip extends StatelessWidget {
   final String label;
   final bool isActive;
   final VoidCallback onToggle;
   final IconData? icon;
   final String? svgAsset;
 
-  const _ExploreFilterChip({
+  const _ExploreIconChip({
     required this.label,
     required this.isActive,
     required this.onToggle,
@@ -1271,16 +1363,13 @@ class _ExploreFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final contentColor =
-        isActive ? AppColors.primary : AppColors.neutral600;
+    final color = isActive ? AppColors.primary : AppColors.neutral600;
     return GestureDetector(
       onTap: onToggle,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
+            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
           color: isActive ? AppColors.primaryLight : AppColors.neutral100,
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
@@ -1293,23 +1382,20 @@ class _ExploreFilterChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (svgAsset != null)
-              SvgPicture.asset(
-                svgAsset!,
-                width: 13,
-                height: 13,
-                colorFilter:
-                    ColorFilter.mode(contentColor, BlendMode.srcIn),
-              )
+              SvgPicture.asset(svgAsset!,
+                  width: 13,
+                  height: 13,
+                  colorFilter:
+                      ColorFilter.mode(color, BlendMode.srcIn))
             else if (icon != null)
-              Icon(icon, size: 13, color: contentColor),
+              Icon(icon, size: 13, color: color),
             const SizedBox(width: 4),
-            Text(
-              label,
-              style: AppTypography.label.copyWith(
-                color: contentColor,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-              ),
-            ),
+            Text(label,
+                style: AppTypography.label.copyWith(
+                  color: color,
+                  fontWeight:
+                      isActive ? FontWeight.w600 : FontWeight.w500,
+                )),
           ],
         ),
       ),
