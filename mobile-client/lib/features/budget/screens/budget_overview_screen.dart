@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/widgets/profile_drawer.dart';
 import '../../../routes/app_router.dart';
 import '../providers/budget_provider.dart';
 import '../models/budget_transaction.dart';
@@ -40,7 +39,6 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      drawer: const ProfileDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddTransactionSheet(context),
         backgroundColor: AppColors.primary,
@@ -88,24 +86,10 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
       elevation: 0,
       scrolledUnderElevation: 0,
       automaticallyImplyLeading: false,
-      titleSpacing: AppSpacing.lg,
-      title: Row(
-        children: [
-          Builder(
-            builder: (ctx) => GestureDetector(
-              onTap: () => Scaffold.of(ctx).openDrawer(),
-              child: const Icon(Icons.menu,
-                  size: AppSpacing.iconMd, color: AppColors.neutral),
-            ),
-          ),
-          const Spacer(),
-          Text('Budget',
-              style:
-                  AppTypography.headline1.copyWith(color: AppColors.primary)),
-          const Spacer(),
-          // Placeholder to balance the hamburger icon width
-          const SizedBox(width: AppSpacing.iconMd),
-        ],
+      centerTitle: true,
+      title: Text(
+        'Budget',
+        style: AppTypography.headline1.copyWith(color: AppColors.primary),
       ),
     );
   }

@@ -144,14 +144,15 @@ class _SearchScreenState extends State<SearchScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.only(
-                  left: AppSpacing.lg,
-                  right: AppSpacing.lg,
                   top: AppSpacing.xxxl,
                   bottom: 0,
                 ),
-                child: Text(
-                  'Explore',
-                  style: AppTypography.display.copyWith(color: AppColors.neutral),
+                child: Center(
+                  child: Text(
+                    'Explore',
+                    style: AppTypography.display
+                        .copyWith(color: AppColors.primary),
+                  ),
                 ),
               ),
             ),
