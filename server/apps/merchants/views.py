@@ -420,6 +420,15 @@ class DashboardPromotionUpdateView(MerchantRequiredMixin, StoreContextMixin, Upd
         return reverse('merchants:dashboard_promotions', kwargs={'store_index': self.kwargs.get("store_index", 0)})
 
 
+class DashboardStaffView(MerchantRequiredMixin, StoreContextMixin, ListView):
+    template_name = "merchants/pages/staff-dashboard.html"
+    model = get_user_model()
+    context_object_name = "staff_members"
+
+    def get_queryset(self):
+        return self.get_active_store().staff.all()
+
+
 class OnboardingView(MerchantRequiredMixin, TemplateView):
     template_name = "merchants/onboarding.html"
     

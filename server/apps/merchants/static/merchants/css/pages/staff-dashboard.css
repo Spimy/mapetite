@@ -1,0 +1,235 @@
+.staff-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .staff-dashboard__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .staff-dashboard__title-wrap {
+    min-width: 0;
+  }
+
+  .staff-dashboard__title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: var(--font-weight-heading);
+  }
+
+  .staff-dashboard__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+}
+
+.staff-table-wrapper {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden; 
+  width: max-content;
+  background-color: var(--color-white);
+  font-family: var(--font-family);
+
+  .staff-table {
+    overflow-x: auto;
+    white-space: nowrap; 
+    border-collapse: collapse;
+    text-align: left;
+
+    .staff-table__head {
+      background-color: var(--color-grey-100);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .staff-table__row {
+      border-bottom: 1px solid var(--color-border);
+
+      &:nth-child(even) {
+        background-color: color-mix(in srgb, var(--color-grey-100) 20%, transparent);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .staff-table__header-cell {
+      padding: 16px 24px;
+      font-weight: var(--font-weight-label);
+      color: var(--color-grey-600);
+      font-size: 0.875rem;
+
+      .staff-table__header-cell--right {
+        text-align: right;
+      }
+    }
+
+    .staff-table__cell {
+      padding: 16px 24px;
+      color: var(--color-neutral);
+      font-size: 0.9375rem;
+      vertical-align: middle;
+
+      .staff-table__cell--actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 16px;
+      }
+    }
+
+    .staff-table__note {
+      color: var(--color-grey-400);
+      font-size: 0.875rem;
+    }
+  }
+}
+
+/* Badge Component */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: var(--font-weight-label);
+
+  .badge--success {
+    background-color: var(--color-badge-bg);
+    color: var(--color-badge-text);
+  }
+
+  .badge--neutral {
+    background-color: var(--color-grey-100);
+    color: var(--color-grey-600);
+  }
+
+  .badge--warning {
+    /* Uses color-mix to create a faint background based on your warning color */
+    background-color: color-mix(in srgb, var(--color-warning) 20%, transparent);
+    color: hsl(38, 90%, 35%); /* Slightly darker warning color for readable text */
+  }
+}
+
+
+/* Permissions Table Wrapper */
+.permissions-table-wrapper {
+  width: max-content;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--color-white);
+  font-family: var(--font-family);
+  margin-bottom: 2rem;
+
+  .permissions-table__title {
+    padding: 20px 24px;
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-heading);
+    color: var(--color-neutral);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .permissions-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+
+    .permissions-table__head {
+      background-color: var(--color-grey-100);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .permissions-table__row {
+      border-bottom: 1px solid var(--color-border);
+
+      &:nth-child(even) {
+        background-color: color-mix(in srgb, var(--color-grey-100) 20%, transparent);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .permissions-table__header-cell {
+      padding: 16px 24px;
+      font-weight: var(--font-weight-label);
+      color: var(--color-grey-600);
+      font-size: 0.875rem;
+
+      .permissions-table__header-cell--center {
+        text-align: center;
+        width: 15%;
+      }
+    }
+
+    .permissions-table__cell {
+      padding: 18px 24px;
+      color: var(--color-neutral);
+      font-size: 0.9375rem;
+      vertical-align: middle;
+
+      .permissions-table__cell--center {
+        text-align: center;
+      }
+    }
+
+    .icon-check {
+      color: var(--color-success);
+    }
+
+    .icon-cross {
+      color: var(--color-grey-400);
+    }
+  }
+}
+
+/* Action Buttons Component */
+.action-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-label);
+  color: var(--color-primary);
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  .action-btn--danger {
+    color: var(--color-error);
+  }
+}
+
+/* Icon Button Component */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  .icon-btn--danger {
+    color: var(--color-error);
+    background-color: color-mix(in srgb, var(--color-error) 12%, transparent);
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-error) 20%, transparent);
+    }
+  }
+}

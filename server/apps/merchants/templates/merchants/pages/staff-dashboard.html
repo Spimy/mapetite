@@ -1,0 +1,178 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'merchants/css/pages/staff-dashboard.css' %}" />
+{% endblock styles %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Staff - {{ store.business_name }}
+{% endblock title %}
+
+{% block description %}
+  Manage your store's staff members. View roles, activity status, and manage team access for your business.
+{% endblock description %}
+
+{% block keywords %}
+  staff management, team management, employee management, Mapetite merchant tools
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block dashboard_content %}
+  <section class="staff-dashboard">
+    <header class="staff-dashboard__header">
+      <div class="staff-dashboard__title-wrap">
+        <h3 class="staff-dashboard__title">Staff Management</h3>
+      </div>
+
+      <div class="staff-dashboard__actions">
+        <button class="btn" type="button">Invite Staff</button>
+      </div>
+    </header>
+
+    <div class="staff-table-wrapper">
+      <table class="staff-table">
+        <thead class="staff-table__head">
+          <tr class="staff-table__row">
+            <th class="staff-table__header-cell">Name</th>
+            <th class="staff-table__header-cell">Email</th>
+            <th class="staff-table__header-cell">Role</th>
+            <th class="staff-table__header-cell">Date Joined</th>
+            <th class="staff-table__header-cell">Status</th>
+            <th class="staff-table__header-cell staff-table__header-cell--right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="staff-table__body">
+
+          <tr class="staff-table__row">
+            <td class="staff-table__cell">{{ store.owner.get_full_name|default:store.owner.username }}</td>
+            <td class="staff-table__cell">{{ store.owner.email }}</td>
+            <td class="staff-table__cell">
+              <span class="badge badge--success">Owner</span>
+            </td>
+            <td class="staff-table__cell">{{ store.owner.date_joined|date:"d M Y" }}</td>
+            <td class="staff-table__cell">
+              <span class="badge badge--success">Active</span>
+            </td>
+            <td class="staff-table__cell staff-table__cell--actions">
+              <span class="staff-table__note">That's you</span>
+            </td>
+          </tr>
+
+          {% for staff_member in staff_members %}
+            <tr class="staff-table__row">
+              <td class="staff-table__cell">{{ staff_member.get_full_name|default:staff_member.username }}</td>
+              <td class="staff-table__cell">{{ staff_member.email }}</td>
+              <td class="staff-table__cell">
+                <span class="badge badge--neutral">Staff</span>
+              </td>
+              <td class="staff-table__cell">{{ staff_member.date_joined|date:"d M Y" }}</td>
+              <td class="staff-table__cell">
+                {% if staff_member.is_active %}
+                  <span class="badge badge--success">Active</span>
+                {% else %}
+                  <span class="badge badge--neutral">Inactive</span>
+                {% endif %}
+              </td>
+              <td class="staff-table__cell staff-table__cell--actions">
+                <button class="action-btn">Transfer Ownership</button>
+                <button class="action-btn action-btn--danger">Suspend</button>
+                <button class="icon-btn icon-btn--danger" aria-label="Delete">
+                  <svg width="16"
+                       height="16"
+                       viewBox="0 0 24 24"
+                       fill="none"
+                       stroke="currentColor"
+                       stroke-width="2"
+                       stroke-linecap="round"
+                       stroke-linejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+
+          {% for invite in pending_invites %}
+            <tr class="staff-table__row">
+              <td class="staff-table__cell">{{ invite.name|default:"—" }}</td>
+              <td class="staff-table__cell">{{ invite.email }}</td>
+              <td class="staff-table__cell">
+                <span class="badge badge--neutral">Staff</span>
+              </td>
+              <td class="staff-table__cell">—</td>
+              <td class="staff-table__cell">
+                <span class="badge badge--warning">Invited</span>
+              </td>
+              <td class="staff-table__cell staff-table__cell--actions">
+                <button class="action-btn">Resend Invite</button>
+                <button class="action-btn action-btn--danger">Cancel Invite</button>
+              </td>
+            </tr>
+          {% endfor %}
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="permissions-table-wrapper">
+      <div class="permissions-table__title">Role Permissions</div>
+      <table class="permissions-table">
+        <thead class="permissions-table__head">
+          <tr class="permissions-table__row">
+            <th class="permissions-table__header-cell">Feature</th>
+            <th class="permissions-table__header-cell permissions-table__header-cell--center">Owner</th>
+            <th class="permissions-table__header-cell permissions-table__header-cell--center">Staff</th>
+          </tr>
+        </thead>
+        <tbody class="permissions-table__body">
+          <tr class="permissions-table__row">
+            <td class="permissions-table__cell">View Dashboard</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+          </tr>
+          <tr class="permissions-table__row">
+            <td class="permissions-table__cell">Manage Menu</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+          </tr>
+          <tr class="permissions-table__row">
+            <td class="permissions-table__cell">Manage Promotions</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+          </tr>
+          <tr class="permissions-table__row">
+            <td class="permissions-table__cell">Manage Location and Hours</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+          </tr>
+          <tr class="permissions-table__row">
+            <td class="permissions-table__cell">Account Settings</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+          </tr>
+          <tr class="permissions-table__row">
+            <td class="permissions-table__cell">View Staff List</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/cross.html" %}</td>
+          </tr>
+          <tr class="permissions-table__row">
+            <td class="permissions-table__cell">Invite and Remove Staff</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/cross.html" %}</td>
+          </tr>
+          <tr class="permissions-table__row">
+            <td class="permissions-table__cell">Transfer Ownership</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/check.html" %}</td>
+            <td class="permissions-table__cell permissions-table__cell--center">{% include "icons/cross.html" %}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock dashboard_content %}
