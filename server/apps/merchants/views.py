@@ -8,7 +8,7 @@ from django.http.response import HttpResponse as HttpResponse
 from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import CreateView, ListView, RedirectView, TemplateView, View, UpdateView
+from django.views.generic import ListView, RedirectView, TemplateView, View, UpdateView
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
