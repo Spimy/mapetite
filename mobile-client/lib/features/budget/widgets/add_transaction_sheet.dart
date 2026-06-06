@@ -190,46 +190,44 @@ class _AddTransactionSheetState
             const SizedBox(height: AppSpacing.xxl),
 
             // ── Large amount input ─────────────────────────────────────────
-            GestureDetector(
-              onTap: () => _amountFocus.requestFocus(),
-              child: SizedBox(
-                height: 80,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Opacity(
-                      opacity: 0,
-                      child: TextField(
-                        controller: _amountCtrl,
-                        focusNode: _amountFocus,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        decoration: const InputDecoration(
-                            border: InputBorder.none),
-                        style: const TextStyle(fontSize: 1),
+            SizedBox(
+              height: 80,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    'RM',
+                    style: AppTypography.headline1.copyWith(
+                        color: AppColors.neutral400, fontSize: 20),
+                  ),
+                  const SizedBox(width: 4),
+                  SizedBox(
+                    width: 180,
+                    child: TextField(
+                      controller: _amountCtrl,
+                      focusNode: _amountFocus,
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true),
+                      textAlign: TextAlign.center,
+                      style: AppTypography.budgetHero,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'[\d.]')),
+                      ],
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '0.00',
+                        hintStyle: AppTypography.budgetHero.copyWith(
+                          color: AppColors.neutral200,
+                        ),
+                        contentPadding: EdgeInsets.zero,
+                        isDense: true,
                       ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          'RM',
-                          style: AppTypography.headline1.copyWith(
-                              color: AppColors.neutral400, fontSize: 20),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _amountCtrl.text.isEmpty
-                              ? '0.00'
-                              : _amountCtrl.text,
-                          style: AppTypography.budgetHero,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             Center(
