@@ -8,6 +8,7 @@ import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_chip.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../../shared/widgets/dietary_chip.dart';
 import '../../../shared/widgets/pricing_badge.dart';
 import '../models/mocks/restaurant_mocks.dart';
 import '../models/restaurant_model.dart';
@@ -502,7 +503,12 @@ class _RestaurantCard extends StatelessWidget {
                     .map(
                       (tag) => Padding(
                         padding: const EdgeInsets.only(right: AppSpacing.xs),
-                        child: _DietaryOverlayChip(tag: tag),
+                        child: switch (tag) {
+                          'Halal' => const DietaryChip.halal(),
+                          'Vegan' => const DietaryChip.vegan(),
+                          'Vegetarian' => const DietaryChip.vegetarian(),
+                          _ => DietaryChip.allergen(tag),
+                        },
                       ),
                     )
                     .toList(),
@@ -642,29 +648,6 @@ class _ImagePlaceholder extends StatelessWidget {
   }
 }
 
-class _DietaryOverlayChip extends StatelessWidget {
-  final String tag;
-
-  const _DietaryOverlayChip({required this.tag});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs + 2,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.tagHalal,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-      ),
-      child: Text(
-        tag,
-        style: AppTypography.label.copyWith(color: AppColors.white),
-      ),
-    );
-  }
-}
 
 // ── Restaurant Filter Data ────────────────────────────────────────────────────
 

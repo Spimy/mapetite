@@ -374,12 +374,6 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                               ],
                             ),
                           ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Icon(
-                            Icons.chevron_right,
-                            color: AppColors.white.withValues(alpha: 0.7),
-                            size: 20,
-                          ),
                         ],
                       ),
                     ),
@@ -449,7 +443,9 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
           ),
           const SizedBox(height: AppSpacing.md),
           GestureDetector(
-            onTap: () => context.push(AppRoutes.dineIn),
+            onTap: () => context.push(
+              '${AppRoutes.restaurants}/${HomeFeedMocks.topPick.id}',
+            ),
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.white,
