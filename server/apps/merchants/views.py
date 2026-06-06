@@ -448,7 +448,7 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
             if form.is_valid():
                 form.save()
                 messages.success(request, "Settings updated!")
-                return redirect('merchants:settings')
+                return redirect('merchants:dashboard_settings', store_index=kwargs.get("store_index", 0))
             return self.render_to_response(self.get_context_data(user_form=form))
 
         elif 'submit_password' in request.POST:
@@ -456,7 +456,7 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
             if form.is_valid():
                 form.save()
                 messages.success(request, "Password changed successfully!")
-                return redirect('merchants:settings')
+                return redirect('merchants:dashboard_settings', store_index=kwargs.get("store_index", 0))
             return self.render_to_response(self.get_context_data(password_form=form))
 
         return self.get(request, *args, **kwargs)
