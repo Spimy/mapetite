@@ -41,6 +41,7 @@ class UserProfile(models.Model):
 
     # Profile data
     avatar = models.ImageField(upload_to="users/avatars", blank=True)
+    phone_number = models.CharField(max_length=20, blank=True)
 
     # Module 1: Location data
     address = models.CharField(max_length=255, blank=True)
