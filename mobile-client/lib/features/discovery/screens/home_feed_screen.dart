@@ -534,7 +534,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
               child: _NearbyRow(
                 restaurant: r,
                 onTap: () =>
-                    context.go('${AppRoutes.restaurants}/${r.id}'),
+                    context.push('${AppRoutes.restaurants}/${r.id}'),
               ),
             ),
           ),

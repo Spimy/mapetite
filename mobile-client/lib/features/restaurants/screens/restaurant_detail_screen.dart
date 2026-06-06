@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../routes/app_router.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dietary_chip.dart';
 import '../../../shared/widgets/pricing_badge.dart';
@@ -136,7 +137,13 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             left: AppSpacing.lg,
             child: _CircleButton(
               icon: Icons.arrow_back,
-              onTap: () => context.pop(),
+              onTap: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(AppRoutes.dineIn);
+                }
+              },
               tooltip: 'Back',
             ),
           ),
