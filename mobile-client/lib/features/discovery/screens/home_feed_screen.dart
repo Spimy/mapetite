@@ -263,14 +263,19 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5)],
+                    colors: [
+                      Color(0xFF065F46),
+                      Color(0xFF0E7490),
+                      Color(0xFF10B981),
+                    ],
+                    stops: [0.0, 0.55, 1.0],
                   ),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                      blurRadius: 20,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
@@ -291,7 +296,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                               end: Alignment.centerRight,
                               colors: [
                                 Colors.white.withValues(alpha: 0),
-                                Colors.white.withValues(alpha: 0.18),
+                                Colors.white.withValues(alpha: 0.12),
                                 Colors.white.withValues(alpha: 0),
                               ],
                               stops: const [0.3, 0.5, 0.7],
@@ -300,26 +305,10 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                         ),
                       ),
                     ),
-                    // Left accent bar
-                    Positioned(
-                      left: 0,
-                      top: 0,
-                      bottom: 0,
-                      child: Container(
-                        width: 3,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(AppSpacing.radiusXl),
-                            bottomLeft: Radius.circular(AppSpacing.radiusXl),
-                          ),
-                        ),
-                      ),
-                    ),
                     // Content
                     Padding(
                       padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg + 3,
+                        AppSpacing.lg,
                         AppSpacing.md + 2,
                         AppSpacing.lg,
                         AppSpacing.md + 2,
@@ -327,31 +316,22 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Glow orb
+                          // AI icon — rounded square with glass border
                           Container(
                             width: 44,
                             height: 44,
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: RadialGradient(
-                                colors: [
-                                  AppColors.primary,
-                                  AppColors.primary.withValues(alpha: 0.85),
-                                ],
+                              color: Colors.white.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 1,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.35),
-                                  blurRadius: 12,
-                                  spreadRadius: 1,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
                             ),
                             child: const Icon(
                               Icons.auto_awesome,
                               color: AppColors.white,
-                              size: 20,
+                              size: 22,
                             ),
                           ),
                           const SizedBox(width: AppSpacing.md),
@@ -363,7 +343,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                                 Text(
                                   'AI SUGGESTION',
                                   style: AppTypography.caption.copyWith(
-                                    color: AppColors.primary,
+                                    color: Colors.white.withValues(alpha: 0.75),
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0.8,
                                     fontSize: 10,
@@ -373,7 +353,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                                 RichText(
                                   text: TextSpan(
                                     style: AppTypography.body1.copyWith(
-                                      color: AppColors.neutral700,
+                                      color: AppColors.white,
                                       height: 1.3,
                                     ),
                                     children: [
@@ -382,7 +362,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                                       TextSpan(
                                         text: 'Dine-In',
                                         style: AppTypography.body1.copyWith(
-                                          color: AppColors.primary,
+                                          color: AppColors.white,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
@@ -395,9 +375,9 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                             ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
-                          const Icon(
+                          Icon(
                             Icons.chevron_right,
-                            color: AppColors.primary,
+                            color: AppColors.white.withValues(alpha: 0.7),
                             size: 20,
                           ),
                         ],
@@ -659,6 +639,12 @@ class _DineInCard extends StatelessWidget {
                                   color: AppColors.white,
                                 ),
                               ),
+                              const Spacer(),
+                              Icon(
+                                Icons.chevron_right,
+                                size: 18,
+                                color: AppColors.white.withValues(alpha: 0.7),
+                              ),
                             ],
                           ),
                         ],
@@ -797,6 +783,12 @@ class _CookInCard extends StatelessWidget {
                                 style: AppTypography.headline3.copyWith(
                                   color: AppColors.neutral600,
                                 ),
+                              ),
+                              const Spacer(),
+                              const Icon(
+                                Icons.chevron_right,
+                                size: 18,
+                                color: AppColors.neutral400,
                               ),
                             ],
                           ),
