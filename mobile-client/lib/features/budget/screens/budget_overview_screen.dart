@@ -89,7 +89,7 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
       centerTitle: true,
       title: Text(
         'Budget',
-        style: AppTypography.headline1.copyWith(color: AppColors.primary),
+        style: AppTypography.display.copyWith(color: AppColors.primary),
       ),
     );
   }
