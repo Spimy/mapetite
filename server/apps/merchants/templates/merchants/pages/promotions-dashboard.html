@@ -50,8 +50,16 @@
               {% endif %}
             </div>
 
-            <span class="promo-item__type-pill promo-item__type-pill--{% if promo.promotion_type == 'PERCENTAGE' %}percentage{% elif promo.promotion_type == 'FLAT_AMOUNT' %}flat{% elif promo.promotion_type == 'FREE_ITEM' %}free{% else %}bundle{% endif %}">
-              {{ promo.get_promotion_type_display }}
+            <span class="promo-item__type-badge promo-item__type-badge--{% if promo.promotion_type == 'PERCENTAGE' %}percentage{% elif promo.promotion_type == 'FLAT_AMOUNT' %}flat{% elif promo.promotion_type == 'FREE_ITEM' %}free{% else %}bundle{% endif %}">
+              {% if promo.promotion_type == "PERCENTAGE" %}
+                % Discount
+              {% elif promo.promotion_type == "FLAT_AMOUNT" %}
+                RM Discount
+              {% elif promo.promotion_type == "FREE_ITEM" %}
+                Free Item
+              {% elif promo.promotion_type == "BUNDLE" %}
+                Bundle Deal
+              {% endif %}
             </span>
           </div>
 
