@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -523,6 +524,10 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
                     color: AppColors.neutral400,
                   ),
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  filled: true,
+                  fillColor: Colors.transparent,
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -1010,34 +1015,38 @@ class _ExploreFilterSheet extends StatefulWidget {
 }
 
 class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
-  static const _categories = ['Restaurants', 'Recipes', 'Groceries'];
-  static const _dietaryOptions = ['Halal', 'Vegan', 'Vegetarian'];
-  static const _priceOptions = [
-    ('Budget', 'RM 5–10'),
-    ('Mid', 'RM 10–20'),
-    ('Premium', 'RM 20+'),
-  ];
-
-  late Set<String> _categories2;
-  late Set<String> _dietary;
+  late Set<String> _selectedCategories;
+  late Set<String> _selectedDietary;
   late String? _priceRange;
 
   @override
   void initState() {
     super.initState();
-    _categories2 = Set.from(widget.filterState.categories);
-    _dietary = Set.from(widget.filterState.dietary);
+    _selectedCategories = Set.from(widget.filterState.categories);
+    _selectedDietary = Set.from(widget.filterState.dietary);
     _priceRange = widget.filterState.priceRange;
   }
 
   bool get _hasFilters =>
-      _categories2.isNotEmpty || _dietary.isNotEmpty || _priceRange != null;
+      _selectedCategories.isNotEmpty ||
+      _selectedDietary.isNotEmpty ||
+      _priceRange != null;
+
+  void _toggle(Set<String> set, String value) {
+    setState(() {
+      if (set.contains(value)) {
+        set.remove(value);
+      } else {
+        set.add(value);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.8,
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
       child: Container(
         decoration: const BoxDecoration(
@@ -1049,11 +1058,10 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle + header
+            // ── Handle + header ──────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0,
-              ),
+                  AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
               child: Column(
                 children: [
                   Center(
@@ -1075,8 +1083,8 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
                       if (_hasFilters)
                         GestureDetector(
                           onTap: () => setState(() {
-                            _categories2.clear();
-                            _dietary.clear();
+                            _selectedCategories.clear();
+                            _selectedDietary.clear();
                             _priceRange = null;
                           }),
                           child: Text(
@@ -1090,98 +1098,126 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
                 ],
               ),
             ),
+
+            // ── Scrollable body ──────────────────────────────────────────────
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0,
-                ),
+                    AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Category
-                    Text(
-                      'Category',
-                      style: AppTypography.headline3
-                          .copyWith(color: AppColors.neutral600),
-                    ),
+                    Text('Category',
+                        style: AppTypography.headline3
+                            .copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
                       runSpacing: AppSpacing.sm,
-                      children: _categories.map((cat) {
-                        final isActive = _categories2.contains(cat);
-                        return _FilterChip(
-                          label: cat,
-                          isActive: isActive,
-                          onTap: () => setState(() {
-                            if (isActive) {
-                              _categories2.remove(cat);
-                            } else {
-                              _categories2.add(cat);
-                            }
-                          }),
-                        );
-                      }).toList(),
+                      children: [
+                        _ExploreFilterChip(
+                          label: 'Restaurants',
+                          icon: Icons.restaurant_outlined,
+                          isActive: _selectedCategories.contains('Restaurants'),
+                          onToggle: () =>
+                              _toggle(_selectedCategories, 'Restaurants'),
+                        ),
+                        _ExploreFilterChip(
+                          label: 'Recipes',
+                          icon: Icons.menu_book_outlined,
+                          isActive: _selectedCategories.contains('Recipes'),
+                          onToggle: () =>
+                              _toggle(_selectedCategories, 'Recipes'),
+                        ),
+                        _ExploreFilterChip(
+                          label: 'Groceries',
+                          icon: Icons.local_grocery_store_outlined,
+                          isActive: _selectedCategories.contains('Groceries'),
+                          onToggle: () =>
+                              _toggle(_selectedCategories, 'Groceries'),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
+
                     // Dietary
-                    Text(
-                      'Dietary',
-                      style: AppTypography.headline3
-                          .copyWith(color: AppColors.neutral600),
-                    ),
+                    Text('Dietary',
+                        style: AppTypography.headline3
+                            .copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
                       runSpacing: AppSpacing.sm,
-                      children: _dietaryOptions.map((d) {
-                        final isActive = _dietary.contains(d);
-                        return _FilterChip(
-                          label: d,
-                          isActive: isActive,
-                          onTap: () => setState(() {
-                            if (isActive) {
-                              _dietary.remove(d);
-                            } else {
-                              _dietary.add(d);
-                            }
-                          }),
-                        );
-                      }).toList(),
+                      children: [
+                        _ExploreFilterChip(
+                          label: 'Halal',
+                          svgAsset: 'assets/icons/dietary/halal-icon.svg',
+                          isActive: _selectedDietary.contains('Halal'),
+                          onToggle: () => _toggle(_selectedDietary, 'Halal'),
+                        ),
+                        _ExploreFilterChip(
+                          label: 'Vegan',
+                          icon: Icons.eco,
+                          isActive: _selectedDietary.contains('Vegan'),
+                          onToggle: () => _toggle(_selectedDietary, 'Vegan'),
+                        ),
+                        _ExploreFilterChip(
+                          label: 'Vegetarian',
+                          icon: Icons.spa,
+                          isActive: _selectedDietary.contains('Vegetarian'),
+                          onToggle: () =>
+                              _toggle(_selectedDietary, 'Vegetarian'),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    // Price range
-                    Text(
-                      'Price Range',
-                      style: AppTypography.headline3
-                          .copyWith(color: AppColors.neutral600),
-                    ),
+
+                    // Price Range
+                    Text('Price Range',
+                        style: AppTypography.headline3
+                            .copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
                       runSpacing: AppSpacing.sm,
-                      children: _priceOptions.map((p) {
-                        final (key, label) = p;
-                        final isActive = _priceRange == key;
-                        return _FilterChip(
-                          label: label,
-                          isActive: isActive,
-                          onTap: () => setState(() {
-                            _priceRange = isActive ? null : key;
-                          }),
-                        );
-                      }).toList(),
+                      children: [
+                        _ExploreFilterChip(
+                          label: 'Budget (RM 5–10)',
+                          icon: Icons.savings_outlined,
+                          isActive: _priceRange == 'Budget',
+                          onToggle: () => setState(() =>
+                              _priceRange =
+                                  _priceRange == 'Budget' ? null : 'Budget'),
+                        ),
+                        _ExploreFilterChip(
+                          label: 'Mid (RM 10–20)',
+                          icon: Icons.account_balance_wallet_outlined,
+                          isActive: _priceRange == 'Mid',
+                          onToggle: () => setState(() =>
+                              _priceRange =
+                                  _priceRange == 'Mid' ? null : 'Mid'),
+                        ),
+                        _ExploreFilterChip(
+                          label: 'Premium (RM 20+)',
+                          icon: Icons.diamond_outlined,
+                          isActive: _priceRange == 'Premium',
+                          onToggle: () => setState(() =>
+                              _priceRange =
+                                  _priceRange == 'Premium' ? null : 'Premium'),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
                   ],
                 ),
               ),
             ),
-            // Apply button
+
+            // ── Apply button ─────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl,
-              ),
+                  AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl),
               child: SizedBox(
                 width: double.infinity,
                 height: AppSpacing.buttonHeight,
@@ -1189,8 +1225,8 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
                   onPressed: () {
                     widget.onApply(
                       _ExploreFilterState(
-                        categories: Set.from(_categories2),
-                        dietary: Set.from(_dietary),
+                        categories: Set.from(_selectedCategories),
+                        dietary: Set.from(_selectedDietary),
                         priceRange: _priceRange,
                       ),
                     );
@@ -1216,25 +1252,31 @@ class _ExploreFilterSheetState extends State<_ExploreFilterSheet> {
   }
 }
 
-// ─── Reusable filter chip ─────────────────────────────────────────────────────
+// ─── Explore Filter Chip — matches recipe _IconFilterChip exactly ─────────────
 
-class _FilterChip extends StatelessWidget {
+class _ExploreFilterChip extends StatelessWidget {
   final String label;
   final bool isActive;
-  final VoidCallback onTap;
+  final VoidCallback onToggle;
+  final IconData? icon;
+  final String? svgAsset;
 
-  const _FilterChip({
+  const _ExploreFilterChip({
     required this.label,
     required this.isActive,
-    required this.onTap,
+    required this.onToggle,
+    this.icon,
+    this.svgAsset,
   });
 
   @override
   Widget build(BuildContext context) {
+    final contentColor =
+        isActive ? AppColors.primary : AppColors.neutral600;
     return GestureDetector(
-      onTap: onTap,
+      onTap: onToggle,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.sm,
@@ -1247,12 +1289,28 @@ class _FilterChip extends StatelessWidget {
             width: isActive ? 1.5 : 1,
           ),
         ),
-        child: Text(
-          label,
-          style: AppTypography.body2.copyWith(
-            color: isActive ? AppColors.primary : AppColors.neutral600,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (svgAsset != null)
+              SvgPicture.asset(
+                svgAsset!,
+                width: 13,
+                height: 13,
+                colorFilter:
+                    ColorFilter.mode(contentColor, BlendMode.srcIn),
+              )
+            else if (icon != null)
+              Icon(icon, size: 13, color: contentColor),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: AppTypography.label.copyWith(
+                color: contentColor,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
