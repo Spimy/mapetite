@@ -1,8 +1,10 @@
 import json
 from typing import Any
 from apps.merchants.paginator import Template404Paginator
+from apps.users.forms import UserInfoForm
 from apps.users.mixins import MerchantRequiredMixin
 from django.http.response import HttpResponse as HttpResponse
+from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, ListView, RedirectView, TemplateView, View, UpdateView
@@ -427,6 +429,37 @@ class DashboardStaffView(MerchantRequiredMixin, StoreContextMixin, ListView):
 
     def get_queryset(self):
         return self.get_active_store().staff.all()
+
+
+class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateView):
+    template_name = "merchants/pages/settings-dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Pass forms to the template
+        context['user_form'] = UserInfoForm(instance=self.request.user.user_profile) # type: ignore
+        context['password_form'] = PasswordChangeForm(user=self.request.user) # type: ignore
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if 'submit_user_info' in request.POST:
+            # Pass the instance of the user's profile
+            form = UserInfoForm(request.POST, request.FILES, instance=request.user.user_profile)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Settings updated!")
+                return redirect('merchants:settings')
+            return self.render_to_response(self.get_context_data(user_form=form))
+
+        elif 'submit_password' in request.POST:
+            form = PasswordChangeForm(user=request.user, data=request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Password changed successfully!")
+                return redirect('merchants:settings')
+            return self.render_to_response(self.get_context_data(password_form=form))
+
+        return self.get(request, *args, **kwargs)
 
 
 class OnboardingView(MerchantRequiredMixin, TemplateView):

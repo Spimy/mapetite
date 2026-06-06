@@ -34,7 +34,7 @@ urlpatterns = [
         "dashboard/<int:store_index>/staff/", views.DashboardStaffView.as_view(), name="dashboard_staff"
     ),
     path(
-        "dashboard/<int:store_index>/settings/", views.DashboardView.as_view(), name="dashboard_settings"
+        "dashboard/<int:store_index>/settings/", views.DashboardSettingsView.as_view(), name="dashboard_settings"
     ),
     path("onboarding/", views.OnboardingView.as_view(), name="onboarding"),
     path("store/<int:store_id>/mark-location/", views.MarkLocationView.as_view(), name="mark_location"),

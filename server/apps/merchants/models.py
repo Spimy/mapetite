@@ -45,6 +45,18 @@ class StoreProfile(gis_models.Model):
     @property
     def longitude(self):
         return self.location.x if self.location else None
+    
+    @property
+    def owner_display_name(self):
+        if not self.owner:
+            return "No Owner"
+            
+        first = getattr(self.owner, 'first_name', '')
+        last = getattr(self.owner, 'last_name', '')
+        
+        if first or last:
+            return f"{first} {last}".strip()
+        return self.owner.username
 
     def set_coordinates(self, lat, lon):
         if lat and lon:
