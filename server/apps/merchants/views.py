@@ -3,13 +3,14 @@ from typing import Any
 from apps.merchants.paginator import Template404Paginator
 from apps.users.mixins import MerchantRequiredMixin
 from django.http.response import HttpResponse as HttpResponse
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, ListView, RedirectView, TemplateView, View, UpdateView
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from .models import Promotion, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
@@ -354,7 +355,51 @@ class DashboardPromotionListView(MerchantRequiredMixin, StoreContextMixin, ListV
         context = super().get_context_data(**kwargs)
         # Inject the blank create form for the Popover
         context['create_form'] = PromotionForm(store=self.get_active_store())
+        context['edit_form'] = PromotionForm(store=self.get_active_store(), auto_id="edit_%s")
         return context
+    
+    def post(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+        active_store = self.get_active_store()
+        store_index = kwargs.get("store_index", 0)
+
+        # User submitted the CREATE Promotion Form
+        if 'submit_promo' in request.POST:
+            create_form = PromotionForm(request.POST)
+            if create_form.is_valid():
+                promo = create_form.save(commit=False)
+                promo.store = active_store
+                promo.save()
+                create_form.save_m2m()
+                return redirect('merchants:dashboard_promotions', store_index=store_index)
+            else:
+                return self.render_to_response(self.get_context_data(create_form=create_form))
+
+        # User submitted the EDIT Promotion Form
+        elif 'submit_edit_promo' in request.POST:
+            promo_id = request.POST.get("edit_promo_id")
+            promo = get_object_or_404(Promotion, id=promo_id, store=active_store)
+            
+            edit_form = PromotionForm(request.POST, instance=promo, auto_id="edit_%s")
+            if edit_form.is_valid():
+                edit_form.save() # Saves instance and M2M automatically
+                return redirect('merchants:dashboard_promotions', store_index=store_index)
+            else:
+                # To keep the popover open on error, you'll likely need a snippet of JS 
+                # or just render the errors in the HTML.
+                return self.render_to_response(self.get_context_data(edit_form=edit_form))
+
+        # User toggled a Promotion (Pause / Reactivate)
+        elif 'toggle_promo' in request.POST:
+            promo_id = request.POST.get('toggle_promo')
+            promo = get_object_or_404(Promotion, id=promo_id, store=active_store)
+            
+            promo.is_active = not promo.is_active
+            promo.save(update_fields=['is_active'])
+            return redirect('merchants:dashboard_promotions', store_index=store_index)
+
+        # Fallback
+        return self.get(request, *args, **kwargs)
 
 
 class PromotionCreateView(MerchantRequiredMixin, StoreContextMixin, CreateView):
@@ -410,6 +455,7 @@ class PromotionToggleActiveView(MerchantRequiredMixin, StoreContextMixin, View):
                 messages.error(request, "Cannot reactivate an expired promotion.")
                 
         return redirect('merchants:dashboard_promotions', store_index=store_index)
+
 
 class OnboardingView(MerchantRequiredMixin, TemplateView):
     template_name = "merchants/onboarding.html"

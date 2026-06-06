@@ -246,6 +246,15 @@ class Promotion(models.Model):
             return "Scheduled"
             
         return "Live"
+    
+    @property
+    def display_items(self):
+        items = self.eligible_items.all() or self.bundle_items.all()
+        if not items: return ""
+        
+        names = [i.name for i in items[:2]]
+        suffix = f" +{items.count() - 2} more" if items.count() > 2 else ""
+        return ", ".join(names) + suffix
 
     def clean(self):
         super().clean()
@@ -262,25 +271,18 @@ class Promotion(models.Model):
         # Validation for FREE ITEM
         elif self.promotion_type == self.PromotionType.FREE_ITEM:
             if not self.reward_item:
-                raise ValidationError({"reward_item": "You must select a reward item for Free Item promotions."})
-            if self.promotion_amount:
-                raise ValidationError({"promotion_amount": "Free Item promotions should not have a discount amount."})
+                raise ValidationError({"reward_item": "You must select a reward item."})
             
-            # Clear fields belonging to other types
+            self.promotion_amount = None
             self.bundle_description = ""
 
         # Validation for BUNDLE
         elif self.promotion_type == self.PromotionType.BUNDLE:
             if not self.promotion_amount:
-                raise ValidationError({"promotion_amount": "You must set a total price for the bundle in the 'amount' field."})
-            
-            # Explicitly reject minimum purchase amounts for bundles
-            if self.minimum_purchase_amount:
-                raise ValidationError({
-                    "minimum_purchase_amount": "Bundle deals cannot have a minimum purchase amount. They are sold as a standalone fixed price."
-                })
+                raise ValidationError({"promotion_amount": "Set a total price for the bundle."})
             
             # Clear fields belonging to other types
+            self.minimum_purchase_amount = None
             self.reward_item = None
 
     def save(self, *args, **kwargs):
