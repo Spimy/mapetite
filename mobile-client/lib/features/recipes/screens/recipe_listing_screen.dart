@@ -127,12 +127,6 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
           style: AppTypography.headline1.copyWith(color: AppColors.primary),
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.tune_rounded, color: AppColors.neutral600),
-          onPressed: _openFilterSheet,
-        ),
-      ],
     );
   }
 
