@@ -402,28 +402,10 @@ class DashboardPromotionListView(MerchantRequiredMixin, StoreContextMixin, ListV
         return self.get(request, *args, **kwargs)
 
 
-class PromotionCreateView(MerchantRequiredMixin, StoreContextMixin, CreateView):
-    model = Promotion
-    form_class = PromotionForm
-    template_name = 'merchants/pages/promotion-create-edit-dashboard.html'
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['store'] = self.get_active_store()
-        return kwargs
-
-    def form_valid(self, form):
-        form.instance.store = self.get_active_store()
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('merchants:dashboard_promotions', kwargs={'store_index': self.kwargs.get("store_index", 0)})
-
-
 class PromotionUpdateView(MerchantRequiredMixin, StoreContextMixin, UpdateView):
     model = Promotion
     form_class = PromotionForm
-    template_name = 'merchants/pages/promotion-create-edit-dashboard.html'
+    template_name = 'merchants/pages/promotion-edit-dashboard.html'
 
     def get_queryset(self):
         # Ensure can only edit promos for the active store
