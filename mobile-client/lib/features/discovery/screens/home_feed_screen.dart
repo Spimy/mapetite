@@ -305,7 +305,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                 child: _DineInCard(
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    context.go(AppRoutes.dineIn);
+                    context.push(AppRoutes.dineIn);
                   },
                 ),
               ),
@@ -346,7 +346,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
           ),
           const SizedBox(height: AppSpacing.md),
           GestureDetector(
-            onTap: () => context.go(AppRoutes.dineIn),
+            onTap: () => context.push(AppRoutes.dineIn),
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.white,
