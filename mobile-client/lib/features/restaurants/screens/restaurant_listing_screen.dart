@@ -20,8 +20,27 @@ class RestaurantListingScreen extends StatefulWidget {
 class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
   int _activeSortIndex = 0;
   final List<String> _sortOptions = ['Best Match', 'Nearest', 'Budget', 'Cuisine'];
+  Set<String> _activeCuisines = {};
 
-  List<RestaurantModel> get _restaurants => RestaurantMocks.nearbyRestaurants;
+  List<RestaurantModel> get _restaurants {
+    final all = RestaurantMocks.nearbyRestaurants;
+    if (_activeCuisines.isEmpty) return all;
+    return all
+        .where((r) => _activeCuisines.contains(r.cuisineType))
+        .toList();
+  }
+
+  void _openCuisineSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CuisineFilterSheet(
+        activeCuisines: _activeCuisines,
+        onApply: (selected) => setState(() => _activeCuisines = selected),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +130,14 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
           child: _SortPillRow(
             options: _sortOptions,
             activeIndex: _activeSortIndex,
-            onChanged: (i) => setState(() => _activeSortIndex = i),
+            activeCuisineCount: _activeCuisines.length,
+            onChanged: (i) {
+              if (_sortOptions[i] == 'Cuisine') {
+                _openCuisineSheet();
+              } else {
+                setState(() => _activeSortIndex = i);
+              }
+            },
           ),
         ),
       ),
@@ -169,11 +195,13 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
 class _SortPillRow extends StatelessWidget {
   final List<String> options;
   final int activeIndex;
+  final int activeCuisineCount;
   final ValueChanged<int> onChanged;
 
   const _SortPillRow({
     required this.options,
     required this.activeIndex,
+    required this.activeCuisineCount,
     required this.onChanged,
   });
 
@@ -196,37 +224,73 @@ class _SortPillRow extends StatelessWidget {
             ),
             child: GestureDetector(
               onTap: () => onChanged(entry.key),
-              child: Container(
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: isActive ? AppColors.primary : AppColors.white,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                  border: Border.all(
-                    color: isActive ? AppColors.primary : AppColors.border,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: AppTypography.body2.copyWith(
-                        color: isActive ? AppColors.white : AppColors.neutral600,
-                        fontWeight: FontWeight.w500,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    height: 36,
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: (isActive || (isCuisine && activeCuisineCount > 0))
+                          ? AppColors.primary
+                          : AppColors.white,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                      border: Border.all(
+                        color: (isActive || (isCuisine && activeCuisineCount > 0))
+                            ? AppColors.primary
+                            : AppColors.border,
                       ),
                     ),
-                    if (isCuisine) ...[
-                      const SizedBox(width: 2),
-                      Icon(
-                        Icons.expand_more,
-                        size: 14,
-                        color: isActive ? AppColors.white : AppColors.neutral600,
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          label,
+                          style: AppTypography.body2.copyWith(
+                            color: (isActive || (isCuisine && activeCuisineCount > 0))
+                                ? AppColors.white
+                                : AppColors.neutral600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        if (isCuisine) ...[
+                          const SizedBox(width: 2),
+                          Icon(
+                            Icons.expand_more,
+                            size: 14,
+                            color: (isActive || activeCuisineCount > 0)
+                                ? AppColors.white
+                                : AppColors.neutral600,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (isCuisine && activeCuisineCount > 0)
+                    Positioned(
+                      top: -4,
+                      right: -4,
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        decoration: const BoxDecoration(
+                          color: AppColors.error,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$activeCuisineCount',
+                            style: AppTypography.caption.copyWith(
+                              color: AppColors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
                       ),
-                    ],
-                  ],
-                ),
+                    ),
+                ],
               ),
             ),
           );
@@ -495,6 +559,193 @@ class _DietaryOverlayChip extends StatelessWidget {
     );
   }
 }
+
+// ── Cuisine Filter Sheet ──────────────────────────────────────────────────────
+
+class _CuisineFilterSheet extends StatefulWidget {
+  final Set<String> activeCuisines;
+  final ValueChanged<Set<String>> onApply;
+
+  const _CuisineFilterSheet({
+    required this.activeCuisines,
+    required this.onApply,
+  });
+
+  @override
+  State<_CuisineFilterSheet> createState() => _CuisineFilterSheetState();
+}
+
+class _CuisineFilterSheetState extends State<_CuisineFilterSheet> {
+  static const _allCuisines = [
+    ('🍛', 'Mamak'),
+    ('☕', 'Kopitiam'),
+    ('🍱', 'Japanese'),
+    ('🥘', 'Chinese'),
+    ('🍛', 'Indian'),
+    ('🍚', 'Malay'),
+    ('🍔', 'Western'),
+    ('🐟', 'Seafood'),
+    ('🥗', 'Vegetarian'),
+    ('🍜', 'Korean'),
+  ];
+
+  late Set<String> _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = Set.from(widget.activeCuisines);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
+      ),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppSpacing.radiusXl),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle + header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0,
+              ),
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 32,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.neutral200,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Filter by Cuisine', style: AppTypography.headline2),
+                      if (_selected.isNotEmpty)
+                        GestureDetector(
+                          onTap: () => setState(() => _selected.clear()),
+                          child: Text(
+                            'Clear all',
+                            style: AppTypography.body2
+                                .copyWith(color: AppColors.primary),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            // Cuisine grid
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: _allCuisines.map((c) {
+                    final (emoji, name) = c;
+                    final isActive = _selected.contains(name);
+                    return GestureDetector(
+                      onTap: () => setState(() {
+                        if (isActive) {
+                          _selected.remove(name);
+                        } else {
+                          _selected.add(name);
+                        }
+                      }),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.sm,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? AppColors.primaryLight
+                              : AppColors.neutral100,
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusFull),
+                          border: Border.all(
+                            color: isActive
+                                ? AppColors.primary
+                                : AppColors.border,
+                            width: isActive ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(emoji,
+                                style: const TextStyle(fontSize: 14)),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              name,
+                              style: AppTypography.body2.copyWith(
+                                color: isActive
+                                    ? AppColors.primary
+                                    : AppColors.neutral600,
+                                fontWeight: isActive
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            // Apply button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xxxl,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: AppSpacing.buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () {
+                    widget.onApply(Set.from(_selected));
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusLg),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text('Apply Filters', style: AppTypography.button),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Pricing Overlay Badge ─────────────────────────────────────────────────────
 
 class _PricingOverlayBadge extends StatelessWidget {
   final PricingBracket bracket;
