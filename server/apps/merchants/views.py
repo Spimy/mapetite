@@ -420,25 +420,6 @@ class PromotionUpdateView(MerchantRequiredMixin, StoreContextMixin, UpdateView):
         return reverse('merchants:dashboard_promotions', kwargs={'store_index': self.kwargs.get("store_index", 0)})
 
 
-class PromotionToggleActiveView(MerchantRequiredMixin, StoreContextMixin, View):
-    def post(self, request, store_index, pk):
-        promotion = get_object_or_404(Promotion, pk=pk, store=self.get_active_store())
-        
-        if promotion.is_active:
-            promotion.is_active = False
-            promotion.save()
-            messages.success(request, f"'{promotion.title}' has been paused.")
-        else:
-            if promotion.can_reactivate:
-                promotion.is_active = True
-                promotion.save()
-                messages.success(request, f"'{promotion.title}' is now active again.")
-            else:
-                messages.error(request, "Cannot reactivate an expired promotion.")
-                
-        return redirect('merchants:dashboard_promotions', store_index=store_index)
-
-
 class OnboardingView(MerchantRequiredMixin, TemplateView):
     template_name = "merchants/onboarding.html"
     
