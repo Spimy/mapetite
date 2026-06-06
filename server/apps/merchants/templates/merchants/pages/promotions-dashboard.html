@@ -70,15 +70,9 @@
           <div class="promo-item__divider"></div>
 
           <div class="promo-item__footer">
-            <div class="promo-item__status {% if promo.is_active %}promo-item__status--live{% elif promo.can_reactivate %}promo-item__status--paused{% else %}promo-item__status--expired{% endif %}">
+            <div class="promo-item__status promo-item__status--{{ promo.status|lower }}">
               <span class="promo-item__status-dot"></span>
-              {% if promo.is_active %}
-                Live
-              {% elif promo.can_reactivate %}
-                Paused
-              {% else %}
-                Expired
-              {% endif %}
+              {{ promo.status }}
             </div>
 
             <div class="promo-item__actions">
@@ -89,19 +83,15 @@
                     action="{% url 'merchants:dashboard_promotion_toggle' current_index promo.id %}"
                     class="promo-item__toggle-form">
                 {% csrf_token %}
-                {% if promo.is_active %}
+
+                {% if promo.status == 'Expired' %}
+                  <button type="button" class="promo-item__action-btn" disabled>Expired</button>
+                {% elif promo.status == 'Paused' %}
                   <button type="submit"
-                          class="promo-item__action-btn promo-item__action-btn--pause">Pause</button>
+                          class="promo-item__action-btn promo-item__action-btn--reactivate">Reactivate</button>
                 {% else %}
                   <button type="submit"
-                          class="promo-item__action-btn promo-item__action-btn--reactivate"
-                          {% if not promo.can_reactivate %}disabled{% endif %}>
-                    {% if promo.can_reactivate %}
-                      Reactivate
-                    {% else %}
-                      Expired
-                    {% endif %}
-                  </button>
+                          class="promo-item__action-btn promo-item__action-btn--pause">Pause</button>
                 {% endif %}
               </form>
             </div>

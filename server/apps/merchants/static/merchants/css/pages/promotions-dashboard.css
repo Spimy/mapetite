@@ -176,7 +176,8 @@
     color: var(--color-success);
   }
 
-  .promo-item__status--paused {
+  .promo-item__status--paused,
+  .promo-item__status--scheduled {
     color: var(--color-grey-400);
   }
 

@@ -230,6 +230,22 @@ class Promotion(models.Model):
         if not self.end_date:
             return False
         return self.end_date >= timezone.now().date()
+    
+    @property
+    def status(self):
+        """Returns the current real-world status of the promotion."""
+        today = timezone.now().date()
+        
+        if self.end_date and self.end_date < today:
+            return "Expired"
+            
+        if not self.is_active:
+            return "Paused"
+            
+        if self.start_date and self.start_date > today:
+            return "Scheduled"
+            
+        return "Live"
 
     def clean(self):
         super().clean()
