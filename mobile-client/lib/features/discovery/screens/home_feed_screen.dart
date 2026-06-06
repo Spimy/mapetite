@@ -82,13 +82,13 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
 
   String _greetingLine2() {
     final hour = DateTime.now().hour;
-    if (hour >= 5 && hour < 10) return "Good morning — what's for breakfast?";
-    if (hour >= 10 && hour < 11) return "It's brunch o'clock — where to?";
-    if (hour >= 11 && hour < 14) return "It's lunchtime — what are you feeling?";
-    if (hour >= 14 && hour < 17) return "Afternoon — time for a treat?";
-    if (hour >= 17 && hour < 21) return "Dinner time — where to tonight?";
-    if (hour >= 21 && hour < 23) return "Evening — still hungry?";
-    return "Late night — there's always supper.";
+    if (hour >= 5 && hour < 10) return 'Rise and shine! What\'s for breakfast?';
+    if (hour >= 10 && hour < 11) return 'Brunch o\'clock! Where are we eating?';
+    if (hour >= 11 && hour < 14) return 'Lunch time! What are you craving?';
+    if (hour >= 14 && hour < 17) return 'Afternoon vibes! Time for a snack?';
+    if (hour >= 17 && hour < 21) return 'Dinner time! Where to tonight?';
+    if (hour >= 21 && hour < 23) return 'Still going? Let\'s find something good.';
+    return 'Night owl! There\'s always supper.';
   }
 
   // ─── Build ───────────────────────────────────────────────────────────────────

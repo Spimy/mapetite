@@ -208,7 +208,7 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
 
   Widget _buildFilterChips() {
     const chips = [
-      (_DineInQuickFilter.halal,     Icons.check_circle_outline, 'Halal'),
+      (_DineInQuickFilter.halal,     null,                        'Halal'),
       (_DineInQuickFilter.openNow,   Icons.access_time_outlined,  'Open Now'),
       (_DineInQuickFilter.vegan,     Icons.eco,                   'Vegan'),
       (_DineInQuickFilter.bestValue, Icons.savings_outlined,      'Best Value'),
@@ -223,6 +223,7 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
         children: chips.map((def) {
           final (filter, icon, label) = def;
           final isActive = _quickFilters.contains(filter);
+          final iconColor = isActive ? AppColors.white : AppColors.neutral600;
           return Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: GestureDetector(
@@ -243,13 +244,18 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, size: 13,
-                        color: isActive ? AppColors.white : AppColors.neutral600),
+                    if (filter == _DineInQuickFilter.halal)
+                      SvgPicture.asset(
+                        'assets/icons/dietary/halal-icon.svg',
+                        width: 13,
+                        height: 13,
+                        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+                      )
+                    else if (icon != null)
+                      Icon(icon, size: 13, color: iconColor),
                     const SizedBox(width: 4),
                     Text(label,
-                        style: AppTypography.label.copyWith(
-                          color: isActive ? AppColors.white : AppColors.neutral600,
-                        )),
+                        style: AppTypography.label.copyWith(color: iconColor)),
                   ],
                 ),
               ),
