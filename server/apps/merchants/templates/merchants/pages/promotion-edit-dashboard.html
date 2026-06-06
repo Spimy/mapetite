@@ -1,0 +1,120 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'merchants/css/pages/promotions-dashboard.css' %}" />
+{% endblock styles %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Edit Promotion - {{ store.business_name }}
+{% endblock title %}
+
+{% block description %}
+  Edit the promotion for {{ store.business_name }}.
+{% endblock description %}
+
+{% block keywords %}
+  Edit Promotion, {{ store.business_name }}, Promotion Editing, Update Promotion, Promotion Form
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block dashboard_content %}
+  <section class="promo-dashboard">
+    <div class="promo-dashboard__header">
+      <div class="promo-dashboard__title-wrap">
+        <h3 class="promo-dashboard__title">Edit Promotion: {{ object.title }}</h3>
+      </div>
+      <div class="promo-dashboard__actions">
+        <a href="{% url 'merchants:dashboard_promotions' store_index=current_index %}"
+           class="btn">Back to Promotions</a>
+      </div>
+    </div>
+
+    <div class="promo-edit-page__card">
+      <form method="post" class="promo-popover__form" id="promo-edit-form">
+        {% csrf_token %}
+
+        <fieldset class="promo-form-group">
+
+          <div class="promo-form-group__field">
+            <label class="promo-form-group__label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+            <div class="promo-form-group__control">{{ form.title }}</div>
+          </div>
+
+          <div class="promo-form-group__field">
+            <label class="promo-form-group__label"
+                   for="{{ form.description.id_for_label }}">
+              {{ form.description.label }} <span>(Optional)</span>
+            </label>
+            <div class="promo-form-group__control">{{ form.description }}</div>
+          </div>
+
+          <div class="promo-form-group__type-grid">
+            {% for radio in form.promotion_type %}
+              <label class="promo-form-group__type-card">
+                {{ radio.tag }}
+                <span class="promo-form-group__type-icon">
+                  {% if radio.data.value == "PERCENTAGE" %}
+                    {% include "icons/percent.html" %}
+                  {% elif radio.data.value == "FLAT_AMOUNT" %}
+                    {% include "icons/dollar.html" %}
+                  {% elif radio.data.value == "FREE_ITEM" %}
+                    {% include "icons/gift.html" %}
+                  {% elif radio.data.value == "BUNDLE" %}
+                    {% include "icons/package.html" %}
+                  {% endif %}
+                </span>
+                <span class="promo-form-group__type-label">{{ radio.choice_label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+
+          <div class="promo-form__conditional promo-form__conditional--amount">
+            <div class="promo-form-group__field">
+              <label class="promo-form-group__label">{{ form.promotion_amount.label }}</label>
+              <div class="promo-form-group__input-prefix promo-form-group__input-prefix--amount">
+                <span class="promo-form-group__currency">RM</span>
+                {{ form.promotion_amount }}
+                <span class="promo-form-group__suffix promo-form-group__suffix--percent">%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="promo-form__conditional promo-form__conditional--eligibility">
+            <div class="promo-form-group__field">
+              <label class="promo-form-group__label">{{ form.minimum_purchase_amount.label }}</label>
+              <div class="promo-form-group__input-prefix">
+                <span class="promo-form-group__currency">RM</span>
+                {{ form.minimum_purchase_amount }}
+              </div>
+            </div>
+            <div class="promo-form-group__field">
+              <label class="promo-form-group__label">{{ form.eligible_items.label }}</label>
+              <div class="promo-form-group__control">{{ form.eligible_items }}</div>
+            </div>
+          </div>
+
+          <div class="promo-form-group__row">
+            <div class="promo-form-group__field">
+              <label class="promo-form-group__label">{{ form.start_date.label }}</label>
+              <div class="promo-form-group__control">{{ form.start_date }}</div>
+            </div>
+            <div class="promo-form-group__field">
+              <label class="promo-form-group__label">{{ form.end_date.label }}</label>
+              <div class="promo-form-group__control">{{ form.end_date }}</div>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="promo-edit-page__actions">
+          <button type="submit" class="promo-popover__submit-btn">Save Changes</button>
+          <a href="{% url 'merchants:dashboard_promotions' store_index=current_index %}"
+             class="promo-popover__cancel-btn promo-edit-page__cancel-link">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </section>
+{% endblock dashboard_content %}
