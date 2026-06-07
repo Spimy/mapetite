@@ -550,6 +550,19 @@ class AcceptInviteView(View):
             )
             messages.success(request, "Account created! Check your email for your temporary password.")
         else:
+            name_updated = False
+            
+            if not user.first_name and invite.first_name:
+                user.first_name = invite.first_name
+                name_updated = True
+                
+            if not user.last_name and invite.last_name:
+                user.last_name = invite.last_name
+                name_updated = True
+                
+            if name_updated:
+                user.save()
+                
             messages.success(request, f"You have been added to {invite.store.business_name} as staff.")
 
         # Add to store staff & cleanup
