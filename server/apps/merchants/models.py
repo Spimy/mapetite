@@ -34,6 +34,7 @@ class StoreProfile(gis_models.Model):
     halal = models.BooleanField(default=False)
     vegan = models.BooleanField(default=False)
 
+    street_address = models.CharField(max_length=255, blank=True)
     location = gis_models.PointField(geography=True, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
