@@ -441,7 +441,6 @@ class DashboardLocationsAndHoursView(MerchantRequiredMixin, StoreContextMixin, T
         day_names = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
         day_labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         
-        # 2. Always generate 7 days
         for i in range(7):
             hour_obj = existing_hours.get(i) # Look up the day in the DB results
             
