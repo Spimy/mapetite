@@ -435,6 +435,26 @@ class DashboardLocationsAndHoursView(MerchantRequiredMixin, StoreContextMixin, T
         if 'store_form' not in context:
             context['store_form'] = StoreProfileForm(instance=store)
             
+        existing_hours = {h.day_of_week: h for h in StoreOperatingHour.objects.filter(store=store)}
+        
+        days_info = []
+        day_names = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        day_labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        
+        # 2. Always generate 7 days
+        for i in range(7):
+            hour_obj = existing_hours.get(i) # Look up the day in the DB results
+            
+            days_info.append({
+                'name': day_names[i],       # "monday" (for the HTML name attribute)
+                'label': day_labels[i],     # "Monday" (for the visual label)
+                'is_active': bool(hour_obj), # True if row exists, False if closed
+                'open_time': hour_obj.open_time.strftime('%H:%M') if hour_obj else '',
+                'close_time': hour_obj.close_time.strftime('%H:%M') if hour_obj else '',
+            })
+            
+        context['days_info'] = days_info
+        
         return context
 
     def post(self, request, *args, **kwargs):
@@ -452,6 +472,39 @@ class DashboardLocationsAndHoursView(MerchantRequiredMixin, StoreContextMixin, T
             else:
                 messages.error(request, "There was an error updating your store. Please check below.")
                 return self.render_to_response(self.get_context_data(store_form=form))
+            
+        elif 'submit_operating_hours' in request.POST:
+            days_mapping = {
+                'monday': 0, 'tuesday': 1, 'wednesday': 2, 
+                'thursday': 3, 'friday': 4, 'saturday': 5, 'sunday': 6
+            }
+
+            try:
+                for day_name, day_int in days_mapping.items():
+                    is_active = f"{day_name}_active" in request.POST
+
+                    if is_active:
+                        open_time = request.POST.get(f"{day_name}_open")
+                        close_time = request.POST.get(f"{day_name}_close")
+
+                        if open_time and close_time:
+                            StoreOperatingHour.objects.update_or_create(
+                                store=store,
+                                day_of_week=day_int,
+                                defaults={
+                                    'open_time': open_time,
+                                    'close_time': close_time
+                                }
+                            )
+                    else:
+                        StoreOperatingHour.objects.filter(store=store, day_of_week=day_int).delete()
+
+                messages.success(request, "Operating hours updated successfully!")
+                
+            except Exception as e:
+                messages.error(request, f"Error saving hours. Please ensure times are valid.")
+
+            return redirect('merchants:dashboard_locations_and_hours', store_index=kwargs.get('store_index'))
 
         return self.render_to_response(self.get_context_data())
 

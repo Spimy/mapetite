@@ -22,6 +22,9 @@
   max-width: 800px;
   display: grid;
   border-radius: 1rem;
+}
+
+.store-profile-card:last-of-type {
   margin-bottom: 2rem;
 }
 
@@ -105,7 +108,6 @@
   .store-form-group {
     flex: 1;
     min-width: 200px;
-    /* Prevents them from getting too squished on mobile */
   }
 }
 
@@ -186,4 +188,61 @@
   border-radius: 0.5rem;
   margin-bottom: 1rem;
   font-weight: var(--font-weight-label);
+}
+
+.hours-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.hours-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.75rem 0;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .hours-row__day {
+    flex: 0 0 180px;
+    margin-bottom: 0;
+    padding: 0;
+  }
+
+  .hours-row__times {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+
+    .store-form-group {
+      margin-bottom: 0;
+      flex: 1;
+    }
+  }
+
+  .hours-row__separator {
+    color: var(--color-grey-600);
+    font-weight: var(--font-weight-label);
+    font-size: 0.95rem;
+  }
+}
+
+.hours-row__divider {
+  border: 0;
+  height: 1px;
+  background-color: var(--color-border);
+  margin: 0;
+}
+
+.btn[name="submit_operating_hours"] {
+  margin-top: 1rem;
+}
+
+.hours-row__copy {
+  display: none;
 }
