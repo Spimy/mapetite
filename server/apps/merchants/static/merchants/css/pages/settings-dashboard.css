@@ -28,6 +28,7 @@
   border-radius: 1rem;
   padding: 2rem;
   margin-bottom: 2rem;
+  max-width: 800px;
 }
 
 .settings__subtitle {
@@ -112,6 +113,11 @@
   align-items: center;
   margin-bottom: 1rem;
   gap: 1rem;
+  flex-wrap: wrap;
+
+  input[type="file"] {
+    width: 100%;
+  }
 }
 
 .settings__avatar-label {
@@ -178,4 +184,3 @@
 .settings__hidden {
   display: none !important;
 }
-
