@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+
+from apps.merchants.models import StoreInvitation
 from .models import User, UserProfile
 
 
@@ -22,6 +24,16 @@ class SignInForm(AuthenticationForm):
         label="Password",
         widget=forms.widgets.PasswordInput(attrs={"placeholder": "••••••••"}),
     )
+    
+    
+class InviteStaffForm(forms.ModelForm):
+    class Meta:
+        model = StoreInvitation
+        fields = ['first_name', 'last_name', 'email']
+
+    def clean_email(self):
+        # Always save emails in lowercase to prevent case-sensitivity bugs
+        return self.cleaned_data['email'].lower()
 
 
 class UserInfoForm(forms.ModelForm):

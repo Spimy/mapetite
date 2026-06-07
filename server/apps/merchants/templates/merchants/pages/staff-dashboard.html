@@ -29,9 +29,63 @@
       </div>
 
       <div class="staff-dashboard__actions">
-        <button class="btn" type="button">Invite Staff</button>
+        <button class="btn" type="button" popovertarget="invite-staff-popover">Invite Staff</button>
       </div>
     </header>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="staff__message staff__message--{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <div id="invite-staff-popover" popover class="staff-popover">
+      <form method="post" class="staff-popover__form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="invite_staff" />
+        <h3>Invite a Staff Member</h3>
+
+        <fieldset class="staff-form-group">
+          <div class="staff-form-group__field">
+            <label class="staff-form-group__label"
+                   for="{{ invite_form.first_name.id_for_label }}">{{ invite_form.first_name.label }}</label>
+            <div class="staff-form-group__control">{{ invite_form.first_name }}</div>
+            {% if invite_form.first_name.help_text %}
+              <p class="staff-form-group__helptext">{{ invite_form.first_name.help_text }}</p>
+            {% endif %}
+            <div class="form-error">{{ invite_form.first_name.errors }}</div>
+          </div>
+
+          <div class="staff-form-group__field">
+            <label class="staff-form-group__label"
+                   for="{{ invite_form.last_name.id_for_label }}">{{ invite_form.last_name.label }}</label>
+            <div class="staff-form-group__control">{{ invite_form.last_name }}</div>
+            {% if invite_form.last_name.help_text %}
+              <p class="staff-form-group__helptext">{{ invite_form.last_name.help_text }}</p>
+            {% endif %}
+            <div class="form-error">{{ invite_form.last_name.errors }}</div>
+          </div>
+
+          <div class="staff-form-group__field">
+            <label class="staff-form-group__label"
+                   for="{{ invite_form.email.id_for_label }}">{{ invite_form.email.label }}</label>
+            <div class="staff-form-group__control">{{ invite_form.email }}</div>
+            {% if invite_form.email.help_text %}
+              <p class="staff-form-group__helptext">{{ invite_form.email.help_text }}</p>
+            {% endif %}
+            <div class="form-error">{{ invite_form.email.errors }}</div>
+          </div>
+        </fieldset>
+
+        <div class="staff-popover__actions">
+          <button type="submit" class="btn">Send Invite</button>
+          <button type="button"
+                  class="staff-popover__cancel-button"
+                  popovertarget="invite-staff-popover"
+                  popovertargetaction="hide">Cancel</button>
+        </div>
+      </form>
+    </div>
 
     <div class="staff-table-wrapper">
       <table class="staff-table">
@@ -40,25 +94,22 @@
             <th class="staff-table__header-cell">Name</th>
             <th class="staff-table__header-cell">Email</th>
             <th class="staff-table__header-cell">Role</th>
-            <th class="staff-table__header-cell">Date Joined</th>
             <th class="staff-table__header-cell">Status</th>
             <th class="staff-table__header-cell staff-table__header-cell--right">Actions</th>
           </tr>
         </thead>
         <tbody class="staff-table__body">
-
           <tr class="staff-table__row">
             <td class="staff-table__cell">{{ store.owner.get_full_name|default:store.owner.username }}</td>
             <td class="staff-table__cell">{{ store.owner.email }}</td>
             <td class="staff-table__cell">
-              <span class="badge badge--success">Owner</span>
+              <span class="badge staff-table-badge badge staff-table-badge--owner">Owner</span>
             </td>
-            <td class="staff-table__cell">{{ store.owner.date_joined|date:"d M Y" }}</td>
             <td class="staff-table__cell">
-              <span class="badge badge--success">Active</span>
+              <span class="badge staff-table-badge badge staff-table-badge--active">Active</span>
             </td>
             <td class="staff-table__cell staff-table__cell--actions">
-              <span class="staff-table__note">That's you</span>
+              {% if request.user == store.owner %}<span class="staff-table__note">That's you</span>{% endif %}
             </td>
           </tr>
 
@@ -67,51 +118,93 @@
               <td class="staff-table__cell">{{ staff_member.get_full_name|default:staff_member.username }}</td>
               <td class="staff-table__cell">{{ staff_member.email }}</td>
               <td class="staff-table__cell">
-                <span class="badge badge--neutral">Staff</span>
+                <span class="badge staff-table-badge badge staff-table-badge--staff">Staff</span>
               </td>
-              <td class="staff-table__cell">{{ staff_member.date_joined|date:"d M Y" }}</td>
               <td class="staff-table__cell">
-                {% if staff_member.is_active %}
-                  <span class="badge badge--success">Active</span>
-                {% else %}
-                  <span class="badge badge--neutral">Inactive</span>
-                {% endif %}
+                <span class="badge staff-table-badge badge staff-table-badge--active">Active</span>
               </td>
               <td class="staff-table__cell staff-table__cell--actions">
-                <button class="action-btn">Transfer Ownership</button>
-                <button class="action-btn action-btn--danger">Suspend</button>
-                <button class="icon-btn icon-btn--danger" aria-label="Delete">
-                  <svg width="16"
-                       height="16"
-                       viewBox="0 0 24 24"
-                       fill="none"
-                       stroke="currentColor"
-                       stroke-width="2"
-                       stroke-linecap="round"
-                       stroke-linejoin="round">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                  </svg>
-                </button>
+                {% if request.user == store.owner %}
+                  <button type="button"
+                          class="action-btn"
+                          popovertarget="transfer-popover-{{ staff_member.id }}">Transfer Ownership</button>
+
+                  <button type="button"
+                          class="action-btn action-btn--danger"
+                          popovertarget="delete-popover-{{ staff_member.id }}"
+                          aria-label="Delete">{% include "icons/trash.html" %}</button>
+
+                  <div id="transfer-popover-{{ staff_member.id }}"
+                       popover
+                       class="staff-popover">
+                    <form method="post" class="staff-popover__form">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="transfer_ownership" />
+                      <input type="hidden" name="user_id" value="{{ staff_member.id }}" />
+                      <h3>Transfer Ownership?</h3>
+                      <p>Are you sure you want to transfer ownership to {{ staff_member.email }}? You will be demoted to Staff.</p>
+                      <div class="staff-popover__actions">
+                        <button type="submit" class="btn btn--danger">Yes, Transfer</button>
+                        <button type="button"
+                                class="staff-popover__cancel-button"
+                                popovertarget="transfer-popover-{{ staff_member.id }}"
+                                popovertargetaction="hide">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+
+                  <div id="delete-popover-{{ staff_member.id }}"
+                       popover
+                       class="staff-popover">
+                    <form method="post" class="staff-popover__form">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="remove_staff" />
+                      <input type="hidden" name="user_id" value="{{ staff_member.id }}" />
+                      <h3>Remove Staff Member?</h3>
+                      <p>Are you sure you want to remove {{ staff_member.get_full_name|default:staff_member.username }} from your team?</p>
+                      <div class="staff-popover__actions">
+                        <button type="submit" class="btn btn--danger">Yes, Remove</button>
+                        <button type="button"
+                                class="staff-popover__cancel-button"
+                                popovertarget="delete-popover-{{ staff_member.id }}"
+                                popovertargetaction="hide">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}
 
           {% for invite in pending_invites %}
             <tr class="staff-table__row">
-              <td class="staff-table__cell">{{ invite.name|default:"—" }}</td>
+              <td class="staff-table__cell">{{ invite.first_name }} {{ invite.last_name }}</td>
               <td class="staff-table__cell">{{ invite.email }}</td>
               <td class="staff-table__cell">
-                <span class="badge badge--neutral">Staff</span>
+                <span class="badge staff-table-badge badge staff-table-badge--staff">Staff</span>
               </td>
-              <td class="staff-table__cell">—</td>
               <td class="staff-table__cell">
-                <span class="badge badge--warning">Invited</span>
+                {% if invite.is_expired %}
+                  <span class="badge staff-table-badge badge staff-table-badge--danger">Expired</span>
+                {% else %}
+                  <span class="badge staff-table-badge badge staff-table-badge--warning">Invited</span>
+                {% endif %}
               </td>
               <td class="staff-table__cell staff-table__cell--actions">
-                <button class="action-btn">Resend Invite</button>
-                <button class="action-btn action-btn--danger">Cancel Invite</button>
+                {% if request.user == store.owner %}
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="resend_invite" />
+                    <input type="hidden" name="invite_id" value="{{ invite.id }}" />
+                    <button type="submit" class="action-btn">Resend Invite</button>
+                  </form>
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="cancel_invite" />
+                    <input type="hidden" name="invite_id" value="{{ invite.id }}" />
+                    <button type="submit" class="action-btn action-btn--danger">Cancel Invite</button>
+                  </form>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}

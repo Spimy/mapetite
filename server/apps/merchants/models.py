@@ -1,10 +1,11 @@
+import uuid
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.utils import timezone
-
+from django.utils.timezone import timedelta
 
 # Create your models here.
 class StoreProfile(gis_models.Model):
@@ -311,3 +312,28 @@ class Promotion(models.Model):
         elif self.promotion_type == self.PromotionType.BUNDLE:
             return f"{self.title} - Bundle (${self.promotion_amount})"
         return self.title
+
+
+class StoreInvitation(models.Model):
+    store = models.ForeignKey(
+        'StoreProfile', 
+        on_delete=models.CASCADE, 
+        related_name="invitations"
+    )
+    email = models.EmailField()
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150)
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Prevent spamming the same email for the same store
+        unique_together = ('store', 'email') 
+
+    @property
+    def is_expired(self):
+        # Invites expire after 3 days
+        return timezone.now() > self.created_at + timedelta(days=3)
+
+    def __str__(self):
+        return f"Invite to {self.email} for {self.store.business_name}"

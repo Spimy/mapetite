@@ -2,7 +2,7 @@ import json
 from typing import Any, cast
 from apps.merchants.paginator import Template404Paginator
 from apps.users.models import User
-from apps.users.forms import UserInfoForm
+from apps.users.forms import InviteStaffForm, UserInfoForm
 from apps.users.mixins import MerchantRequiredMixin
 from django.http.response import HttpResponse as HttpResponse
 from django.contrib.auth.forms import PasswordChangeForm
@@ -14,9 +14,11 @@ from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.utils import timezone
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from .models import Promotion, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
+from .models import Promotion, StoreInvitation, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
 from .forms import ItemCategoryForm, PromotionForm, StoreItemForm
 from .serializers import StoreOperatingHourSerializer, StoreProfileSerializer
 from .mixins import StoreContextMixin
@@ -427,9 +429,138 @@ class DashboardStaffView(MerchantRequiredMixin, StoreContextMixin, ListView):
     template_name = "merchants/pages/staff-dashboard.html"
     model = get_user_model()
     context_object_name = "staff_members"
-
+    
     def get_queryset(self):
         return self.get_active_store().staff.all()
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        store = self.get_active_store()
+        context['pending_invites'] = StoreInvitation.objects.filter(store=store)
+        context['invite_form'] = InviteStaffForm()
+        return context
+    
+    def get(self, request, *args, **kwargs):
+        store = self.get_active_store()
+        if request.user != store.owner:
+            messages.error(request, "Only the store owner can manage staff.")
+            return redirect('merchants:dashboard_home', store_index=kwargs.get("store_index", 0))
+        return super().get(request, *args, **kwargs)
+
+
+    def post(self, request, *args, **kwargs):
+        store = self.get_active_store()
+        action = request.POST.get('action')
+
+        # Security check: Only the owner should perform these destructive actions
+        is_owner = request.user == store.owner
+
+        if action == "invite_staff" and is_owner:
+            owner = cast(User, request.user)
+            form = InviteStaffForm(request.POST)
+            
+            if form.is_valid():
+                email = form.cleaned_data['email']
+                
+                if store.staff.filter(email=email).exists() or owner.email == email:
+                    messages.error(request, "This user is already part of the store.")
+                else:
+                    invite = form.save(commit=False)
+                    invite.store = store
+                    invite.save()
+                    
+                    self.send_invitation_email(request, invite)
+                    messages.success(request, f"Invitation sent to {email}.")
+
+        elif action == "remove_staff" and is_owner:
+            user_id = request.POST.get('user_id')
+            user_to_remove = get_object_or_404(User, id=user_id)
+            store.staff.remove(user_to_remove)
+            messages.success(request, f"{user_to_remove.email} removed from staff.")
+
+        elif action == "transfer_ownership" and is_owner:
+            user_id = request.POST.get('user_id')
+            new_owner = get_object_or_404(User, id=user_id)
+            
+            if new_owner in store.staff.all():
+                store.staff.remove(new_owner) # Remove them from staff list
+                store.staff.add(request.user) # Add old owner to staff list
+                store.owner = new_owner       # Set new owner
+                store.save()
+                messages.success(request, f"Ownership transferred to {new_owner.email}.")
+
+        elif action == "cancel_invite" and is_owner:
+            invite_id = request.POST.get('invite_id')
+            StoreInvitation.objects.filter(id=invite_id, store=store).delete()
+            messages.success(request, "Invitation canceled.")
+
+        elif action == "resend_invite" and is_owner:
+            invite_id = request.POST.get('invite_id')
+            invite = get_object_or_404(StoreInvitation, id=invite_id, store=store)
+            invite.created_at = timezone.now() # Reset expiration
+            invite.save()
+            self.send_invitation_email(request, invite)
+            messages.success(request, f"Invitation resent to {invite.email}.")
+
+        return redirect('merchants:dashboard_staff', store_index=self.kwargs['store_index'])
+
+    def send_invitation_email(self, request, invite):
+        invite_url = request.build_absolute_uri(
+            reverse('merchants:accept_invite', kwargs={'token': invite.token})
+        )
+        send_mail(
+            subject=f"Invitation to join {invite.store.business_name}",
+            message=f"You've been invited! Click here to accept: {invite_url}",
+            from_email=None,
+            recipient_list=[invite.email],
+        )
+
+
+class AcceptInviteView(View):
+    def get(self, request, token, *args, **kwargs):
+        # The token comes from the URL parameters and is used to identify the invitation
+        invite = get_object_or_404(StoreInvitation, token=token)
+
+        if invite.is_expired:
+            messages.error(request, "This invitation link has expired.")
+            return redirect('account_login') # Assuming you use allauth
+
+        user = User.objects.filter(email=invite.email).first()
+
+        if not user:
+            # User doesn't exist then Create account
+            temp_password = User.objects.make_random_password(length=12)
+            
+            # Using email for username
+            user = User.objects.create_user(
+                username=invite.email, 
+                email=invite.email,
+                password=temp_password,
+                first_name=invite.first_name,
+                last_name=invite.last_name,
+                is_merchant=True, # Automatically mark as merchant since they have a store to manage
+            )
+            
+            # Email them the temp password
+            send_mail(
+                "Your New Account Details",
+                f"An account was created for you. Your temporary password is: {temp_password}\nPlease log in and change it.",
+                None,
+                [user.email]
+            )
+            messages.success(request, "Account created! Check your email for your temporary password.")
+        else:
+            messages.success(request, f"You have been added to {invite.store.business_name} as staff.")
+
+        # Add to store staff & cleanup
+        invite.store.staff.add(user)
+        invite.delete()
+        
+        if not user.is_merchant:
+            user.is_merchant = True
+            user.save(update_fields=['is_merchant'])
+        
+        return redirect('users:sign_in')
 
 
 class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateView):

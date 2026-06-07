@@ -33,6 +33,7 @@ urlpatterns = [
     path(
         "dashboard/<int:store_index>/staff/", views.DashboardStaffView.as_view(), name="dashboard_staff"
     ),
+    path("invite/accept/<uuid:token>/", views.AcceptInviteView.as_view(), name="accept_invite"),
     path(
         "dashboard/<int:store_index>/settings/", views.DashboardSettingsView.as_view(), name="dashboard_settings"
     ),
