@@ -16,6 +16,17 @@
 {% comment %} End Page Meta {% endcomment %}
 
 {% block dashboard_content %}
-  <h1>Welcome to your Dashboard, {{ store.business_name }}!</h1>
-  <p>Use the sidebar to navigate through your store management options.</p>
+  <style>
+    .dashboard-section {
+      max-width: 800px;
+      text-align: justify;
+    }
+  </style>
+
+  <section class="dashboard-section">
+    <h1>Welcome to your Dashboard, {{ store.business_name }}!</h1>
+    <p>
+      This page is under construction as it requires additional data integration and development. Come back soon! In the meantime, you can manage your store's location and operating hours using the links in the sidebar.
+    </p>
+  </section>
 {% endblock dashboard_content %}
