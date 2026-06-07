@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 
-from apps.merchants.models import StoreInvitation
+from apps.merchants.models import StoreInvitation, StoreProfile
 from .models import User, UserProfile
 
 
@@ -94,3 +94,41 @@ class UserInfoForm(forms.ModelForm):
             profile.save()
             
         return profile
+
+
+class StoreProfileForm(forms.ModelForm):
+    latitude = forms.FloatField(
+        required=False,
+        widget=forms.NumberInput(attrs={'id': 'id_latitude', 'step': 'any', 'class': 'form-control'})
+    )
+    longitude = forms.FloatField(
+        required=False,
+        widget=forms.NumberInput(attrs={'id': 'id_longitude', 'step': 'any', 'class': 'form-control'})
+    )
+
+    class Meta:
+        model = StoreProfile
+        fields = ['business_name', 'merchant_type', 'description', 'street_address', 'halal', 'vegan']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.location:
+            self.fields['latitude'].initial = self.instance.latitude
+            self.fields['longitude'].initial = self.instance.longitude
+            
+        self.fields['business_name'].initial = self.instance.business_name if self.instance.business_name else ""
+        self.fields['description'].initial = self.instance.description if self.instance.description else ""
+        self.fields['halal'].initial = self.instance.halal if self.instance.halal is not None else False
+        self.fields['vegan'].initial = self.instance.vegan if self.instance.vegan is not None else False
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        lat = self.cleaned_data.get('latitude')
+        lon = self.cleaned_data.get('longitude')
+        instance.set_coordinates(lat, lon)
+
+        if commit:
+            instance.save()
+
+        return instance

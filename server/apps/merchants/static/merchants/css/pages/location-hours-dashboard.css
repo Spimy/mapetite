@@ -1,0 +1,182 @@
+.store-profile-message {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid transparent;
+  font-weight: var(--font-weight-heading);
+  color: var(--color-white);
+}
+
+.store-profile-message--success {
+  border-color: color-mix(in srgb, var(--color-success) 80%, black);
+  background-color: color-mix(in srgb, var(--color-success) 80%, transparent);
+}
+
+.store-profile-message--error {
+  border-color: color-mix(in srgb, var(--color-error) 80%, black);
+  background-color: color-mix(in srgb, var(--color-error) 80%, transparent);
+}
+
+.store-profile-card {
+  background-color: var(--color-white);
+  padding: 1.5rem;
+  max-width: 800px;
+  display: grid;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
+}
+
+.store-profile-card__title {
+  font-size: 1.25rem;
+  color: var(--color-neutral);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.store-profile-card__divider {
+  border: 0;
+  height: 1px;
+  background-color: var(--color-border);
+  margin: 2rem 0;
+}
+
+/* Standard Inputs, Textareas, and Selects */
+.store-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+
+  .store-form-group__label {
+    font-weight: var(--font-weight-heading);
+    color: var(--color-neutral);
+    font-size: 0.95rem;
+  }
+
+  input:not([type="checkbox"]),
+  textarea,
+  select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background-color: var(--color-tertiary);
+    color: var(--color-neutral);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-light) 50%, transparent);
+    }
+
+    &::placeholder {
+      color: var(--color-grey-400);
+    }
+
+    &:disabled {
+      background-color: var(--color-border);
+      cursor: not-allowed;
+      color: var(--color-grey-400);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+}
+
+/* Side-by-side Grid Layout for Lat/Lng */
+.store-form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  .store-form-group {
+    flex: 1;
+    min-width: 200px;
+    /* Prevents them from getting too squished on mobile */
+  }
+}
+
+/* Pill Toggle Styling */
+.store-form-group--toggle {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+
+  .store-form-group__label {
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  input[type="checkbox"] {
+    appearance: none;
+    width: 3rem;
+    height: 1.5rem;
+    background-color: var(--color-border);
+    border-radius: 2rem;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 0;
+    outline: none;
+    flex-shrink: 0;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: calc(1.5rem - 4px);
+      height: calc(1.5rem - 4px);
+      background-color: var(--color-white);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px color-mix(in srgb, var(--color-neutral) 15%, transparent);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &:checked {
+      background-color: var(--color-primary);
+
+      &::after {
+        transform: translateX(1.5rem);
+      }
+    }
+  }
+}
+
+#map {
+  height: 400px;
+  width: 100%;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  z-index: 1;
+  display: none;
+}
+
+.geo-controls {
+  margin-bottom: 1rem;
+  gap: 10px;
+  align-items: center;
+  display: none;
+
+  .geo-controls__help-text {
+    font-size: 0.875rem;
+    color: var(--color-grey-400);
+  }
+}
+
+.noscript-warning {
+  background-color: color-mix(in srgb, var(--color-warning) 20%, white);
+  color: var(--color-warning);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-weight: var(--font-weight-label);
+}

@@ -28,7 +28,7 @@ urlpatterns = [
     ),
     path('dashboard/<int:store_index>/promotions/<int:pk>/', views.DashboardPromotionUpdateView.as_view(), name='dashboard_promotion_edit'),
     path(
-        "dashboard/<int:store_index>/locations-and-hours/", views.DashboardView.as_view(), name="dashboard_locations_and_hours"
+        "dashboard/<int:store_index>/locations-and-hours/", views.DashboardLocationsAndHoursView.as_view(), name="dashboard_locations_and_hours"
     ),
     path(
         "dashboard/<int:store_index>/staff/", views.DashboardStaffView.as_view(), name="dashboard_staff"

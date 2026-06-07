@@ -1,0 +1,224 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'merchants/css/pages/location-hours-dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock styles %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Location & Hours - {{ store.business_name }}
+{% endblock title %}
+
+{% block description %}
+  Manage your store profile, exact map location, and operating hours for {{ store.business_name }}.
+{% endblock description %}
+
+{% block keywords %}
+  Store Location, {{ store.business_name }}, Store Profile, Mapetite merchant tools
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block dashboard_content %}
+  <h3 class="store-profile-title">Location & Hours</h3>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="store-profile-message store-profile-message--{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" class="store-profile-card">
+    {% csrf_token %}
+    <h2 class="store-profile-card__title">Store Profile</h2>
+
+    <div class="store-form-group">
+      <label class="store-form-group__label"
+             for="{{ store_form.business_name.id_for_label }}">Business Name</label>
+      {{ store_form.business_name }}
+    </div>
+
+    <div class="store-form-group">
+      <label class="store-form-group__label"
+             for="{{ store_form.description.id_for_label }}">Description</label>
+      {{ store_form.description }}
+    </div>
+
+    <div class="store-form-group">
+      <label class="store-form-group__label"
+             for="{{ store_form.merchant_type.id_for_label }}">Merchant Type</label>
+      {{ store_form.merchant_type }}
+    </div>
+
+    <div class="store-form-group store-form-group--toggle">
+      <label class="store-form-group__label"
+             for="{{ store_form.halal.id_for_label }}">Halal Certified</label>
+      {{ store_form.halal }}
+    </div>
+
+    <div class="store-form-group store-form-group--toggle">
+      <label class="store-form-group__label"
+             for="{{ store_form.vegan.id_for_label }}">Fully Vegan Options</label>
+      {{ store_form.vegan }}
+    </div>
+
+    <hr class="store-profile-card__divider" />
+
+    <h2 class="store-profile-card__title">Store Location</h2>
+
+    <div class="geo-controls">
+      <button type="button" id="locate-btn" class="btn btn--invert">📍 Get My Location</button>
+      <small class="geo-controls__help-text">Or click on the map.</small>
+    </div>
+
+    <div id="map"></div>
+
+    <noscript>
+      <div class="noscript-warning">
+        ⚠️ <strong>JavaScript is disabled.</strong> The interactive map cannot be loaded, but you can still type your latitude and longitude manually below.
+      </div>
+    </noscript>
+
+    <div class="store-form-group">
+      <label class="store-form-group__label"
+             for="{{ store_form.street_address.id_for_label }}">Street Address</label>
+      {{ store_form.street_address }}
+    </div>
+
+    <div class="store-form-row">
+      <div class="store-form-group">
+        <label class="store-form-group__label"
+               for="{{ store_form.latitude.id_for_label }}">Latitude</label>
+        {{ store_form.latitude }}
+      </div>
+      <div class="store-form-group">
+        <label class="store-form-group__label"
+               for="{{ store_form.longitude.id_for_label }}">Longitude</label>
+        {{ store_form.longitude }}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn--primary" name="submit_store_info">Save Details</button>
+  </form>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById('map').style.display = 'block';
+      document.querySelector('.geo-controls').style.display = 'flex';
+
+        const latInput = document.getElementById('id_latitude');
+        const lonInput = document.getElementById('id_longitude');
+        const addressInput = document.getElementById('id_street_address');
+        const locateBtn = document.getElementById('locate-btn');
+
+        // Initialise the map (Default center to KL/Subang Jaya if inputs are empty)
+        let initialLat = parseFloat(latInput.value) || 3.0738;
+        let initialLon = parseFloat(lonInput.value) || 101.5183;
+        
+        const map = L.map('map').setView([initialLat, initialLon], 13);
+
+        // Load OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap',
+            referrerPolicy: 'strict-origin-when-cross-origin'
+        }).addTo(map);
+
+        // Create a Draggable Marker
+        let marker = L.marker([initialLat, initialLon], {draggable: true}).addTo(map);
+        function updateInputs(lat, lon) {
+            latInput.value = lat.toFixed(6);
+            lonInput.value = lon.toFixed(6);
+        }
+
+        async function fetchAddress(lat, lon) {
+          if (!addressInput) return; 
+          
+          // Show a loading state so the user knows it's working
+          addressInput.value = "Fetching address..."; 
+          addressInput.disabled = true;
+
+          const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+          
+          try {
+              const response = await fetch(url);
+              const data = await response.json();
+              
+              if (data && data.display_name) {
+                  addressInput.value = data.display_name;
+              } else {
+                  addressInput.value = "Address not found for this location.";
+              }
+          } catch (error) {
+              console.error("Geocoding failed:", error);
+              addressInput.value = "Error fetching address. Please type it manually.";
+          } finally {
+              addressInput.disabled = false;
+          }
+        }
+
+        marker.on('dragend', function(e) {
+            const position = marker.getLatLng();
+            updateInputs(position.lat, position.lng);
+            fetchAddress(position.lat, position.lng);
+        });
+
+        marker.on('drag', function(e) {
+            const position = marker.getLatLng();
+            updateInputs(position.lat, position.lng);
+        });
+
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            updateInputs(e.latlng.lat, e.latlng.lng);
+            fetchAddress(e.latlng.lat, e.latlng.lng);
+        });
+
+        // When user manually types in the input fields, move the marker
+        [latInput, lonInput].forEach(input => {
+            input.addEventListener('input', function() {
+                let lat = parseFloat(latInput.value);
+                let lon = parseFloat(lonInput.value);
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    let newLatLng = new L.LatLng(lat, lon);
+                    marker.setLatLng(newLatLng);
+                    map.panTo(newLatLng);
+                }
+            });
+        });
+
+        // HTML5 Geolocation (Get User's Current Location)
+        locateBtn.addEventListener('click', function() {
+            if ("geolocation" in navigator) {
+                locateBtn.innerText = "Locating...";
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        // Move map and marker
+                        map.setView([lat, lon], 16);
+                        marker.setLatLng([lat, lon]);
+                        updateInputs(lat, lon);
+                        fetchAddress(lat, lon);
+
+                        locateBtn.innerText = "📍 Get My Location";
+                    },
+                    function(error) {
+                        alert("Unable to retrieve your location. You can type it manually.");
+                        locateBtn.innerText = "📍 Get My Location";
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        });
+    });
+  </script>
+{% endblock dashboard_content %}

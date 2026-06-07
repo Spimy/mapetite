@@ -2,7 +2,7 @@ import json
 from typing import Any, cast
 from apps.merchants.paginator import Template404Paginator
 from apps.users.models import User
-from apps.users.forms import InviteStaffForm, UserInfoForm
+from apps.users.forms import InviteStaffForm, StoreProfileForm, UserInfoForm
 from apps.users.mixins import MerchantRequiredMixin
 from django.http.response import HttpResponse as HttpResponse
 from django.contrib.auth.forms import PasswordChangeForm
@@ -424,6 +424,36 @@ class DashboardPromotionUpdateView(MerchantRequiredMixin, StoreContextMixin, Upd
     def get_success_url(self):
         return reverse('merchants:dashboard_promotions', kwargs={'store_index': self.kwargs.get("store_index", 0)})
 
+
+class DashboardLocationsAndHoursView(MerchantRequiredMixin, StoreContextMixin, TemplateView):
+    template_name = "merchants/pages/location-hours-dashboard.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        store = context.get('store') or self.get_active_store()
+        if 'store_form' not in context:
+            context['store_form'] = StoreProfileForm(instance=store)
+            
+        return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        store = context.get('store') or self.get_active_store()
+        
+        if 'submit_store_info' in request.POST:
+            form = StoreProfileForm(request.POST, instance=store)
+            
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Store location and details updated successfully!")
+                return redirect('merchants:dashboard_locations_and_hours', store_index=kwargs.get('store_index'))
+            
+            else:
+                messages.error(request, "There was an error updating your store. Please check below.")
+                return self.render_to_response(self.get_context_data(store_form=form))
+
+        return self.render_to_response(self.get_context_data())
 
 class DashboardStaffView(MerchantRequiredMixin, StoreContextMixin, ListView):
     template_name = "merchants/pages/staff-dashboard.html"
