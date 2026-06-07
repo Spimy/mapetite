@@ -34,48 +34,147 @@
     <section class="settings__card">
       <h2 class="settings__subtitle">Profile Information</h2>
 
-      <div class="settings__avatar-container">
-        {% if user.user_profile.avatar %}
-          <img class="settings__avatar-img"
-               src="{{ user.user_profile.avatar.url }}"
-               alt="Profile Picture"
-               width="80"
-               height="80" />
-        {% else %}
-          <div class="settings__avatar-placeholder">
-            {% if user.first_name or user.last_name %}
-              {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
-            {% else %}
-              {{ user.username|slice:":1" }}
-            {% endif %}
-          </div>
-        {% endif %}
-      </div>
-
       <form method="post" enctype="multipart/form-data" class="settings__form">
         {% csrf_token %}
-        {% for field in user_form %}
+
+        <div class="settings__avatar-section">
+          <label for="{{ user_form.avatar.id_for_label }}"
+                 class="settings__avatar-label">
+            <div class="settings__avatar-preview" id="avatarPreviewContainer">
+
+              {% if user.user_profile.avatar %}
+                <img id="avatarImage"
+                     class="settings__avatar-img"
+                     src="{{ user.user_profile.avatar.url }}"
+                     alt="Profile Picture"
+                     width="90"
+                     height="90" />
+                <div id="avatarPlaceholder"
+                     class="settings__avatar-placeholder settings__hidden">
+                  {% if user.first_name or user.last_name %}
+                    {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
+                  {% else %}
+                    {{ user.username|slice:":1" }}
+                  {% endif %}
+                </div>
+              {% else %}
+                <img id="avatarImage"
+                     class="settings__avatar-img settings__hidden"
+                     src=""
+                     alt="Profile Picture"
+                     width="90"
+                     height="90" />
+                <div id="avatarPlaceholder" class="settings__avatar-placeholder">
+                  {% if user.first_name or user.last_name %}
+                    {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
+                  {% else %}
+                    {{ user.username|slice:":1" }}
+                  {% endif %}
+                </div>
+              {% endif %}
+
+              <div class="settings__avatar-overlay">
+                <span>Upload</span>
+              </div>
+            </div>
+          </label>
+          <div class="settings__avatar-input-wrapper">{{ user_form.avatar }}</div>
+        </div>
+
+        <div class="settings__form-grid">
           <div class="settings__group">
-            <label class="settings__label">{{ field.label }}</label>
-            {{ field }}
+            <label class="settings__label"
+                   for="{{ user_form.display_name.id_for_label }}">{{ user_form.display_name.label }}</label>
+            {{ user_form.display_name }}
           </div>
-        {% endfor %}
+          <div class="settings__group">
+            <label class="settings__label" for="{{ user_form.owner_name.id_for_label }}">{{ user_form.owner_name.label }}</label>
+            {{ user_form.owner_name }}
+            {% if user_form.owner_name.help_text %}
+              <p class="settings__helptext">{{ user_form.owner_name.help_text }}</p>
+            {% endif %}
+          </div>
+          <div class="settings__group">
+            <label class="settings__label" for="{{ user_form.email.id_for_label }}">{{ user_form.email.label }}</label>
+            {{ user_form.email }}
+            {% if user_form.email.help_text %}<p class="settings__helptext">{{ user_form.email.help_text }}</p>{% endif %}
+          </div>
+          <div class="settings__group">
+            <label class="settings__label"
+                   for="{{ user_form.phone_number.id_for_label }}">{{ user_form.phone_number.label }}</label>
+            {{ user_form.phone_number }}
+          </div>
+
+          <div class="settings__group settings__group--full">
+            <label class="settings__label" for="{{ user_form.address.id_for_label }}">{{ user_form.address.label }}</label>
+            {{ user_form.address }}
+          </div>
+
+          <div class="settings__group">
+            <label class="settings__label" for="{{ user_form.city.id_for_label }}">{{ user_form.city.label }}</label>
+            {{ user_form.city }}
+          </div>
+          <div class="settings__group">
+            <label class="settings__label" for="{{ user_form.country.id_for_label }}">{{ user_form.country.label }}</label>
+            {{ user_form.country }}
+          </div>
+        </div>
+
         <button type="submit" name="submit_user_info" class="btn">Save Profile</button>
       </form>
     </section>
 
     <section class="settings__card">
-      <h2 class="settings__subtitle">Security</h2>
+      <h2 class="settings__subtitle">Password</h2>
       <form method="post" class="settings__form">
         {% csrf_token %}
-        {% for field in password_form %}
-          <div class="settings__group">
-            <label class="settings__label">{{ field.label }}</label>
-            {{ field }}
-          </div>
-        {% endfor %}
-        <button type="submit" name="submit_password" class="btn">Change Password</button>
+        <div class="settings__form-grid">
+          {% for field in password_form %}
+            <div class="settings__group settings__group--full">
+              <label class="settings__label" for="{{ field.id_for_label }}">
+                {% if field.name == 'old_password' %}
+                  Current Password
+                {% elif field.name == 'new_password2' %}
+                  Confirm New Password
+                {% else %}
+                  {{ field.label }}
+                {% endif %}
+              </label>
+              {{ field }}
+            </div>
+          {% endfor %}
+        </div>
+        <button type="submit" name="submit_password" class="btn">Update Password</button>
       </form>
     </section>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Find the file input generated by Django
+      const avatarInput = document.querySelector("input[name='avatar']");
+      const avatarImage = document.getElementById("avatarImage");
+      const avatarPlaceholder = document.getElementById("avatarPlaceholder");
+
+      if (avatarInput) {
+        avatarInput.addEventListener("change", function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+              // Update the image src and make it visible by removing the hidden class
+              avatarImage.src = event.target.result;
+              avatarImage.classList.remove("settings__hidden");
+              
+              // Hide the initials placeholder by adding the hidden class
+              if (avatarPlaceholder) {
+                avatarPlaceholder.classList.add("settings__hidden");
+              }
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    });
+  </script>
 {% endblock dashboard_content %}

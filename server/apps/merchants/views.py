@@ -570,7 +570,8 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
         context = super().get_context_data(**kwargs)
         user = cast(User, self.request.user)
         
-        context['user_form'] = UserInfoForm(instance=getattr(user, 'user_profile'))
+        store = context.get('store')
+        context['user_form'] = UserInfoForm(instance=getattr(user, 'user_profile'), store=store)
         
         password_form = PasswordChangeForm(user=user)
         for field in password_form.fields.values():
@@ -580,14 +581,25 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
         return context
 
     def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        store = context.get('store')
+        
         if 'submit_user_info' in request.POST:
-            # Pass the instance of the user's profile
-            form = UserInfoForm(request.POST, request.FILES, instance=request.user.user_profile)
+            form = UserInfoForm(
+                request.POST, 
+                request.FILES, 
+                instance=request.user.user_profile, 
+                store=store
+            )
+            
             if form.is_valid():
                 form.save()
                 messages.success(request, "Settings updated!")
                 return redirect('merchants:dashboard_settings', store_index=kwargs.get("store_index", 0))
-            return self.render_to_response(self.get_context_data(user_form=form))
+            
+            # If invalid, re-render the context with the errored form
+            context['user_form'] = form
+            return self.render_to_response(context)
 
         elif 'submit_password' in request.POST:
             form = PasswordChangeForm(user=request.user, data=request.POST)
