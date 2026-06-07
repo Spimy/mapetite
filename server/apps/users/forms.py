@@ -37,7 +37,11 @@ class InviteStaffForm(forms.ModelForm):
 
 
 class UserInfoForm(forms.ModelForm):
-    display_name = forms.CharField(label="Display Name", required=False)
+    display_name = forms.CharField(
+        label="Display Name",
+        required=False,
+        help_text="This is the name that will be shown in the dashboard to you. The owner will always see your first and last name unless they are not set, in which case they will see your username."
+    )
     owner_name = forms.CharField(
         label="Owner Name", 
         required=False,
@@ -61,7 +65,7 @@ class UserInfoForm(forms.ModelForm):
         user = self.instance.user
         full_name = f"{user.first_name} {user.last_name}".strip()
         
-        self.fields['display_name'].initial = full_name if full_name else user.username
+        self.fields['display_name'].initial = user.username if user.username else full_name if full_name else user.email
         
         if store and hasattr(store, 'owner'):
             owner = store.owner
