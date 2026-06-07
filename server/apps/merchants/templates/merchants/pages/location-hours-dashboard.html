@@ -34,7 +34,7 @@
 
   <form method="post" class="store-profile-card">
     {% csrf_token %}
-    <h2 class="store-profile-card__title">Store Profile</h2>
+    <h4 class="store-profile-card__title store-profile-card__title--main">Store Profile</h4>
 
     <div class="store-form-group">
       <label class="store-form-group__label"
@@ -68,7 +68,7 @@
 
     <hr class="store-profile-card__divider" />
 
-    <h2 class="store-profile-card__title">Store Location</h2>
+    <h4 class="store-profile-card__title">Store Location</h4>
 
     <div class="geo-controls">
       <button type="button" id="locate-btn" class="btn btn--invert">📍 Get My Location</button>

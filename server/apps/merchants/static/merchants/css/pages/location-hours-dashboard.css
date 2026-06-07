@@ -18,7 +18,7 @@
 
 .store-profile-card {
   background-color: var(--color-white);
-  padding: 1.5rem;
+  padding: 2rem;
   max-width: 800px;
   display: grid;
   border-radius: 1rem;
@@ -30,6 +30,13 @@
   color: var(--color-neutral);
   margin-top: 0;
   margin-bottom: 1.5rem;
+
+  &.store-profile-card__title--main {
+    background-color: var(--color-grey-100);
+    margin: -2rem -2rem 1.5rem -2rem;
+    padding: 1rem 2rem;
+    border-radius: 1rem 1rem 0 0;
+  }
 }
 
 .store-profile-card__divider {
