@@ -123,16 +123,18 @@
                    width="40"
                    height="40" />
             {% else %}
-              {% if user.first_name or user.last_name %}
+              {% if user.username %}
+                <div class="sidebar__avatar-placeholder">{{ user.username|slice:":1" }}</div>
+              {% elif user.first_name or user.last_name %}
                 <div class="sidebar__avatar-placeholder">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</div>
               {% else %}
-                <div class="sidebar__avatar-placeholder">{{ user.username|slice:":1" }}</div>
+                <div class="sidebar__avatar-placeholder">{{ user.email|slice:":1" }}</div>
               {% endif %}
             {% endif %}
           </div>
 
           <div class="sidebar__user-details">
-            <span class="sidebar__user-name">{{ user.get_full_name|default:user.username }}</span>
+            <span class="sidebar__user-name">{% firstof user.username user.first_name user.email %}</span>
             {% if store.owner == user %}
               <span class="badge sidebar__user-role sidebar__user-role--owner">Owner</span>
             {% else %}
@@ -165,11 +167,11 @@
 
     <section class="dashboard">
       <header class="dashboard__header">
-        <h2 class="dashboard__title">Good morning, {{ user.first_name|default:user.username }}</h2>
+        <h2 class="dashboard__title">Good morning, {% firstof user.username user.first_name user.email %}</h2>
 
         <div class="dashboard__user-info">
           <div class="dashboard__user-details">
-            <span class="dashboard__user-name">{{ user.get_full_name|default:user.username }}</span>
+            <span class="dashboard__user-name">{% firstof user.username user.first_name user.email %}</span>
             {% if store.owner == user %}
               <span class="badge dashboard__user-role dashboard__user-role--owner">Owner</span>
             {% else %}
@@ -185,10 +187,12 @@
                    width="40"
                    height="40" />
             {% else %}
-              {% if user.first_name or user.last_name %}
+              {% if user.username %}
+                <div class="dashboard__avatar-placeholder">{{ user.username|slice:":1" }}</div>
+              {% elif user.first_name or user.last_name %}
                 <div class="dashboard__avatar-placeholder">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</div>
               {% else %}
-                <div class="dashboard__avatar-placeholder">{{ user.username|slice:":1" }}</div>
+                <div class="dashboard__avatar-placeholder">{{ user.email|slice:":1" }}</div>
               {% endif %}
             {% endif %}
           </div>

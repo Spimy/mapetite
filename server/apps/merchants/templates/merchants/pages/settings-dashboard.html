@@ -51,10 +51,12 @@
                      height="90" />
                 <div id="avatarPlaceholder"
                      class="settings__avatar-placeholder settings__hidden">
-                  {% if user.first_name or user.last_name %}
+                  {% if user.username %}
+                    {{ user.username|slice:":1" }}
+                  {% elif user.first_name or user.last_name %}
                     {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
                   {% else %}
-                    {{ user.username|slice:":1" }}
+                    {{ user.email|slice:":1" }}
                   {% endif %}
                 </div>
               {% else %}
@@ -65,10 +67,12 @@
                      width="90"
                      height="90" />
                 <div id="avatarPlaceholder" class="settings__avatar-placeholder">
-                  {% if user.first_name or user.last_name %}
+                  {% if user.username %}
+                    {{ user.username|slice:":1" }}
+                  {% elif user.first_name or user.last_name %}
                     {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
                   {% else %}
-                    {{ user.username|slice:":1" }}
+                    {{ user.email|slice:":1" }}
                   {% endif %}
                 </div>
               {% endif %}
@@ -86,6 +90,9 @@
             <label class="settings__label"
                    for="{{ user_form.display_name.id_for_label }}">{{ user_form.display_name.label }}</label>
             {{ user_form.display_name }}
+            {% if user_form.display_name.help_text %}
+              <p class="settings__helptext">{{ user_form.display_name.help_text }}</p>
+            {% endif %}
           </div>
           <div class="settings__group">
             <label class="settings__label" for="{{ user_form.owner_name.id_for_label }}">{{ user_form.owner_name.label }}</label>
