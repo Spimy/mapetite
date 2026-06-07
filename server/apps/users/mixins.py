@@ -1,4 +1,9 @@
+from typing import cast
+from django.http import HttpRequest
 from django.views.generic.base import View
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
+from .models import User
 
 
 class SuccessUrlMixin(View):
@@ -24,3 +29,19 @@ class SuccessUrlMixin(View):
             return success
 
         return ""
+
+
+class MerchantRequiredMixin(UserPassesTestMixin):
+    """Mixin to check if the user is a merchant"""
+
+    request: HttpRequest
+
+    def test_func(self):
+        user = cast(User, self.request.user)
+        return user.is_authenticated and user.is_merchant
+
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return super().handle_no_permission()
+
+        raise PermissionDenied("You must be a merchant to view this page.")

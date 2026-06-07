@@ -4,49 +4,15 @@ The core engine for Mapetite. This project serves the **JSON API** for the mobil
 
 ## 🛠 Prerequisites
 
-- **Python 3.14.x**: We enforce a strict version guardrail to ensure environment parity across the team.
-- **Database**: PostgreSQL 18 (Managed via the root `docker-compose.yml`).
+- **Docker Desktop**: The entire Python environment, PostgreSQL 18 (PostGIS), and spatial C-libraries (GDAL) are containerised. You do not need Python installed on your local machine.
+- **VS Code**: Required for the backend development workflow.
+- **Dev Containers Extension**: Install the official Microsoft `Dev Containers` extension in VS Code.
 
-## 📥 Local Setup
+## 📥 Local Setup & Architecture
 
-### 1. Install Python 3.14
+This project uses a **VS Code Dev Container**. Instead of managing virtual environments on your Windows or Mac machine, VS Code will inject itself directly into the running Linux Docker container, giving you perfect IntelliSense, Git tracking, and a native terminal.
 
-Depending on your operating system, use one of the following methods:
-
-**For WSL (Ubuntu) / Linux:**
-
-```bash
-# Install build dependencies, then:
-curl https://pyenv.run | bash
-pyenv install 3.14.5
-pyenv global 3.14.5 # Optional if you wish to keep your existing Python version for terminal as .python-version will force use Python 3.14 for this specific project
-
-```
-
-**For macOS (Intel or Apple Silicon):**
-
-```bash
-brew update
-brew install pyenv
-pyenv install 3.14.5
-pyenv global 3.14.5 # Optional if you wish to keep your existing Python version for terminal as .python-version will force use Python 3.14 for this specific project
-
-```
-
-**🛠 Shell Configuration (Required Once)**
-
-To enable automatic version switching via the `.python-version` file, add the following to your shell profile (`~/.zshrc` for Mac/Zsh or `~/.bashrc` for WSL/Bash):
-
-```bash
-# Add this to the end of your ~/.zshrc or ~/.bashrc
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-```
-
-**After adding the lines**: Restart your terminal or run source ~/.zshrc (or ~/.bashrc).
-
-### 2. Environment Variables
+### 1. Environment Variables
 
 Copy the template and fill in the secrets. **Never commit the `.env` file.**
 
@@ -55,46 +21,44 @@ cp .env.example .env
 
 ```
 
-### 3. Virtual Environment & Dependencies
+_(Ensure `POSTGRES_HOST=database` is set in your `.env` so Django can find Postgres inside the Docker network)._
+
+### 2. Booting the Dev Container
+
+1. Open this repository in VS Code.
+2. Press **`Ctrl + Shift + P`** (Windows/Linux) or **`Cmd + Shift + P`** (Mac) to open the Command Palette.
+3. Search for and select: **`Dev Containers: Reopen in Container`**.
+
+VS Code will build the container, install all necessary extensions (like Black, DJLint, and Pylance), and log you in.
+
+### 3. The Native Terminal
+
+Once inside the Dev Container, open a new terminal in VS Code (`Ctrl + ~`). **You are now natively inside the Linux container at the `/workspace/server` directory.**
+
+You do not need to use `make` or `docker compose exec...` anymore. You can run standard Django commands directly:
 
 ```bash
-python -m venv env
-source env/bin/activate  # On Windows/WSL or macOS
-pip install -r requirements.txt
-
-```
-
-### 4. Database Initialisation
-
-Ensure the Docker container is running in the root directory, then apply the migrations:
-
-```bash
+python manage.py makemigrations
 python manage.py migrate
-
-```
-
-### 5. Create a Super User
-
-To access the Django Admin dashboard, you need to have a super user account. You can create one using Django's CLI tool:
-
-```bash
 python manage.py createsuperuser
-```
-
-## 🛰 Development & Access
-
-Run the local development server:
-
-```bash
-python manage.py runserver
 
 ```
+
+---
+
+## 🛰 Development & Debugging
+
+Because VS Code is running inside the container with your code, debugging works seamlessly out of the box.
+
+1. Open the Run & Debug tab in VS Code.
+2. Select the **Django** configuration and press **F5**.
+3. Set breakpoints anywhere in your Python code.
+
+**Access Points:**
 
 - **Mobile API Base**: `http://127.0.0.1:8000/api/`
 - **Merchant Dashboard**: `http://127.0.0.1:8000/dashboard/`
 - **Django Admin**: `http://127.0.0.1:8000/admin/`
-- **API Documentation (Swagger UI)**: `http://127.0.0.1:8000/api/schema/swagger-ui/` (Requires Admin)
-- **API Documentation (Redoc)**: `http://127.0.0.1:8000/api/schema/redoc/` (Requires Admin)
 
 ---
 
@@ -102,50 +66,29 @@ python manage.py runserver
 
 All domain logic is located in the `apps/` directory to keep the root clean:
 
-| App              | Responsibility               |
-| ---------------- | ---------------------------- |
-| **`apps.users`** | Identity and Authentication. |
+| App                  | Responsibility                                                  |
+| -------------------- | --------------------------------------------------------------- |
+| **`apps.users`**     | Identity and Authentication.                                    |
+| **`apps.merchants`** | Store profiles, spatial location (PostGIS), and business logic. |
 
 ---
 
 ## 🔐 Google Authentication Setup
 
-To enable Google Sign-In for the mobile API, you must configure credentials in both the Google Cloud Console and the local Django Admin dashboard.
+To enable Google Sign-In for the mobile API:
 
-### 1. Generate Google Credentials
-
-1. Navigate to the [Google Cloud Console - Create OAuth client ID](https://console.cloud.google.com/auth/clients/create).
-2. Create a new **Web application** OAuth client ID (this is required to generate the Client Secret for the backend server).
-3. Leave the "Authorized redirect URIs" field empty, as the mobile app fetches and passes the token directly.
-4. Copy the newly generated **Client ID** and **Client Secret**.
-
-### 2. Configure Django Admin & Sites
-
-1. With the local development server running, log in to the [Django Admin Dashboard](http://127.0.0.1:8000/admin/) using your superuser account.
-2. First, navigate to the Sites section on the main dashboard and click on the default `example.com` record.
-3. Change the Domain name to `127.0.0.1:8000` (or localhost:8000) and the Display name to `Mapetite Local`, then click Save.
-4. Next, navigate to Social Accounts > Social applications and click Add social application.
-5. Set the Provider to `Google`.
-6. Enter a name (e.g., "Google OAuth"), then paste your Client ID and Secret key into the respective fields.
-7. Scroll down to the Sites box. Highlight `Mapetite Local` in the "Available sites" list on the left, and click the rightward arrow to move it into the Chosen sites box.
-8. Click Save.
-
-### 3. Testing the Implementation
-
-If you need to test the authentication API endpoint locally (e.g., via Postman) before the mobile app is integrated, you can generate temporary tokens:
-
-1. Go to the [Google OAuth2 Playground](https://developers.google.com/oauthplayground/).
-2. Under "Step 1", scroll to **Google OAuth2 API v2** and select both the `email` and `profile` scopes.
-3. Click **Authorize APIs**, sign in with a Google account, and click **Exchange authorization code for tokens** in Step 2.
-4. Copy the `access_token` and `id_token`. Send these as the JSON payload in a POST request to the local API endpoint.
+1. Generate a **Web application** OAuth client ID in the [Google Cloud Console](https://console.cloud.google.com/auth/clients/create). Leave redirect URIs empty.
+2. Log in to the local [Django Admin Dashboard](http://127.0.0.1:8000/admin/).
+3. Under **Sites**, update `example.com` to `127.0.0.1:8000` (Display name: `Mapetite Local`).
+4. Under **Social Accounts > Social applications**, add a new Google application with your Client ID and Secret key. Move `Mapetite Local` to the "Chosen sites" box.
+5. _(For API Testing)_: Use the [Google OAuth2 Playground](https://developers.google.com/oauthplayground/) (v2 API, `email` & `profile` scopes) to generate temporary `access_token` and `id_token` payloads for Postman.
 
 ---
 
-## ⚠️ Guardrails
+## ⚠️ Guardrails & Best Practices
 
-- **Python Version**: `manage.py` will block execution if your Python version is not 3.14.x.
+- **Adding Dependencies**: If you need a new Python package, add it to `requirements.txt` and run `pip install -r requirements.txt` directly in your VS Code terminal. No need to rebuild the container manually.
 - **App Creation**: Always create new apps inside the `apps/` folder:
   `python manage.py startapp name apps/name`
 - **CRITICAL**: You must manually update `apps/name/apps.py` so that `name = "apps.name"`.
-
 - **Static/Media**: Store global assets in `/static` and user uploads in `/media`.

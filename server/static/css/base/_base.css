@@ -15,6 +15,8 @@
   --color-error: hsl(0, 84%, 60%);
   --color-warning: hsl(38, 92%, 50%);
   --color-success: hsl(160, 84%, 39%);
+  --color-badge-bg: hsl(150, 81%, 90%);
+  --color-badge-text: hsl(163, 100%, 19%);
 
   --font-family: "Inter", sans-serif;
   --font-weight-body: 400;
@@ -65,19 +67,52 @@ a {
   border-radius: 0.75rem;
   font-weight: var(--font-weight-label);
   text-align: center;
-}
 
-.btn:hover {
-  background-color: color-mix(in srgb, var(--color-primary) 80%, black);
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 80%, black);
+  }
 }
 
 .btn--invert {
   background-color: transparent;
   color: var(--color-primary);
   border: 0.125rem solid var(--color-primary);
+
+  &:hover {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+  }
 }
 
-.btn--invert:hover {
-  background-color: var(--color-primary);
-  color: var(--color-white);
+.btn--danger {
+  background-color: var(--color-error);
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-error) 80%, black);
+  }
+}
+
+.badge {
+  font-size: 0.875rem;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-weight: var(--font-weight-label);
+}
+
+.error-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  text-align: center;
+}
+
+.error-page h1 {
+  font-size: 2.5rem;
+}
+
+.error-page p {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
 }

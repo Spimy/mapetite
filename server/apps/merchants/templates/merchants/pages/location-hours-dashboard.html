@@ -1,0 +1,162 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'merchants/css/pages/location-hours-dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock styles %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Location & Hours - {{ store.business_name }}
+{% endblock title %}
+
+{% block description %}
+  Manage your store profile, exact map location, and operating hours for {{ store.business_name }}.
+{% endblock description %}
+
+{% block keywords %}
+  Store Location, {{ store.business_name }}, Store Profile, Mapetite merchant tools
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block dashboard_content %}
+  <h3 class="store-profile-title">Location & Hours</h3>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="store-profile-message store-profile-message--{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" class="store-profile-card">
+    {% csrf_token %}
+    <h4 class="store-profile-card__title store-profile-card__title--main">Store Profile</h4>
+
+    <div class="store-form-group">
+      <label class="store-form-group__label"
+             for="{{ store_form.business_name.id_for_label }}">Business Name</label>
+      {{ store_form.business_name }}
+    </div>
+
+    <div class="store-form-group">
+      <label class="store-form-group__label"
+             for="{{ store_form.description.id_for_label }}">Description</label>
+      {{ store_form.description }}
+    </div>
+
+    <div class="store-form-group">
+      <label class="store-form-group__label"
+             for="{{ store_form.merchant_type.id_for_label }}">Merchant Type</label>
+      {{ store_form.merchant_type }}
+    </div>
+
+    <div class="store-form-group store-form-group--toggle">
+      <label class="store-form-group__label"
+             for="{{ store_form.halal.id_for_label }}">Halal Certified</label>
+      {{ store_form.halal }}
+    </div>
+
+    <div class="store-form-group store-form-group--toggle">
+      <label class="store-form-group__label"
+             for="{{ store_form.vegan.id_for_label }}">Fully Vegan Options</label>
+      {{ store_form.vegan }}
+    </div>
+
+    <hr class="store-profile-card__divider" />
+
+    <h4 class="store-profile-card__title">Store Location</h4>
+
+    <div class="geo-controls">
+      <button type="button" id="locate-btn" class="btn btn--invert">📍 Get My Location</button>
+      <small class="geo-controls__help-text">Or click on the map.</small>
+    </div>
+
+    <div id="map"></div>
+
+    <noscript>
+      <div class="noscript-warning">
+        ⚠️ <strong>JavaScript is disabled.</strong> The interactive map cannot be loaded, but you can still type your latitude and longitude manually below.
+      </div>
+    </noscript>
+
+    <div class="store-form-group">
+      <label class="store-form-group__label"
+             for="{{ store_form.street_address.id_for_label }}">Street Address</label>
+      {{ store_form.street_address }}
+    </div>
+
+    <div class="store-form-row">
+      <div class="store-form-group">
+        <label class="store-form-group__label"
+               for="{{ store_form.latitude.id_for_label }}">Latitude</label>
+        {{ store_form.latitude }}
+      </div>
+      <div class="store-form-group">
+        <label class="store-form-group__label"
+               for="{{ store_form.longitude.id_for_label }}">Longitude</label>
+        {{ store_form.longitude }}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn--primary" name="submit_store_info">Save Details</button>
+  </form>
+
+  <form method="post" class="store-profile-card">
+    {% csrf_token %}
+    <h4 class="store-profile-card__title store-profile-card__title--main">Operating Hours</h4>
+
+    <div class="hours-list">
+      {% for day in days_info %}
+        <div class="hours-row">
+
+          <div class="hours-row__day store-form-group store-form-group--toggle">
+            <label class="store-form-group__label" for="id_{{ day.name }}_active">{{ day.label }}</label>
+
+            <input type="checkbox"
+                   id="id_{{ day.name }}_active"
+                   name="{{ day.name }}_active"
+                   class="hours-toggle"
+                   {% if day.is_active %}checked{% endif %} />
+          </div>
+
+          <div class="hours-row__times">
+            <div class="store-form-group">
+              <input type="time"
+                     name="{{ day.name }}_open"
+                     id="id_{{ day.name }}_open"
+                     value="{{ day.open_time }}" />
+            </div>
+            <span class="hours-row__separator">to</span>
+            <div class="store-form-group">
+              <input type="time"
+                     name="{{ day.name }}_close"
+                     id="id_{{ day.name }}_close"
+                     value="{{ day.close_time }}" />
+            </div>
+
+            <button type="button"
+                    class="hours-row__copy btn btn--invert"
+                    aria-label="Copy these hours to all days">Copy to all</button>
+          </div>
+        </div>
+        {% if not forloop.last %}<hr class="hours-row__divider" />{% endif %}
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="btn" name="submit_operating_hours">Save Hours</button>
+  </form>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="{% static 'merchants/js/pages/location-hours-dashboard.js' %}"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    initOperatingHours();
+    initStoreMap();
+  });
+  </script>
+{% endblock dashboard_content %}

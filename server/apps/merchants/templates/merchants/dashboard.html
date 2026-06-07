@@ -1,0 +1,208 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+{% endblock styles %}
+
+{% block content %}
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <nav class="sidebar__nav" aria-label="Main navigation">
+        <div class="sidebar__header">
+          <h1>Mapetite</h1>
+          <form class="sidebar__store-switcher"
+                action="{% url 'merchants:dashboard' %}"
+                method="post"
+                onchange="this.submit()">
+            {% csrf_token %}
+            <select name="store_index" id="store-index">
+              {% for owned_store in stores %}
+                <option value="{{ forloop.counter0 }}"
+                        {% if forloop.counter0 == current_index %}selected{% endif %}>
+                  {{ owned_store.business_name }}
+                  {% if owned_store.halal and owned_store.vegan %}
+                    (Halal + Vegan)
+                  {% elif owned_store.halal %}
+                    (Halal)
+                  {% elif owned_store.vegan %}
+                    (Vegan)
+                  {% endif %}
+                </option>
+              {% endfor %}
+            </select>
+            {% if request.resolver_match.view_name == 'merchants:dashboard_edit_item' %}
+              <input type="hidden" name="current_route" value="merchants:dashboard_items" />
+            {% elif request.resolver_match.view_name == 'merchants:dashboard_promotion_edit' %}
+              <input type="hidden"
+                     name="current_route"
+                     value="merchants:dashboard_promotions" />
+            {% else %}
+              <input type="hidden"
+                     name="current_route"
+                     value="{{ request.resolver_match.view_name }}" />
+            {% endif %}
+            <noscript>
+              <button type="submit" class="btn">Switch Store</button>
+            </noscript>
+          </form>
+        </div>
+
+        <ul class="sidebar__nav-list" role="list">
+          <li class="sidebar__nav-item">
+            <a class="sidebar__nav-link"
+               href="{% url 'merchants:dashboard_home' current_index %}"
+               {% if request.resolver_match.view_name == 'merchants:dashboard_home' %}aria-current="page"{% endif %}>
+              <span class="sidebar__nav-icon">{% include "icons/dashboard.html" %}</span>
+              <span class="sidebar__nav-text">Dashboard</span>
+            </a>
+          </li>
+
+          <li class="sidebar__nav-item">
+            <a class="sidebar__nav-link"
+               href="{% url 'merchants:dashboard_items' current_index %}"
+               {% if request.resolver_match.view_name == 'merchants:dashboard_items' or request.resolver_match.view_name == 'merchants:dashboard_edit_item' %}aria-current="page"{% endif %}>
+              <span class="sidebar__nav-icon">{% include "icons/list.html" %}</span>
+              <span class="sidebar__nav-text">
+                {% if store.merchant_type == store.MerchantType.RESTAURANT %}
+                  Menu
+                {% elif store.merchant_type == store.MerchantType.GROCERY %}
+                  Products
+                {% endif %}
+              </span>
+            </a>
+          </li>
+
+          <li class="sidebar__nav-item">
+            <a class="sidebar__nav-link"
+               href="{% url 'merchants:dashboard_promotions' current_index %}"
+               {% if request.resolver_match.view_name == 'merchants:dashboard_promotions' or request.resolver_match.view_name == 'merchants:dashboard_promotion_edit' %}aria-current="page"{% endif %}>
+              <span class="sidebar__nav-icon">{% include "icons/tag.html" %}</span>
+              <span class="sidebar__nav-text">Promotions</span>
+            </a>
+          </li>
+          <li class="sidebar__nav-item">
+            <a class="sidebar__nav-link"
+               href="{% url 'merchants:dashboard_locations_and_hours' current_index %}"
+               {% if request.resolver_match.view_name == 'merchants:dashboard_locations_and_hours' %}aria-current="page"{% endif %}>
+              <span class="sidebar__nav-icon">{% include "icons/location.html" %}</span>
+              <span class="sidebar__nav-text">Location &amp; Hours</span>
+            </a>
+          </li>
+
+          {% comment %} Only owner can manage staff {% endcomment %}
+          {% if store.owner == user %}
+            <li class="sidebar__nav-item">
+              <a class="sidebar__nav-link"
+                 href="{% url 'merchants:dashboard_staff' current_index %}"
+                 {% if request.resolver_match.view_name == 'merchants:dashboard_staff' %}aria-current="page"{% endif %}>
+                <span class="sidebar__nav-icon">{% include "icons/users.html" %}</span>
+                <span class="sidebar__nav-text">Staff Management</span>
+              </a>
+            </li>
+          {% endif %}
+
+          <li class="sidebar__nav-item">
+            <a class="sidebar__nav-link"
+               href="{% url 'merchants:dashboard_settings' current_index %}"
+               {% if request.resolver_match.view_name == 'merchants:dashboard_settings' %}aria-current="page"{% endif %}>
+              <span class="sidebar__nav-icon">{% include "icons/settings.html" %}</span>
+              <span class="sidebar__nav-text">Account Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar__user-info">
+        <div class="sidebar__about-user">
+          <div class="sidebar__user-avatar">
+            {% if user.user_profile.avatar %}
+              <img class="sidebar__avatar-img"
+                   src="{{ user.user_profile.avatar.url }}"
+                   alt="Profile Picture"
+                   width="40"
+                   height="40" />
+            {% else %}
+              {% if user.username %}
+                <div class="sidebar__avatar-placeholder">{{ user.username|slice:":1" }}</div>
+              {% elif user.first_name or user.last_name %}
+                <div class="sidebar__avatar-placeholder">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</div>
+              {% else %}
+                <div class="sidebar__avatar-placeholder">{{ user.email|slice:":1" }}</div>
+              {% endif %}
+            {% endif %}
+          </div>
+
+          <div class="sidebar__user-details">
+            <span class="sidebar__user-name">{% firstof user.username user.first_name user.email %}</span>
+            {% if store.owner == user %}
+              <span class="badge sidebar__user-role sidebar__user-role--owner">Owner</span>
+            {% else %}
+              <span class="badge sidebar__user-role sidebar__user-role--staff">Staff</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <form action="{% url 'users:sign_out' %}" method="post" id="sign-out-form">
+          {% csrf_token %}
+          <button type="button"
+                  class="sidebar__sign-out-btn"
+                  popovertarget="sign-out-popover">{% include "icons/sign-out.html" %}</button>
+        </form>
+
+        <div id="sign-out-popover" popover class="sign-out-popover">
+          <p class="sign-out-popover__message">Are you sure you want to sign out?</p>
+
+          <div class="sign-out-popover__actions">
+            <button type="button"
+                    class="btn btn--invert"
+                    popovertarget="sign-out-popover"
+                    popovertargetaction="hide">Cancel</button>
+
+            <button type="submit" class="btn btn--danger" form="sign-out-form">Sign Out</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="dashboard">
+      <header class="dashboard__header">
+        <h2 class="dashboard__title">Good morning, {% firstof user.username user.first_name user.email %}</h2>
+
+        <div class="dashboard__user-info">
+          <div class="dashboard__user-details">
+            <span class="dashboard__user-name">{% firstof user.username user.first_name user.email %}</span>
+            {% if store.owner == user %}
+              <span class="badge dashboard__user-role dashboard__user-role--owner">Owner</span>
+            {% else %}
+              <span class="badge dashboard__user-role dashboard__user-role--staff">Staff</span>
+            {% endif %}
+          </div>
+
+          <div class="dashboard__user-avatar">
+            {% if user.user_profile.avatar %}
+              <img class="dashboard__avatar-img"
+                   src="{{ user.user_profile.avatar.url }}"
+                   alt="Profile Picture"
+                   width="40"
+                   height="40" />
+            {% else %}
+              {% if user.username %}
+                <div class="dashboard__avatar-placeholder">{{ user.username|slice:":1" }}</div>
+              {% elif user.first_name or user.last_name %}
+                <div class="dashboard__avatar-placeholder">{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}</div>
+              {% else %}
+                <div class="dashboard__avatar-placeholder">{{ user.email|slice:":1" }}</div>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </header>
+
+      <main class="dashboard__content">
+        {% block dashboard_content %}
+        {% endblock dashboard_content %}
+      </main>
+    </section>
+  </div>
+{% endblock content %}

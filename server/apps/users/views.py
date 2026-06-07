@@ -28,8 +28,7 @@ from .serializers import UserDetailSerializer
 class SignInView(SuccessUrlMixin, FormView):
     template_name = "users/signin.html"
     form_class = SignInForm
-    # TODO: This should be linked to the merchant dashboard once it's implemented
-    success_url = "/admin/"
+    success_url = reverse_lazy("merchants:dashboard")
 
     def form_valid(self, form):
         login(self.request, form.get_user())
@@ -37,11 +36,10 @@ class SignInView(SuccessUrlMixin, FormView):
 
 
 class SignOutView(LoginRequiredMixin, RedirectView):
-    # TODO: To update to marketing/landing page
     url = reverse_lazy("users:sign_in")
     redirect_field_name = None
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         logout(request)
         return super(SignOutView, self).get(request, *args, **kwargs)
 

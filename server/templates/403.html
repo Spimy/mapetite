@@ -1,0 +1,10 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+  <main class="error-page">
+    <h1>403 - Access Denied</h1>
+    <p>{{ exception|default:"You do not have permission to view this page." }}</p>
+
+    <a href="{% url 'users:sign_in' %}" class="btn">Return to Sign In</a>
+  </main>
+{% endblock content %}

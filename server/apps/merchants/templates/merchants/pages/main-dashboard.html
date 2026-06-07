@@ -1,0 +1,32 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Dashboard - {{ store.business_name }}
+{% endblock title %}
+
+{% block description %}
+  Welcome to your Mapetite dashboard, {{ store.business_name }}. Manage your store's location, hours, menu, and promotions all in one place.
+{% endblock description %}
+
+{% block keywords %}
+  merchant dashboard, store management, business analytics, Mapetite merchant tools
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block dashboard_content %}
+  <style>
+    .dashboard-section {
+      max-width: 800px;
+      text-align: justify;
+    }
+  </style>
+
+  <section class="dashboard-section">
+    <h1>Welcome to your Dashboard, {{ store.business_name }}!</h1>
+    <p>
+      This page is under construction as it requires additional data integration and development. Come back soon! In the meantime, you can manage your store's location and operating hours using the links in the sidebar.
+    </p>
+  </section>
+{% endblock dashboard_content %}

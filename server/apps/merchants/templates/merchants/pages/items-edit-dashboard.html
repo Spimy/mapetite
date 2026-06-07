@@ -1,0 +1,139 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'merchants/css/pages/items-dashboard.css' %}" />
+{% endblock styles %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Edit {{ object.name }} - {{ object.store.business_name }}
+{% endblock title %}
+
+{% block description %}
+  Edit details for {{ object.name }} in {{ object.store.business_name }}. Manage pricing, description, category, and availability of this menu item.
+{% endblock description %}
+
+{% block keywords %}
+  Edit Item, {{ object.name }}, {{ object.store.business_name }}, Menu Management, Update Menu Item, Item Details, Pricing, Description, Category, Availability
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block dashboard_content %}
+  <section class="item-edit-page">
+    <div class="items-page-header">
+      <div class="items-page-header__title-wrap">
+        <h3 class="items-page-header__title">
+          {% if item_not_found %}
+            Item Not Found
+          {% else %}
+            Edit Item: {{ object.name }}
+          {% endif %}
+        </h3>
+      </div>
+      <div class="items-page-header__actions">
+        <a href="{% url 'merchants:dashboard_items' store_index=current_index %}"
+           class="btn btn--secondary">Back to Dashboard</a>
+      </div>
+    </div>
+
+    <div class="item-edit-page__card">
+      {% if item_not_found %}
+        <div class="items-category__empty-state">
+          <h4>We couldn't find this item</h4>
+          <p>The item you are trying to edit does not exist, belongs to another store, or has been deleted.</p>
+          <br />
+          <a href="{% url 'merchants:dashboard_items' store_index=current_index %}">Return to
+            {% if store.merchant_type == store.MerchantType.RESTAURANT %}
+              Menu
+            {% elif store.merchant_type == store.MerchantType.GROCERY %}
+              Products
+            {% endif %}
+          </a>
+        </div>
+
+      {% else %}
+        <form class="items-form" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="current_store" value="{{ object.store.id }}" />
+
+          {% for section_title, fields in form.grouped_fields %}
+            <fieldset class="items-form-group">
+              {% if section_title != "" %}<legend class="items-form-group__legend">{{ section_title }}</legend>{% endif %}
+
+              {% for field in fields %}
+                {% if field.name == "thumbnail" %}
+                  <div class="items-form-group__field">
+                    <div class="items-form-group__file-dropzone {% if object.thumbnail %}items-form-group__file-dropzone--has-file{% endif %}">
+                      <div class="file-dropzone-content">
+
+                        <div class="file-dropzone-placeholder"
+                             style="{% if object.thumbnail %}display: none;
+                                    {% endif %}">
+                          {% include "icons/upload.html" %}
+                          <span class="upload-title">Upload new image</span>
+                          <span class="upload-subtitle">JPG or PNG, max 5MB</span>
+                        </div>
+
+                        <img class="file-dropzone-preview"
+                             alt="Image preview"
+                             width="100"
+                             height="100"
+                             {% if object.thumbnail %}src="{{ object.thumbnail.url }}" style="display: block;"{% endif %} />
+
+                      </div>
+                      {{ field }}
+                    </div>
+                    {{ field.errors }}
+                  </div>
+
+                {% elif field.name == "is_active" %}
+                  <div class="items-form-group__field items-form-group__toggle-wrap">
+                    <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                  </div>
+
+                {% else %}
+                  <div class="items-form-group__field">
+                    <label class="items-form-group__label" for="{{ field.id_for_label }}">
+                      {{ field.label }}
+                      {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
+                    </label>
+
+                    {% if field.name == "price" %}
+                      <div class="items-form-group__input-prefix">
+                        <span class="items-form-group__currency">RM</span>
+                        {{ field }}
+                      </div>
+                    {% else %}
+                      <div class="items-form-group__control">{{ field }}</div>
+                    {% endif %}
+
+                    {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
+                    {{ field.errors }}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </fieldset>
+          {% endfor %}
+
+          <div class="item-edit-page__actions">
+            <button class="items-popover__submit-button" type="submit">Save Changes</button>
+            <a href="{% url 'merchants:dashboard_items' store_index=current_index %}"
+               class="items-popover__cancel-button item-edit-page__cancel-link">Cancel</a>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </section>
+
+  <script src="{% static 'merchants/js/pages/items-dashboard.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initImageUpload();
+    });
+  </script>
+{% endblock dashboard_content %}

@@ -1,0 +1,516 @@
+{% extends "merchants/dashboard.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'merchants/css/pages/items-dashboard.css' %}" />
+{% endblock styles %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Items - {{ store.business_name }}
+{% endblock title %}
+
+{% block description %}
+  Manage your store's items, categories, and pricing. Add new items or update existing ones to keep your menu fresh and appealing to customers.
+{% endblock description %}
+
+{% block keywords %}
+  item management, menu management, product management, Mapetite merchant tools
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block dashboard_content %}
+  <div class="items-page-header">
+    <div class="items-page-header__title-wrap">
+      <h3 class="items-page-header__title">
+        {% if store.merchant_type == store.MerchantType.RESTAURANT %}
+          Menu Management
+        {% elif store.merchant_type == store.MerchantType.GROCERY %}
+          Inventory
+        {% endif %}
+      </h3>
+    </div>
+
+    <div class="items-page-header__actions">
+      <form action="."
+            method="get"
+            class="items-page-header__search-form"
+            id="search-form">
+        <input class="items-page-header__search"
+               name="search"
+               value="{% if current_search and current_search != 'None' %}{{ current_search }}{% endif %}"
+               type="search"
+               placeholder="Search items..."
+               aria-label="Search items" />
+      </form>
+      <button class="btn items-page-header__add-button"
+              type="button"
+              popovertarget="add-item-popover">Add Item</button>
+    </div>
+  </div>
+
+  <nav class="items-tabs" aria-label="Category filter">
+    <a class="items-tabs__tab"
+       href="{% url 'merchants:dashboard_items' store_index=current_index %}"
+       {% if not selected_category %}aria-current="page"{% endif %}>All Items</a>
+
+    {% for category in categories %}
+      <a class="items-tabs__tab"
+         href="?category={{ category.name }}"
+         {% if selected_category == category.name %}aria-current="page"{% endif %}>{{ category.name }}</a>
+    {% endfor %}
+
+    <button type="button"
+            class="items-tabs__action-btn"
+            aria-label="Add new category"
+            popovertarget="add-category-popover">{% include "icons/plus.html" %}</button>
+
+    <button type="button"
+            class="items-tabs__action-btn"
+            aria-label="Manage categories"
+            popovertarget="manage-categories-popover">
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="20"
+           height="20"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="1.5"
+           stroke-linecap="round"
+           stroke-linejoin="round">
+        <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
+      </svg>
+    </button>
+  </nav>
+
+  {% comment %} Display paginated items {% endcomment %}
+  <section class="items-category">
+    <ul role="list" class="items-category__list">
+      {% for item in items %}
+        <li class="item-card {% if not item.is_active %}item-card--hidden{% endif %}">
+          <div class="item-card__image-wrap">
+            {% if not item.is_active %}<span class="item-card__status-badge">Hidden</span>{% endif %}
+
+            {% if item.thumbnail %}
+              <img src="{{ item.thumbnail.url }}"
+                   alt="{{ item.name }}"
+                   class="item-card__image"
+                   loading="lazy"
+                   width="200"
+                   height="200" />
+            {% else %}
+              <span class="item-card__placeholder-icon">{% include "icons/utensils.html" %}</span>
+            {% endif %}
+          </div>
+
+          <div class="item-card__content">
+            <div class="item-card__header">
+              <h4 class="item-card__title">{{ item.name }}</h4>
+              <span class="item-card__category">{{ item.category.name }}</span>
+            </div>
+
+            <div class="item-card__price-row">
+              <span class="item-card__price">RM {{ item.price }}</span>
+              <span class="item-card__tax">excl. tax</span>
+            </div>
+
+            <div class="item-card__tags">
+              {% if item.organic %}<span class="item-card__tag item-card__tag--organic">Organic</span>{% endif %}
+              {% if item.vegetarian %}<span class="item-card__tag item-card__tag--vegetarian">Vegetarian</span>{% endif %}
+              {% if item.gluten_free %}<span class="item-card__tag item-card__tag--gluten-free">Gluten-Free</span>{% endif %}
+              {% if item.dairy_free %}<span class="item-card__tag item-card__tag--dairy-free">Dairy-Free</span>{% endif %}
+              {% if item.contains_nuts %}<span class="item-card__tag item-card__tag--contains-nuts">Contain Nuts</span>{% endif %}
+              {% if item.eco_packaging %}<span class="item-card__tag item-card__tag--eco-packaging">Eco-Packaging</span>{% endif %}
+            </div>
+
+            {% if item.calories %}<span class="item-card__meta">{{ item.calories }} kcal</span>{% endif %}
+
+            <div class="item-card__actions">
+              <a href="{% url 'merchants:dashboard_edit_item' store_index=current_index pk=item.id %}"
+                 class="item-card__action-btn js-edit-item-btn"
+                 aria-label="Edit item"
+                 data-url="{% url 'merchants:dashboard_edit_item' store_index=current_index pk=item.id %}"
+                 data-id="{{ item.id }}"
+                 data-name="{{ item.name }}"
+                 data-description="{{ item.description }}"
+                 data-price="{{ item.price }}"
+                 data-calories="{{ item.calories|default:'' }}"
+                 data-category="{{ item.category.id }}"
+                 data-stock-status="{{ item.stock_status }}"
+                 data-is-active="{{ item.is_active|yesno:'true,false' }}"
+                 data-organic="{{ item.organic|yesno:'true,false' }}"
+                 data-vegetarian="{{ item.vegetarian|yesno:'true,false' }}"
+                 data-gluten-free="{{ item.gluten_free|yesno:'true,false' }}"
+                 data-dairy-free="{{ item.dairy_free|yesno:'true,false' }}"
+                 data-contains-nuts="{{ item.contains_nuts|yesno:'true,false' }}"
+                 data-eco-packaging="{{ item.eco_packaging|yesno:'true,false' }}"
+                 data-locally-sourced="{{ item.locally_sourced|yesno:'true,false' }}"
+                 data-image-url="{% if item.thumbnail %}{{ item.thumbnail.url }}{% endif %}">
+                {% include "icons/edit.html" %}
+              </a>
+
+              <form method="post" action="." class="item-card__toggle-form">
+                {% csrf_token %}
+                <input type="hidden" name="toggle_item" value="{{ item.id }}" />
+
+                <button type="submit"
+                        class="item-card__action-btn"
+                        aria-label="Toggle visibility">
+                  <span class="item-card__toggle-icon-on"
+                        {% if not item.is_active %}hidden{% endif %}>{% include "icons/eye-on.html" %}</span>
+                  <span class="item-card__toggle-icon-off"
+                        {% if item.is_active %}hidden{% endif %}>{% include "icons/eye-off.html" %}</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </li>
+      {% empty %}
+        <div class="items-category__empty-state">
+          {% if paginator.count == 0 %}
+            <h4>No items found</h4>
+            <p>
+              {% if selected_category %}
+                There are no items in the "{{ selected_category }}" category yet.
+              {% else %}
+                Your store doesn't have any items yet.
+              {% endif %}
+            </p>
+
+          {% else %}
+            <h4>Page {{ page_obj.number }} Not Found</h4>
+            <p>There are no items on this page.</p>
+            <a href="{% url 'merchants:dashboard_items' store_index=current_index %}">Return to First Page</a>.
+          {% endif %}
+
+        </div>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% comment %} Pagination controls {% endcomment %}
+  <nav class="pagination-wrapper" aria-label="Pagination">
+    <div class="pagination">
+      {% if page_obj.has_previous and page_obj.number <= page_obj.paginator.num_pages %}
+        <a href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}"
+           class="pagination__btn"
+           aria-label="First page">«</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}"
+           class="pagination__btn"
+           aria-label="Previous page">‹</a>
+      {% else %}
+        <button class="pagination__btn" disabled aria-hidden="true">«</button>
+        <button class="pagination__btn" disabled aria-hidden="true">‹</button>
+      {% endif %}
+
+      {% for i in page_range %}
+        {% if page_obj.number == i %}
+          <span class="pagination__btn pagination__btn--active" aria-current="page">{{ i }}</span>
+        {% else %}
+          <a href="?page={{ i }}{% if current_search %}&search={{ current_search }}{% endif %}"
+             class="pagination__btn">{{ i }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next and page_obj.number <= page_obj.paginator.num_pages %}
+        <a href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}"
+           class="pagination__btn"
+           aria-label="Next page">›</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}"
+           class="pagination__btn"
+           aria-label="Last page">»</a>
+      {% else %}
+        <button class="pagination__btn" disabled aria-hidden="true">›</button>
+        <button class="pagination__btn" disabled aria-hidden="true">»</button>
+      {% endif %}
+    </div>
+
+    <form class="pagination__jump" method="get">
+      {% if current_search and current_search != 'None' %}
+        <input type="hidden" name="search" value="{{ current_search }}" />
+      {% endif %}
+
+      {% if page_obj.number <= page_obj.paginator.num_pages %}
+        <label for="page-jump" class="pagination__info">Page</label>
+        <input type="number"
+               id="page-jump"
+               name="page"
+               class="pagination__jump-input"
+               min="1"
+               max="{{ page_obj.paginator.num_pages }}"
+               value="{{ page_obj.number }}"
+               aria-label="Jump to page" />
+        <span class="pagination__info">of {{ page_obj.paginator.num_pages }}</span>
+        <button type="submit" hidden>Go</button>
+      {% else %}
+        <span class="pagination__info">Page Not Found</span>
+      {% endif %}
+    </form>
+  </nav>
+
+  {% comment %} Add Item Popover {% endcomment %}
+  <div id="add-item-popover" class="items-popover" popover>
+    <div class="items-popover__header">
+      <h4 class="items-popover__title">Add New Item</h4>
+    </div>
+
+    <form class="items-popover__form"
+          method="post"
+          enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for section_title, fields in item_form.grouped_fields %}
+        <fieldset class="items-form-group">
+          {% if section_title != "" %}<legend class="items-form-group__legend">{{ section_title }}</legend>{% endif %}
+          {% for field in fields %}
+            {% if field.name == "thumbnail" %}
+              <div class="items-form-group__field">
+                <div class="items-form-group__file-dropzone">
+                  <div class="file-dropzone-content">
+
+                    <div class="file-dropzone-placeholder">
+                      {% include "icons/upload.html" %}
+                      <span class="upload-title">Upload image</span>
+                      <span class="upload-subtitle">JPG or PNG, max 5MB</span>
+                    </div>
+
+                    <img class="file-dropzone-preview"
+                         alt="Image preview"
+                         width="100"
+                         height="100"
+                         hidden />
+
+                  </div>
+                  {{ field }}
+                </div>
+                {{ field.errors }}
+              </div>
+
+            {% elif field.name == "is_active" %}
+              <div class="items-form-group__field items-form-group__toggle-wrap">
+                <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+              </div>
+
+            {% else %}
+              <div class="items-form-group__field">
+                <label class="items-form-group__label" for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                  {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
+                </label>
+
+                {% if field.name == "price" %}
+                  <div class="items-form-group__input-prefix">
+                    <span class="items-form-group__currency">RM</span>
+                    {{ field }}
+                  </div>
+                {% else %}
+                  <div class="items-form-group__control">{{ field }}</div>
+                {% endif %}
+
+                {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
+                {{ field.errors }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </fieldset>
+      {% endfor %}
+      <div class="items-popover__actions">
+        <input type="hidden" name="current_store" value="{{ store.id }}" />
+        <button class="items-popover__submit-button" type="submit" name="submit_item">Save Item</button>
+        <button class="items-popover__cancel-button"
+                type="button"
+                popovertarget="add-item-popover"
+                popovertargetaction="hide">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  {% comment %} Add Category Popover {% endcomment %}
+  <div id="add-category-popover" class="items-popover" popover>
+    <div class="items-popover__header">
+      <h4 class="items-popover__title">Add New Category</h4>
+    </div>
+
+    <form class="items-popover__form" method="post">
+      {% csrf_token %}
+      <fieldset class="items-form-group">
+        {% for field in category_form %}
+          <div class="items-form-group__field">
+            <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            <div class="items-form-group__control">{{ field }}</div>
+            {{ field.errors }}
+            {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
+          </div>
+        {% endfor %}
+      </fieldset>
+
+      <div class="items-popover__actions">
+        <input type="hidden" name="current_store" value="{{ store.id }}" />
+
+        <button class="items-popover__submit-button"
+                type="submit"
+                name="submit_category">Save Category</button>
+        <button class="items-popover__cancel-button"
+                type="button"
+                popovertarget="add-category-popover"
+                popovertargetaction="hide">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  {% comment %} Manage Categories Popover {% endcomment %}
+  <div id="manage-categories-popover" class="items-popover" popover>
+    <div class="items-popover__header">
+      <h4 class="items-popover__title">Manage Categories</h4>
+    </div>
+
+    <form class="items-popover__form" method="post">
+      {% csrf_token %}
+      <fieldset class="items-form-group">
+        <p class="items-form-group__helptext items-form-group__helptext--spaced">
+          Update names, reorder, or mark categories for deletion. Lower numbers appear first.
+        </p>
+
+        <div class="category-bulk-list">
+          {% for category in categories %}
+            <div class="category-bulk-row">
+
+              <label class="category-bulk-delete" title="Mark for deletion">
+                <input type="checkbox" name="delete_{{ category.id }}" value="true" />
+                <div class="delete-icon-wrapper">
+                  <svg xmlns="http://www.w3.org/2000/svg"
+                       width="18"
+                       height="18"
+                       viewBox="0 0 24 24"
+                       fill="none"
+                       stroke="currentColor"
+                       stroke-width="2"
+                       stroke-linecap="round"
+                       stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </div>
+              </label>
+
+              <input type="text"
+                     name="name_{{ category.id }}"
+                     value="{{ category.name }}"
+                     class="items-form-group__text-input"
+                     required
+                     aria-label="Category name" />
+
+              <input type="number"
+                     name="order_{{ category.id }}"
+                     value="{{ category.display_order }}"
+                     class="items-form-group__number-input"
+                     aria-label="Display order" />
+            </div>
+          {% empty %}
+            <p class="items-form-group__helptext">No categories found.</p>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <div class="items-popover__actions">
+        <input type="hidden" name="current_store" value="{{ store.id }}" />
+        <button class="items-popover__submit-button"
+                type="submit"
+                name="submit_manage_categories">Save Changes</button>
+        <button class="items-popover__cancel-button"
+                type="button"
+                popovertarget="manage-categories-popover"
+                popovertargetaction="hide">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  {% comment %} Edit Item Popover {% endcomment %}
+  <div id="edit-item-popover" class="items-popover" popover>
+    <div class="items-popover__header">
+      <h4 class="items-popover__title">Edit Item</h4>
+    </div>
+
+    <form class="items-popover__form"
+          method="post"
+          id="edit-item-form"
+          enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="edit_item_id" id="edit-item-id" />
+
+      {% for section_title, fields in edit_item_form.grouped_fields %}
+        <fieldset class="items-form-group">
+          {% if section_title != "" %}<legend class="items-form-group__legend">{{ section_title }}</legend>{% endif %}
+          {% for field in fields %}
+            {% if field.name == "thumbnail" %}
+              <div class="items-form-group__field">
+                <div class="items-form-group__file-dropzone">
+                  <div class="file-dropzone-content">
+                    <div class="file-dropzone-placeholder">
+                      {% include "icons/upload.html" %}
+                      <span class="upload-title">Upload new image</span>
+                      <span class="upload-subtitle">JPG or PNG, max 5MB</span>
+                    </div>
+                    <img class="file-dropzone-preview"
+                         alt="Image preview"
+                         width="100"
+                         height="100"
+                         hidden />
+                  </div>
+                  {{ field }}
+                </div>
+                {{ field.errors }}
+              </div>
+            {% elif field.name == "is_active" %}
+              <div class="items-form-group__field items-form-group__toggle-wrap">
+                <label class="items-form-group__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+              </div>
+            {% else %}
+              <div class="items-form-group__field">
+                <label class="items-form-group__label" for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                  {% if field.name == "calories" %}<span>(Optional)</span>{% endif %}
+                </label>
+                {% if field.name == "price" %}
+                  <div class="items-form-group__input-prefix">
+                    <span class="items-form-group__currency">RM</span>
+                    {{ field }}
+                  </div>
+                {% else %}
+                  <div class="items-form-group__control">{{ field }}</div>
+                {% endif %}
+                {% if field.help_text %}<p class="items-form-group__helptext">{{ field.help_text }}</p>{% endif %}
+                {{ field.errors }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </fieldset>
+      {% endfor %}
+
+      <div class="items-popover__actions">
+        <button class="items-popover__submit-button" type="submit">Save Changes</button>
+        <button class="items-popover__cancel-button"
+                type="button"
+                popovertarget="edit-item-popover"
+                popovertargetaction="hide">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  {% comment %} Used for progressive enhancement {% endcomment %}
+  <script src="{% static 'merchants/js/pages/items-dashboard.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initTabSwitch();
+      initSearch();
+      initImageUpload();
+      initItemToggles();
+      initItemEditing();
+    });
+  </script>
+{% endblock dashboard_content %}

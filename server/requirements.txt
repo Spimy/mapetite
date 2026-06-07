@@ -38,3 +38,4 @@ sqlparse==0.5.5
 tqdm==4.67.3
 uritemplate==4.2.0
 urllib3==2.7.0
+debugpy==1.8.20

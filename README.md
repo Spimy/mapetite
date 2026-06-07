@@ -6,22 +6,37 @@ Mapetite is a "Zero-Input" micro-economy platform designed to connect merchants 
 
 This is a monorepo organised as follows:
 
-* **`server/`**: The core engine. Contains the REST API for mobile, the Merchant Management Dashboard, and the project landing pages.
-* **`mobile-client/`**: The mobile application (Flutter/React Native).
-* **`docker-compose.yml`**: Orchestrates the shared infrastructure (Database).
+- **`server/`**: The core Django engine. Contains the REST API for mobile, the Merchant Management Dashboard, and the project landing pages.
+- **`mobile-client/`**: The mobile application (Flutter).
+- **`docker-compose.yml`**: Orchestrates the shared backend infrastructure (PostGIS Database and the Django Web Server).
 
-## 🚀 Quick Start (Infrastructure)
+## 🚀 Quick Start (Mobile & Frontend Developers)
 
-The backend requires a PostgreSQL database. We use Docker to ensure everyone runs the same version without manual installation.
+The entire backend (Database + Django Server) runs inside Docker. You do not need to install Python or configure any databases locally.
 
-1.  Ensure Docker Desktop is running.
-2.  From this root directory, run:
-    ```bash
-    docker compose up
-    ```
+1. Ensure Docker Desktop is running.
+2. From this root directory, build and start the containers:
+   ```bash
+   docker compose up
+   ```
+3. Run the database migrations and create your local admin account (requires `make`):
+
+   ```bash
+   make migrate
+   make createsuperuser
+   ```
+
+   or without `make`:
+
+   ```bash
+   docker compose exec web python manage.py migrate
+   docker compose exec web python manage.py createsuperuser
+   ```
+
+**Mobile Emulator Note:** If you are testing the Flutter app on an Android Emulator, your API base URL must be `http://10.0.2.2:8000/api/` (not localhost) to connect to your host machine's Docker network.
 
 ## 👥 Team Guidelines
 
-* **Backend:** See the [Server README](./server/README.md) for environment setup.
-* **Frontend:** See the [Mobile Client README](./mobile-client/README.md) for environment setup.
-* **Version Control:** Never commit `.env` files. Use the provided `.env.example` templates.
+- **Backend:** See the [Server README](./server/README.md) for the Dev Container setup.
+- **Frontend:** See the [Mobile Client README](./mobile-client/README.md) for environment setup.
+- **Version Control:** Never commit `.env` files. Use the provided `.env.example` templates.
