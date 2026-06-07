@@ -32,7 +32,7 @@
     {% endif %}
 
     <section class="settings__card">
-      <h2 class="settings__subtitle">Profile Information</h2>
+      <h4 class="settings__subtitle">Profile Information</h4>
 
       <form method="post" enctype="multipart/form-data" class="settings__form">
         {% csrf_token %}
@@ -132,7 +132,7 @@
     </section>
 
     <section class="settings__card">
-      <h2 class="settings__subtitle">Password</h2>
+      <h4 class="settings__subtitle">Password</h4>
       <form method="post" class="settings__form">
         {% csrf_token %}
         <div class="settings__form-grid">
