@@ -196,7 +196,13 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
       backgroundColor: AppColors.white,
       surfaceTintColor: Colors.transparent,
       leading: GestureDetector(
-        onTap: () => context.pop(),
+        onTap: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/recipes');
+          }
+        },
         child: Container(
           margin: const EdgeInsets.all(AppSpacing.sm),
           width: 32,
@@ -485,22 +491,46 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
   // ─── CTA ──────────────────────────────────────────────────────────────────
 
   Widget _buildAddToListButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: AppSpacing.buttonHeight,
-      child: ElevatedButton.icon(
-        onPressed: _addSelectedToGroceryList,
-        icon: const Icon(Icons.playlist_add, size: 20),
-        label: Text('Add Selected to Grocery List', style: AppTypography.button),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+    final recipe = widget.recipe;
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: AppSpacing.buttonHeight,
+          child: ElevatedButton.icon(
+            onPressed: () => context.push('/recipes/${recipe.id}/match'),
+            icon: const Icon(Icons.store_outlined, size: 20),
+            label: Text('Find Grocery Store', style: AppTypography.button),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              ),
+              elevation: 0,
+            ),
           ),
-          elevation: 0,
         ),
-      ),
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          width: double.infinity,
+          height: AppSpacing.buttonHeight,
+          child: OutlinedButton.icon(
+            onPressed: _addSelectedToGroceryList,
+            icon: const Icon(Icons.playlist_add, size: 20, color: AppColors.primary),
+            label: Text(
+              'Add Selected to My List',
+              style: AppTypography.button.copyWith(color: AppColors.primary),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppColors.primary),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -764,7 +794,7 @@ class _StatChip extends StatelessWidget {
 // ─── Friend Selector Sheet ────────────────────────────────────────────────────
 
 const _kMockFriends = [
-  ('Aisha Rahman', 'A'),
+  ('Joshua Bonham', 'J'),
   ('Ben Lim', 'B'),
   ('Chloe Tan', 'C'),
   ('David Wong', 'D'),

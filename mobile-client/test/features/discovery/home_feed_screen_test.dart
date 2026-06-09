@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mapetite/features/discovery/models/home_feed_models.dart';
 import 'package:mapetite/features/discovery/providers/home_feed_providers.dart';
 import 'package:mapetite/features/discovery/screens/home_feed_screen.dart';
+import 'package:mapetite/shared/widgets/app_drawer.dart';
 import 'package:mapetite/shared/widgets/app_empty_state.dart';
 import 'package:mapetite/shared/widgets/dietary_chip.dart';
 import 'package:mapetite/shared/widgets/food_card.dart';
@@ -78,6 +80,84 @@ Widget _wrap(Widget child) {
   return ProviderScope(child: MaterialApp(home: child));
 }
 
+// ─── Router helpers for HomeFeedScreen tests ────────────────────────────────
+
+GoRouter _testRouter() => GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (_, _) => const HomeFeedScreen(),
+        ),
+        GoRoute(
+          path: '/dine-in',
+          builder: (_, _) => const Scaffold(body: Text('DineIn')),
+        ),
+        GoRoute(
+          path: '/cook-in',
+          builder: (_, _) => const Scaffold(body: Text('CookIn')),
+        ),
+        GoRoute(
+          path: '/recipes',
+          builder: (_, _) => const Scaffold(body: Text('Recipes')),
+        ),
+        GoRoute(
+          path: '/restaurants',
+          builder: (_, _) => const Scaffold(body: Text('Restaurants')),
+          routes: [
+            GoRoute(
+              path: ':id',
+              builder: (_, _) =>
+                  const Scaffold(body: Text('RestaurantDetail')),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/map',
+          builder: (_, _) => const Scaffold(body: Text('Map')),
+        ),
+        GoRoute(
+          path: '/notifications',
+          builder: (_, _) => const Scaffold(body: Text('Notifications')),
+        ),
+        GoRoute(
+          path: '/profile/edit',
+          builder: (_, _) => const Scaffold(body: Text('ProfileEdit')),
+        ),
+        GoRoute(
+          path: '/groceries',
+          builder: (_, _) => const Scaffold(body: Text('Groceries')),
+        ),
+        GoRoute(
+          path: '/list',
+          builder: (_, _) => const Scaffold(body: Text('List')),
+        ),
+        GoRoute(
+          path: '/my-list',
+          builder: (_, _) => const Scaffold(body: Text('MyList')),
+        ),
+        GoRoute(
+          path: '/list/route',
+          builder: (_, _) => const Scaffold(body: Text('Route')),
+        ),
+        GoRoute(
+          path: '/budget/analytics',
+          builder: (_, _) => const Scaffold(body: Text('Analytics')),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (_, _) => const Scaffold(body: Text('Settings')),
+        ),
+      ],
+    );
+
+Widget _routerWrap() => ProviderScope(
+      overrides: [
+        homeFeedProvider.overrideWith((_) async {}),
+      ],
+      child: MaterialApp.router(routerConfig: _testRouter()),
+    );
+
 // ─── Tests ─────────────────────────────────────────────────────────────────────
 
 void main() {
@@ -100,7 +180,8 @@ void main() {
       expect(find.text('4.8 ★  ·  0.5 km'), findsOneWidget);
     });
 
-    testWidgets('renders halal dietary chip when isHalal is true', (tester) async {
+    testWidgets('renders halal dietary chip when isHalal is true',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(Scaffold(
           body: RestaurantMiniCard(restaurant: _testRestaurant, onTap: () {}),
@@ -109,10 +190,12 @@ void main() {
       expect(find.text('Halal'), findsOneWidget);
     });
 
-    testWidgets('renders vegan dietary chip when isVegan is true', (tester) async {
+    testWidgets('renders vegan dietary chip when isVegan is true',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(Scaffold(
-          body: RestaurantMiniCard(restaurant: _testRestaurantVeganOnly, onTap: () {}),
+          body: RestaurantMiniCard(
+              restaurant: _testRestaurantVeganOnly, onTap: () {}),
         )),
       );
       expect(find.text('Vegan'), findsOneWidget);
@@ -196,7 +279,8 @@ void main() {
       expect(find.textContaining('25 min'), findsOneWidget);
     });
 
-    testWidgets('renders halal dietary chip when isHalal is true', (tester) async {
+    testWidgets('renders halal dietary chip when isHalal is true',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(Scaffold(
           body: RecipeMiniCard(recipe: _testRecipe, onTap: () {}),
@@ -205,7 +289,8 @@ void main() {
       expect(find.text('Halal'), findsOneWidget);
     });
 
-    testWidgets('renders vegan dietary chip when isVegan is true', (tester) async {
+    testWidgets('renders vegan dietary chip when isVegan is true',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(Scaffold(
           body: RecipeMiniCard(recipe: _testRecipeVegan, onTap: () {}),
@@ -276,7 +361,16 @@ void main() {
           overrides: [
             homeFeedProvider.overrideWith((ref) => completer.future),
           ],
-          child: const MaterialApp(home: HomeFeedScreen()),
+          child: MaterialApp.router(
+            routerConfig: GoRouter(
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (_, _) => const HomeFeedScreen(),
+                ),
+              ],
+            ),
+          ),
         ),
       );
       await tester.pump();
@@ -301,6 +395,141 @@ void main() {
       expect(find.text('Nothing nearby yet'), findsOneWidget);
       expect(find.text('No venues found near your location.'), findsOneWidget);
       expect(find.text('Explore Map'), findsOneWidget);
+    });
+  });
+
+  group('HomeFeedScreen — new layout', () {
+    testWidgets('renders personalised greeting with user name', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Hi, Joshua.'), findsOneWidget);
+    });
+
+    testWidgets('renders contextual meal-time second line', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      // Any one of the contextual greeting lines should appear
+      final greetingFinder = find.textContaining(
+        RegExp(
+          r"(breakfast|brunch|craving|snack|tonight|something|supper)",
+          caseSensitive: false,
+        ),
+      );
+      expect(greetingFinder, findsOneWidget);
+    });
+
+    testWidgets('renders Dine-In mode card', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Dine-In'), findsOneWidget);
+    });
+
+    testWidgets('renders Cook-In mode card', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Cook-In'), findsOneWidget);
+    });
+
+    testWidgets('renders AI nudge pill icon', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byIcon(Icons.auto_awesome), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets("renders Today's Top Pick section header", (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text("Today's Top Pick"), findsOneWidget);
+    });
+
+    testWidgets('renders match score badge on top pick card', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.textContaining('Match'), findsOneWidget);
+    });
+
+    testWidgets("renders Let's Eat! button on top pick card", (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text("Let's Eat!"), findsOneWidget);
+    });
+
+    testWidgets('renders Nearby Options section header', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Nearby Options'), findsOneWidget);
+    });
+
+    testWidgets('renders View map button', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('View map'), findsOneWidget);
+    });
+
+    testWidgets('does not render FAB', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byType(FloatingActionButton), findsNothing);
+    });
+
+    testWidgets('Dine-In card tap navigates to /dine-in', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(find.text('Dine-In'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('DineIn'), findsOneWidget);
+    });
+
+    testWidgets('Cook-In card tap navigates to /cook-in', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(find.text('Cook-In'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('CookIn'), findsOneWidget);
+    });
+
+    testWidgets('View map tap navigates to /map', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.drag(
+        find.byType(CustomScrollView).first,
+        const Offset(0, -600),
+      );
+      await tester.pump();
+      await tester.tap(find.text('View map'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Map'), findsOneWidget);
+    });
+  });
+
+  group('HomeFeedScreen — drawer', () {
+    testWidgets('renders AppDrawer when drawer is opened', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      final scaffoldState =
+          tester.state<ScaffoldState>(find.byType(Scaffold).first);
+      scaffoldState.openDrawer();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(AppDrawer), findsOneWidget);
     });
   });
 }

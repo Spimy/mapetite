@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
@@ -127,7 +128,16 @@ class _GroceryListScreenState extends ConsumerState<GroceryListScreen> {
         shadowColor: Colors.black.withValues(alpha: 0.08),
         elevation: 2,
         scrolledUnderElevation: 2,
-        leading: const BackButton(color: AppColors.primary),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
         title: Row(
           children: [
             Text('My List', style: AppTypography.headline2),

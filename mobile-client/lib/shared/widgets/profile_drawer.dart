@@ -51,7 +51,7 @@ class ProfileDrawer extends StatelessWidget {
                           ),
                           child: Center(
                             child: Text(
-                              'A',
+                              'J',
                               style: AppTypography.headline2.copyWith(
                                 color: AppColors.white,
                               ),
@@ -64,7 +64,7 @@ class ProfileDrawer extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Aisha',
+                                'Joshua',
                                 style: AppTypography.headline2.copyWith(
                                   color: AppColors.primary,
                                 ),
@@ -174,7 +174,7 @@ class ProfileDrawer extends StatelessWidget {
                       label: 'Budget Analytics',
                       onTap: () {
                         Navigator.of(context).pop();
-                        context.go(AppRoutes.budget);
+                        context.push(AppRoutes.budgetAnalytics);
                       },
                     ),
                   ],

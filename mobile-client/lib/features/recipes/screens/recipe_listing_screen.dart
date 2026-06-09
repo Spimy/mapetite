@@ -7,11 +7,9 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../shared/widgets/app_chip.dart';
-import '../../../shared/widgets/profile_drawer.dart';
 import '../models/recipe_model.dart';
 import '../providers/recipe_provider.dart';
 import '../widgets/recipe_card.dart';
-import '../widgets/add_recipe_sheet.dart';
 
 class RecipeListingScreen extends ConsumerStatefulWidget {
   const RecipeListingScreen({super.key});
@@ -27,15 +25,6 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _openAddSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const AddRecipeSheet(),
-    );
   }
 
   void _openFilterSheet() {
@@ -58,7 +47,6 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      drawer: const ProfileDrawer(),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -99,6 +87,14 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/recipes/create'),
+        backgroundColor: AppColors.primary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+        ),
+        child: const Icon(Icons.add, color: AppColors.white, size: 24),
+      ),
       bottomNavigationBar: _RecipeScreenBottomNav(),
     );
   }
@@ -113,58 +109,23 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
       shadowColor: Colors.black.withValues(alpha: 0.08),
       elevation: 2,
       scrolledUnderElevation: 2,
-      titleSpacing: AppSpacing.lg,
+      titleSpacing: 0,
       automaticallyImplyLeading: false,
-      title: Stack(
-        alignment: Alignment.center,
-        children: [
-          Center(
-            child: Text(
-              'Recipes',
-              style: AppTypography.headline2.copyWith(color: AppColors.primary),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Builder(
-                builder: (drawerCtx) => GestureDetector(
-                  onTap: () => Scaffold.of(drawerCtx).openDrawer(),
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.primary,
-                      border: Border.all(color: AppColors.primaryLight, width: 2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'A',
-                        style: AppTypography.body1.copyWith(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: _openAddSheet,
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.add, color: AppColors.white, size: 20),
-                ),
-              ),
-            ],
-          ),
-        ],
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: AppColors.neutral),
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/home');
+          }
+        },
+      ),
+      title: Center(
+        child: Text(
+          'Cook-In',
+          style: AppTypography.headline1.copyWith(color: AppColors.primary),
+        ),
       ),
     );
   }

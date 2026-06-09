@@ -3,8 +3,8 @@ import '../user_profile.dart';
 abstract class ProfileMocks {
   static const UserProfile currentUser = UserProfile(
     id: 'u1',
-    displayName: 'Aisha Salleh',
-    email: 'aisha.salleh@example.com',
+    displayName: 'Joshua Bonham',
+    email: 'joshua.bonham@example.com',
     phone: '+60 12-345 6789',
     avatarUrl: null,
     city: 'Bangsar, Kuala Lumpur',
