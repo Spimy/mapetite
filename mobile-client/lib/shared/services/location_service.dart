@@ -83,21 +83,51 @@ class LocationService {
           'lon': position.longitude.toString(),
           'format': 'json',
         },
-        options: Options(headers: {'User-Agent': 'Mapetite/1.0 (university project)'}),
+        options: Options(
+            headers: {'User-Agent': 'Mapetite/1.0 (university project)'}),
       );
       if (response.statusCode != 200 || response.data == null) return null;
       final address = response.data!['address'] as Map<String, dynamic>?;
       if (address == null) return null;
-      // Nominatim uses city / town / village / suburb in order of specificity.
-      return (address['city'] as String?)?.isNotEmpty == true
-          ? address['city'] as String
-          : (address['town'] as String?)?.isNotEmpty == true
-              ? address['town'] as String
-              : (address['suburb'] as String?)?.isNotEmpty == true
-                  ? address['suburb'] as String
-                  : address['state'] as String?;
+
+      // For Malaysian addresses Nominatim puts the municipal council name
+      // (e.g. "Subang Jaya City Council") in the `city` field.
+      // Prefer suburb → town → city_district → cleaned city → state.
+      final raw = _str(address, 'suburb') ??
+          _str(address, 'town') ??
+          _str(address, 'city_district') ??
+          _cleanCouncilName(_str(address, 'city')) ??
+          _str(address, 'state');
+      return raw;
     } catch (_) {
       return null;
     }
+  }
+
+  String? _str(Map<String, dynamic> map, String key) {
+    final v = map[key];
+    if (v is String && v.isNotEmpty) return v;
+    return null;
+  }
+
+  // Strips Malaysian administrative suffixes so "Subang Jaya City Council"
+  // becomes "Subang Jaya".
+  String? _cleanCouncilName(String? name) {
+    if (name == null) return null;
+    const suffixes = [
+      ' City Council',
+      ' Municipal Council',
+      ' District Council',
+      ' Town Council',
+      ' Majlis Bandaraya',
+      ' Majlis Perbandaran',
+      ' Majlis Daerah',
+    ];
+    for (final suffix in suffixes) {
+      if (name.endsWith(suffix)) {
+        return name.substring(0, name.length - suffix.length).trim();
+      }
+    }
+    return name;
   }
 }
