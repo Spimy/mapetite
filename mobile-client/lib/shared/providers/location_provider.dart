@@ -27,11 +27,19 @@ final locationProvider =
   LocationNotifier.new,
 );
 
-/// Convenience provider returning just the city name, falling back to a default.
+/// Convenience provider returning the city name for display.
+/// - Loading → "Locating..."
+/// - Permission denied / no position → "Nearby"
+/// - Position obtained but geocoding failed (e.g. web) → "Your Location"
+/// - City resolved → city name
 final locationCityProvider = Provider<String>((ref) {
   final location = ref.watch(locationProvider);
-  return location.maybeWhen(
-    data: (loc) => loc?.city ?? 'Nearby',
-    orElse: () => 'Locating...',
+  return location.when(
+    data: (loc) {
+      if (loc == null) return 'Nearby';
+      return loc.city ?? 'Your Location';
+    },
+    loading: () => 'Locating...',
+    error: (_, _) => 'Nearby',
   );
 });

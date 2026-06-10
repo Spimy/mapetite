@@ -48,9 +48,14 @@ class LocationService {
       );
       if (placemarks.isEmpty) return null;
       final p = placemarks.first;
-      return p.subAdministrativeArea?.isNotEmpty == true
-          ? p.subAdministrativeArea
-          : p.locality;
+      // Try fields from most specific to least specific.
+      // For Malaysia: locality = city (e.g. "Subang Jaya"),
+      // subAdministrativeArea = district, administrativeArea = state.
+      return p.locality?.isNotEmpty == true
+          ? p.locality
+          : p.subAdministrativeArea?.isNotEmpty == true
+              ? p.subAdministrativeArea
+              : p.administrativeArea;
     } catch (_) {
       return null;
     }
