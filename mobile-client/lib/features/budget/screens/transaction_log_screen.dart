@@ -141,6 +141,66 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
     );
   }
 
+  Future<bool> _confirmDelete(BuildContext context, _TxData tx) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        ),
+        icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 28),
+        title: Text('Delete transaction?', style: AppTypography.headline2),
+        content: Text(
+          'Remove "${tx.merchant}" from your transaction log?',
+          style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+          textAlign: TextAlign.center,
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.neutral,
+                    side: const BorderSide(color: AppColors.border),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                  ),
+                  child: Text('Cancel',
+                      style: AppTypography.button
+                          .copyWith(color: AppColors.neutral)),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: AppColors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                  ),
+                  child: Text('Delete', style: AppTypography.button),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   Future<void> _exportTransactions() async {
     setState(() => _isExporting = true);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -400,6 +460,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
               ],
             ),
           ),
+          confirmDismiss: (_) => _confirmDelete(context, tx),
           onDismissed: (_) => _delete(tx),
           child: _buildTxRow(tx),
         );
