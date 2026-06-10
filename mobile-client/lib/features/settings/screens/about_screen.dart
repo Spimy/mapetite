@@ -127,7 +127,7 @@ class AboutScreen extends StatelessWidget {
       children: [
         Text('Our Commitments', style: AppTypography.headline2),
         const SizedBox(height: AppSpacing.md),
-        _SdgCard(
+        const _SdgCard(
           number: '3',
           color: AppColors.success,
           title: 'Good Health & Well-being',
@@ -135,7 +135,7 @@ class AboutScreen extends StatelessWidget {
               'Promoting healthy dietary choices and allergen-safe options.',
         ),
         const SizedBox(height: AppSpacing.sm),
-        _SdgCard(
+        const _SdgCard(
           number: '11',
           color: AppColors.warning,
           title: 'Sustainable Cities',
@@ -143,7 +143,7 @@ class AboutScreen extends StatelessWidget {
               'Supporting local businesses and walkable urban food discovery.',
         ),
         const SizedBox(height: AppSpacing.sm),
-        _SdgCard(
+        const _SdgCard(
           number: '12',
           color: AppColors.secondary,
           title: 'Responsible Consumption',

@@ -790,8 +790,8 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                     _CuisineIconGrid(
                       active: _cuisines,
                       onToggle: (c) => setState(() {
-                        if (_cuisines.contains(c)) _cuisines.remove(c);
-                        else _cuisines.add(c);
+                        if (_cuisines.contains(c)) { _cuisines.remove(c); }
+                        else { _cuisines.add(c); }
                       }),
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -807,8 +807,8 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                           label: 'Halal',
                           isActive: _dietary.contains('Halal'),
                           onToggle: () => setState(() {
-                            if (_dietary.contains('Halal')) _dietary.remove('Halal');
-                            else _dietary.add('Halal');
+                            if (_dietary.contains('Halal')) { _dietary.remove('Halal'); }
+                            else { _dietary.add('Halal'); }
                           }),
                           svgAsset: 'assets/icons/dietary/halal-icon.svg',
                         ),
@@ -816,8 +816,8 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                           label: 'Vegan',
                           isActive: _dietary.contains('Vegan'),
                           onToggle: () => setState(() {
-                            if (_dietary.contains('Vegan')) _dietary.remove('Vegan');
-                            else _dietary.add('Vegan');
+                            if (_dietary.contains('Vegan')) { _dietary.remove('Vegan'); }
+                            else { _dietary.add('Vegan'); }
                           }),
                           icon: Icons.eco,
                         ),
@@ -825,8 +825,8 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                           label: 'Vegetarian',
                           isActive: _dietary.contains('Vegetarian'),
                           onToggle: () => setState(() {
-                            if (_dietary.contains('Vegetarian')) _dietary.remove('Vegetarian');
-                            else _dietary.add('Vegetarian');
+                            if (_dietary.contains('Vegetarian')) { _dietary.remove('Vegetarian'); }
+                            else { _dietary.add('Vegetarian'); }
                           }),
                           icon: Icons.spa,
                         ),
@@ -899,8 +899,8 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                           label: allergen,
                           isActive: _allergenFree.contains(allergen),
                           onToggle: () => setState(() {
-                            if (_allergenFree.contains(allergen)) _allergenFree.remove(allergen);
-                            else _allergenFree.add(allergen);
+                            if (_allergenFree.contains(allergen)) { _allergenFree.remove(allergen); }
+                            else { _allergenFree.add(allergen); }
                           }),
                           icon: AppChip.allergenIconMap[allergen] ?? Icons.warning_amber,
                         );

@@ -365,7 +365,7 @@ class _AddItemSheetState extends State<_AddItemSheet> {
           const SizedBox(height: AppSpacing.lg),
           Text('Add Item', style: AppTypography.headline2),
           const SizedBox(height: AppSpacing.lg),
-          _FieldLabel('Item name'),
+          const _FieldLabel('Item name'),
           const SizedBox(height: AppSpacing.xs),
           _SheetField(
             controller: _nameCtrl,
@@ -380,7 +380,7 @@ class _AddItemSheetState extends State<_AddItemSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _FieldLabel('Quantity'),
+                    const _FieldLabel('Quantity'),
                     const SizedBox(height: AppSpacing.xs),
                     _SheetField(
                       controller: _quantityCtrl,
@@ -395,7 +395,7 @@ class _AddItemSheetState extends State<_AddItemSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _FieldLabel('Est. Cost (RM)'),
+                    const _FieldLabel('Est. Cost (RM)'),
                     const SizedBox(height: AppSpacing.xs),
                     _SheetField(
                       controller: _priceCtrl,
@@ -409,7 +409,7 @@ class _AddItemSheetState extends State<_AddItemSheet> {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          _FieldLabel('Store'),
+          const _FieldLabel('Store'),
           const SizedBox(height: AppSpacing.xs),
           _SheetField(
             controller: _storeCtrl,
