@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/providers/location_provider.dart';
 import '../../../shared/widgets/app_chip.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dietary_chip.dart';
@@ -409,9 +411,10 @@ class _FilterIconButton extends StatelessWidget {
 
 // ── Location Pill ─────────────────────────────────────────────────────────────
 
-class _LocationPill extends StatelessWidget {
+class _LocationPill extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final city = ref.watch(locationCityProvider);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -427,7 +430,7 @@ class _LocationPill extends StatelessWidget {
           const Icon(Icons.location_on, size: 14, color: AppColors.primary),
           const SizedBox(width: 2),
           Text(
-            'Subang Jaya',
+            city,
             style: AppTypography.body2.copyWith(color: AppColors.primary),
           ),
         ],

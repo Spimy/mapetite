@@ -249,7 +249,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
               ),
               const SizedBox(width: 2),
               Text(
-                HomeFeedMocks.userLocation,
+                ref.watch(locationCityProvider),
                 style: AppTypography.body1.copyWith(color: AppColors.neutral600),
               ),
             ],
@@ -481,7 +481,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                 _TopPickHeroImage(restaurant: restaurant),
                 _TopPickBody(
                   restaurant: restaurant,
-                  area: HomeFeedMocks.userLocation,
+                  area: ref.watch(locationCityProvider),
                 ),
               ],
             ),

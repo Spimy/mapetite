@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/providers/location_provider.dart';
 
 class _MarkerData {
   final String id;
@@ -24,21 +26,21 @@ class _MarkerData {
   });
 }
 
-class MapExploreScreen extends StatefulWidget {
+class MapExploreScreen extends ConsumerStatefulWidget {
   const MapExploreScreen({super.key});
 
   @override
-  State<MapExploreScreen> createState() => _MapExploreScreenState();
+  ConsumerState<MapExploreScreen> createState() => _MapExploreScreenState();
 }
 
-class _MapExploreScreenState extends State<MapExploreScreen> {
+class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
   final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
   int _activeFilterIndex = 0;
   String? _selectedMarkerId;
   String _searchQuery = '';
 
-  static const LatLng _center = LatLng(3.0731, 101.6069);
+  static const LatLng _defaultCenter = LatLng(3.0731, 101.6069);
 
   static const List<_MarkerData> _allMarkers = [
     _MarkerData(
@@ -137,8 +139,13 @@ class _MapExploreScreenState extends State<MapExploreScreen> {
         children: [
           FlutterMap(
             mapController: _mapController,
-            options: const MapOptions(
-              initialCenter: _center,
+            options: MapOptions(
+              initialCenter: ref.watch(locationProvider).maybeWhen(
+                    data: (loc) => loc != null
+                        ? LatLng(loc.latitude, loc.longitude)
+                        : _defaultCenter,
+                    orElse: () => _defaultCenter,
+                  ),
               initialZoom: 15.0,
             ),
             children: [
@@ -334,7 +341,13 @@ class _MapExploreScreenState extends State<MapExploreScreen> {
 
   Widget _buildLocationFab() {
     return GestureDetector(
-      onTap: () => _mapController.move(_center, 15.0),
+      onTap: () {
+        final loc = ref.read(locationProvider).valueOrNull;
+        final center = loc != null
+            ? LatLng(loc.latitude, loc.longitude)
+            : _defaultCenter;
+        _mapController.move(center, 15.0);
+      },
       child: Container(
         width: 48,
         height: 48,
