@@ -14,6 +14,11 @@ class BudgetNotifier extends StateNotifier<BudgetState> {
         transactions: state.transactions.where((t) => t.id != id).toList(),
       );
 
+  void restoreTransaction(BudgetTransaction tx) {
+    if (state.transactions.any((t) => t.id == tx.id)) return;
+    state = state.copyWith(transactions: [tx, ...state.transactions]);
+  }
+
   void adjustBudget({double? monthly, double? groceries, double? dining}) =>
       state = state.copyWith(
         monthlyBudget: monthly,
