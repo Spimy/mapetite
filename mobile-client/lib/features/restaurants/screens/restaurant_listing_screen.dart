@@ -335,7 +335,7 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              "Try adjusting your search or filters.",
+              'Try adjusting your search or filters.',
               style: AppTypography.body1.copyWith(color: AppColors.neutral600),
               textAlign: TextAlign.center,
             ),

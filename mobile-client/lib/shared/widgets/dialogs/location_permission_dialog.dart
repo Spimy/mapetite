@@ -51,7 +51,7 @@ class LocationPermissionDialog extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              "Mapetite wants to use your location to show nearby restaurants and grocery stores.",
+              'Mapetite wants to use your location to show nearby restaurants and grocery stores.',
               style: AppTypography.body1.copyWith(color: AppColors.neutral600),
               textAlign: TextAlign.center,
             ),
