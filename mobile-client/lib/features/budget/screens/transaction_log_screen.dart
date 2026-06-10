@@ -73,7 +73,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
   ];
 
   late List<_TxData> _transactions;
-  late List<_TxData> _undoBuffer;
+  late List<(_TxData, int)> _undoBuffer;
 
   static const _filters = ['All', 'Dining', 'Groceries'];
 
@@ -81,7 +81,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
   void initState() {
     super.initState();
     _transactions = List.from(_allTransactions);
-    _undoBuffer = [];
+    _undoBuffer = <(_TxData, int)>[];
     _searchCtrl.addListener(() => setState(() {}));
   }
 
@@ -109,14 +109,17 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
   }
 
   void _delete(_TxData tx) {
-    _undoBuffer = [tx];
+    final origIdx = _transactions.indexOf(tx);
+    _undoBuffer = [(tx, origIdx)];
     setState(() => _transactions.remove(tx));
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Transaction deleted',
             style: AppTypography.body1.copyWith(color: AppColors.white)),
         backgroundColor: AppColors.neutral700,
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
         action: SnackBarAction(
@@ -124,12 +127,12 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
           textColor: AppColors.primaryLight,
           onPressed: () {
             if (_undoBuffer.isNotEmpty) {
-              final restored = _undoBuffer.removeAt(0);
-              final origIdx = _allTransactions.indexOf(restored);
+              final (restored, insertAt) = _undoBuffer.removeAt(0);
               setState(() {
-                final insertAt =
-                    origIdx.clamp(0, _transactions.length);
-                _transactions.insert(insertAt, restored);
+                _transactions.insert(
+                  insertAt.clamp(0, _transactions.length),
+                  restored,
+                );
               });
             }
           },
