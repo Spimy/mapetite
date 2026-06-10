@@ -237,6 +237,10 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const _WipScreen(label: 'Grocery Stores'),
       routes: [
         GoRoute(
+          path: 'match',
+          builder: (context, state) => const GroceryMatchScreen(recipeId: ''),
+        ),
+        GoRoute(
           path: ':id',
           builder: (context, state) => GroceryStoreDetailScreen(
             storeId: state.pathParameters['id'] ?? '',

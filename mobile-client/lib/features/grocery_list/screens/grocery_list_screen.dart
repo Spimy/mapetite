@@ -9,6 +9,7 @@ import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/profile_drawer.dart';
 import '../../../features/grocery/models/grocery_list_model.dart';
 import '../../../features/grocery/providers/grocery_list_provider.dart';
+import '../../../features/recipes/providers/selected_ingredients_provider.dart';
 
 class ShoppingListScreen extends ConsumerStatefulWidget {
   const ShoppingListScreen({super.key});
@@ -408,13 +409,54 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
       ),
       child: SafeArea(
         top: false,
-        child: AppButton(
-          label: 'Plan Shopping Route',
-          leadingIcon: Icons.route_outlined,
-          onPressed: () => context.push('/list/route'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppButton(
+              label: 'Find Grocery Store',
+              leadingIcon: Icons.store_outlined,
+              onPressed: () => _findGroceryStore(context),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppButton(
+              label: 'Plan Shopping Route',
+              leadingIcon: Icons.route_outlined,
+              variant: AppButtonVariant.outlined,
+              onPressed: () => context.push('/list/route'),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  void _findGroceryStore(BuildContext context) {
+    final items = ref.read(groceryListProvider);
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Add items to your list first.',
+            style: AppTypography.body1.copyWith(color: AppColors.white),
+          ),
+          backgroundColor: AppColors.warning,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+        ),
+      );
+      return;
+    }
+    ref.read(selectedIngredientsProvider.notifier).state = items
+        .map((item) => SelectedIngredient(
+              name: item.name,
+              quantity: item.quantity,
+              storeName: item.storeName,
+              cost: item.estimatedPrice,
+            ))
+        .toList();
+    context.push('/groceries/match');
   }
 }
 
