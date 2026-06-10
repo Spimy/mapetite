@@ -461,6 +461,18 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
             ),
           ],
         ),
+        const SizedBox(height: AppSpacing.xs),
+        Row(
+          children: [
+            const Icon(Icons.shopping_cart_outlined,
+                size: 13, color: AppColors.neutral400),
+            const SizedBox(width: 4),
+            Text(
+              'Tap ingredients you need to buy',
+              style: AppTypography.caption.copyWith(color: AppColors.neutral400),
+            ),
+          ],
+        ),
         const SizedBox(height: AppSpacing.sm),
         Container(
           decoration: BoxDecoration(
