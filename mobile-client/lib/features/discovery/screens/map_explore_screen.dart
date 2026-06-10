@@ -193,6 +193,56 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
                         ))
                     .toList(),
               ),
+              // User location marker
+              Consumer(
+                builder: (context, ref, _) {
+                  final loc = ref.watch(locationProvider).valueOrNull;
+                  if (loc == null) return const SizedBox.shrink();
+                  final userPos = LatLng(loc.latitude, loc.longitude);
+                  return MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: userPos,
+                        width: 56,
+                        height: 56,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Pulsing halo
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            // Solid dot with white border
+                            Container(
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: AppColors.white, width: 3),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        AppColors.primary.withValues(alpha: 0.5),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
 
