@@ -16,6 +16,9 @@ import '../models/mocks/home_feed_mocks.dart';
 import '../providers/home_feed_providers.dart';
 import '../../../routes/app_router.dart';
 import '../../../features/notifications/providers/notification_provider.dart';
+import '../../../shared/providers/location_provider.dart';
+import '../../../shared/widgets/dialogs/location_permission_dialog.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeFeedScreen extends ConsumerStatefulWidget {
   const HomeFeedScreen({super.key});
@@ -69,6 +72,16 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     );
 
     _animController.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkLocationPermission());
+  }
+
+  Future<void> _checkLocationPermission() async {
+    final permission = await Geolocator.checkPermission();
+    if (!mounted) return;
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.unableToDetermine) {
+      showLocationPermissionDialog(context);
+    }
   }
 
   @override
