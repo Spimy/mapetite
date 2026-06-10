@@ -430,8 +430,6 @@ class _LocationPill extends StatelessWidget {
             'Subang Jaya',
             style: AppTypography.body2.copyWith(color: AppColors.primary),
           ),
-          const SizedBox(width: 2),
-          const Icon(Icons.expand_more, size: 14, color: AppColors.primary),
         ],
       ),
     );
