@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
-import '../../../shared/widgets/app_chip.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../recipes/providers/selected_ingredients_provider.dart';
 
-class GroceryMatchScreen extends StatelessWidget {
+class GroceryMatchScreen extends ConsumerWidget {
   final String recipeId;
 
   const GroceryMatchScreen({super.key, required this.recipeId});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedItems = ref.watch(selectedIngredientsProvider);
+    final itemCount = selectedItems.length;
+    final totalCost =
+        selectedItems.fold(0.0, (sum, i) => sum + i.cost);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(context),
@@ -23,11 +29,11 @@ class GroceryMatchScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildRecipeSummaryCard(),
+              _buildSelectedItemsCard(selectedItems),
               const SizedBox(height: AppSpacing.lg),
-              _buildBestMatchSection(context),
+              _buildBestMatchSection(context, itemCount, totalCost),
               const SizedBox(height: AppSpacing.lg),
-              _buildOtherStoresSection(context),
+              _buildOtherStoresSection(context, itemCount),
               const SizedBox(height: AppSpacing.xxl),
             ],
           ),
@@ -53,7 +59,7 @@ class GroceryMatchScreen extends StatelessWidget {
         },
       ),
       title: Text(
-        'Find Ingredients',
+        'Find Grocery Store',
         style: AppTypography.headline1.copyWith(color: AppColors.primary),
       ),
       centerTitle: true,
@@ -64,7 +70,8 @@ class GroceryMatchScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecipeSummaryCard() {
+  Widget _buildSelectedItemsCard(
+      List<SelectedIngredient> items) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -72,48 +79,55 @@ class GroceryMatchScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         border: Border.all(color: AppColors.border),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            child: Container(
-              width: AppSpacing.avatarXl,
-              height: AppSpacing.avatarXl,
-              color: AppColors.primaryLight,
-              child: const Icon(
-                Icons.restaurant_menu,
-                size: 32,
-                color: AppColors.primary,
+          Row(
+            children: [
+              const Icon(Icons.shopping_cart_outlined,
+                  size: 18, color: AppColors.primary),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                'Shopping for ${items.length} ingredient${items.length != 1 ? 's' : ''}',
+                style: AppTypography.headline3,
+              ),
+            ],
+          ),
+          if (items.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.sm),
+            ...items.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xs),
+                child: Row(
+                  children: [
+                    const Icon(Icons.circle,
+                        size: 6, color: AppColors.neutral400),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        '${item.name}  ·  ${item.quantity}',
+                        style: AppTypography.body2
+                            .copyWith(color: AppColors.neutral600),
+                      ),
+                    ),
+                    if (item.cost > 0)
+                      Text(
+                        'RM ${item.cost.toStringAsFixed(2)}',
+                        style: AppTypography.caption
+                            .copyWith(color: AppColors.neutral600),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Nasi Goreng Kampung',
-                  style: AppTypography.headline2,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Requires 6 specific ingredients.',
-                  style: AppTypography.body2,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                AppChip.halal(),
-              ],
-            ),
-          ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildBestMatchSection(BuildContext context) {
+  Widget _buildBestMatchSection(
+      BuildContext context, int itemCount, double totalCost) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -144,27 +158,21 @@ class GroceryMatchScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Jaya Grocer', style: AppTypography.headline2),
-                  Text(
-                    'RM 7.20',
-                    style: AppTypography.headline2.copyWith(
-                      color: AppColors.primary,
+                  if (totalCost > 0)
+                    Text(
+                      'est. RM ${totalCost.toStringAsFixed(2)}',
+                      style: AppTypography.headline3.copyWith(
+                        color: AppColors.primary,
+                      ),
                     ),
-                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),
-              Row(
+              const Row(
                 children: [
-                  const Icon(
-                    Icons.location_on,
-                    size: 14,
-                    color: AppColors.neutral400,
-                  ),
-                  const SizedBox(width: AppSpacing.xxs),
-                  Text(
-                    '0.8 km away',
-                    style: AppTypography.body2,
-                  ),
+                  Icon(Icons.location_on, size: 14, color: AppColors.neutral400),
+                  SizedBox(width: AppSpacing.xxs),
+                  Text('0.8 km away'),
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
@@ -173,12 +181,11 @@ class GroceryMatchScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Items Available',
-                    style: AppTypography.label.copyWith(
-                      color: AppColors.neutral600,
-                    ),
+                    style: AppTypography.label
+                        .copyWith(color: AppColors.neutral600),
                   ),
                   Text(
-                    '6 / 6 (100%)',
+                    '$itemCount / $itemCount (100%)',
                     style: AppTypography.label.copyWith(
                       color: AppColors.success,
                       fontWeight: FontWeight.w600,
@@ -193,14 +200,12 @@ class GroceryMatchScreen extends StatelessWidget {
                   value: 1.0,
                   minHeight: 10,
                   backgroundColor: AppColors.neutral100,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.success,
-                  ),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.success),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
               AppButton(
-                label: 'View Store & Add to List',
+                label: 'View Store Details',
                 onPressed: () => context.push('/groceries/jaya-grocer'),
               ),
             ],
@@ -210,7 +215,9 @@ class GroceryMatchScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOtherStoresSection(BuildContext context) {
+  Widget _buildOtherStoresSection(BuildContext context, int itemCount) {
+    final partial67 = (itemCount * 0.67).round().clamp(0, itemCount);
+    final partial83 = (itemCount * 0.83).round().clamp(0, itemCount);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -221,25 +228,21 @@ class GroceryMatchScreen extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         _OtherStoreCard(
           name: '99 Speedmart',
-          estimatedCost: 'RM 4.80',
           distance: '0.5 km away',
-          availableCount: 4,
-          totalCount: 6,
+          availableCount: partial67,
+          totalCount: itemCount,
           coverage: 0.67,
           coverageColor: AppColors.warning,
-          coverageLabel: '4 / 6 (67%)',
           onTap: () => context.push('/groceries/99-speedmart'),
         ),
         const SizedBox(height: AppSpacing.sm),
         _OtherStoreCard(
           name: 'Village Grocer',
-          estimatedCost: 'RM 6.50',
           distance: '2.1 km away',
-          availableCount: 5,
-          totalCount: 6,
+          availableCount: partial83,
+          totalCount: itemCount,
           coverage: 0.83,
           coverageColor: AppColors.primary,
-          coverageLabel: '5 / 6 (83%)',
           onTap: () => context.push('/groceries/village-grocer'),
         ),
       ],
@@ -251,29 +254,26 @@ class GroceryMatchScreen extends StatelessWidget {
 
 class _OtherStoreCard extends StatelessWidget {
   final String name;
-  final String estimatedCost;
   final String distance;
   final int availableCount;
   final int totalCount;
   final double coverage;
   final Color coverageColor;
-  final String coverageLabel;
   final VoidCallback onTap;
 
   const _OtherStoreCard({
     required this.name,
-    required this.estimatedCost,
     required this.distance,
     required this.availableCount,
     required this.totalCount,
     required this.coverage,
     required this.coverageColor,
-    required this.coverageLabel,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final pct = (coverage * 100).round();
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -286,21 +286,12 @@ class _OtherStoreCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(name, style: AppTypography.headline3),
-                Text(estimatedCost, style: AppTypography.headline3),
-              ],
-            ),
+            Text(name, style: AppTypography.headline3),
             const SizedBox(height: AppSpacing.xs),
             Row(
               children: [
-                const Icon(
-                  Icons.location_on,
-                  size: 14,
-                  color: AppColors.neutral400,
-                ),
+                const Icon(Icons.location_on,
+                    size: 14, color: AppColors.neutral400),
                 const SizedBox(width: AppSpacing.xxs),
                 Text(distance, style: AppTypography.body2),
               ],
@@ -311,12 +302,11 @@ class _OtherStoreCard extends StatelessWidget {
               children: [
                 Text(
                   'Items Available',
-                  style: AppTypography.label.copyWith(
-                    color: AppColors.neutral600,
-                  ),
+                  style: AppTypography.label
+                      .copyWith(color: AppColors.neutral600),
                 ),
                 Text(
-                  coverageLabel,
+                  '$availableCount / $totalCount ($pct%)',
                   style: AppTypography.label.copyWith(
                     color: coverageColor,
                     fontWeight: FontWeight.w600,
