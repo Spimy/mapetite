@@ -134,6 +134,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
           textColor: AppColors.primaryLight,
           onPressed: () {
             _snackTimer?.cancel();
+            _activeSnack = null;
             if (_undoBuffer.isNotEmpty) {
               final (restored, insertAt) = _undoBuffer.removeAt(0);
               setState(() {
@@ -149,6 +150,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
     );
     _snackTimer = Timer(const Duration(seconds: 4), () {
       _messengerKey.currentState?.hideCurrentSnackBar();
+      _activeSnack = null;
     });
   }
 

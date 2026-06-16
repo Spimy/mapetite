@@ -428,6 +428,7 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
                             textColor: AppColors.primaryLight,
                             onPressed: () {
                               _snackTimer?.cancel();
+                              _activeSnack = null;
                               ref
                                   .read(budgetProvider.notifier)
                                   .restoreTransaction(deleted);
@@ -436,6 +437,7 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
                         ));
                         _snackTimer = Timer(const Duration(seconds: 4), () {
                           messenger.hideCurrentSnackBar();
+                          _activeSnack = null;
                         });
                       }
                     },
