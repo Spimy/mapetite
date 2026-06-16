@@ -37,7 +37,8 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
   Widget build(BuildContext context) {
     final budget = ref.watch(budgetProvider);
 
-    return Scaffold(
+    return ScaffoldMessenger(
+      child: Scaffold(
       backgroundColor: AppColors.background,
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddTransactionSheet(context),
@@ -71,6 +72,7 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -395,7 +397,33 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
                   _TransactionRow(
                     tx: recent[i],
                     showDivider: i < recent.length - 1,
-                    onTap: () => showTransactionDetailSheet(context, recent[i]),
+                    onTap: () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final deleted =
+                          await showTransactionDetailSheet(context, recent[i]);
+                      if (deleted != null && mounted) {
+                        messenger
+                          ..clearSnackBars()
+                          ..showSnackBar(SnackBar(
+                            content: Text('Expense deleted',
+                                style: AppTypography.body1
+                                    .copyWith(color: AppColors.white)),
+                            backgroundColor: AppColors.neutral700,
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 4),
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(AppSpacing.radiusMd)),
+                            action: SnackBarAction(
+                              label: 'Undo',
+                              textColor: AppColors.primaryLight,
+                              onPressed: () => ref
+                                  .read(budgetProvider.notifier)
+                                  .restoreTransaction(deleted),
+                            ),
+                          ));
+                      }
+                    },
                   ),
               ],
             ),

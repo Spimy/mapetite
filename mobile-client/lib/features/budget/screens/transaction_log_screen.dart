@@ -30,6 +30,7 @@ class TransactionLogScreen extends StatefulWidget {
 }
 
 class _TransactionLogScreenState extends State<TransactionLogScreen> {
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
   final _searchCtrl = TextEditingController();
   String _activeFilter = 'All';
   bool _isExporting = false;
@@ -112,8 +113,8 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
     final origIdx = _transactions.indexOf(tx);
     _undoBuffer = [(tx, origIdx)];
     setState(() => _transactions.remove(tx));
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
+    _messengerKey.currentState!.clearSnackBars();
+    _messengerKey.currentState!.showSnackBar(
       SnackBar(
         content: Text('Transaction deleted',
             style: AppTypography.body1.copyWith(color: AppColors.white)),
@@ -203,7 +204,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
 
   Future<void> _exportTransactions() async {
     setState(() => _isExporting = true);
-    ScaffoldMessenger.of(context).showSnackBar(
+    _messengerKey.currentState!.showSnackBar(
       SnackBar(
         content: Row(
           children: [
@@ -230,7 +231,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
     await Future.delayed(const Duration(milliseconds: 1800));
     if (!mounted) return;
     setState(() => _isExporting = false);
-    ScaffoldMessenger.of(context).showSnackBar(
+    _messengerKey.currentState!.showSnackBar(
       SnackBar(
         content: Row(
           children: [
@@ -258,7 +259,9 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ScaffoldMessenger(
+      key: _messengerKey,
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.white,
@@ -323,6 +326,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
           borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
         ),
         child: const Icon(Icons.add, color: AppColors.white),
+      ),
       ),
     );
   }

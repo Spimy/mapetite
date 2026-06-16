@@ -6,10 +6,10 @@ import '../../../core/theme/app_colors.dart';
 import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
 
-void showTransactionDetailSheet(
+Future<BudgetTransaction?> showTransactionDetailSheet(
     BuildContext context, BudgetTransaction tx) {
   final container = ProviderScope.containerOf(context);
-  showModalBottomSheet(
+  return showModalBottomSheet<BudgetTransaction>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
@@ -212,30 +212,10 @@ class _TransactionDetailSheet extends ConsumerWidget {
       ),
     );
     if (confirmed == true && context.mounted) {
-      // Capture the container before popping so the undo closure can use it
-      // after the sheet widget is disposed.
       final container = ProviderScope.containerOf(context);
       final deleted = transaction;
       container.read(budgetProvider.notifier).deleteTransaction(deleted.id);
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Expense deleted',
-              style: AppTypography.body1.copyWith(color: AppColors.white)),
-          backgroundColor: AppColors.neutral700,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
-          action: SnackBarAction(
-            label: 'Undo',
-            textColor: AppColors.primaryLight,
-            onPressed: () =>
-                container.read(budgetProvider.notifier).restoreTransaction(deleted),
-          ),
-        ),
-      );
+      Navigator.of(context).pop(deleted);
     }
   }
 }
