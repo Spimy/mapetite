@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -72,7 +73,16 @@ class AboutScreen extends StatelessWidget {
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(Icons.map, size: 40, color: AppColors.white),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: SvgPicture.asset(
+                'assets/logos/logo_icon.svg',
+                colorFilter: const ColorFilter.mode(
+                  AppColors.white,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
