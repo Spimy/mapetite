@@ -66,30 +66,12 @@ class AboutScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
       child: Column(
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: SvgPicture.asset(
-                'assets/logos/logo_icon.svg',
-                colorFilter: const ColorFilter.mode(
-                  AppColors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
+          SvgPicture.asset(
+            'assets/logos/logo_wording.svg',
+            width: 200,
+            fit: BoxFit.contain,
           ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'Mapetite',
-            style: AppTypography.display.copyWith(color: AppColors.primary),
-          ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.lg),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 280),
             child: Text(
