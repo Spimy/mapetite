@@ -1,7 +1,7 @@
 abstract class AppConfig {
   static const String baseUrl = String.fromEnvironment(
     'BASE_URL',
-    defaultValue: 'http://localhost:8000/api/v1',
+    defaultValue: 'http://127.0.0.1:8000',
   );
 
   static const bool isProduction = bool.fromEnvironment('dart.vm.product');
