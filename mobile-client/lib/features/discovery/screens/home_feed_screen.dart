@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -164,15 +165,12 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                 tooltip: 'Open menu',
               ),
             ),
-            const Expanded(
+            Expanded(
               child: Center(
-                child: Text(
-                  'Mapetite',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
+                child: SvgPicture.asset(
+                  'assets/logos/logo_wording.svg',
+                  height: 28,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
