@@ -42,7 +42,7 @@ class ProfileDrawer extends StatelessWidget {
                       child: Center(
                         child: SvgPicture.asset(
                           'assets/logos/logo_wording.svg',
-                          height: 48,
+                          height: 100,
                           fit: BoxFit.contain,
                         ),
                       ),
