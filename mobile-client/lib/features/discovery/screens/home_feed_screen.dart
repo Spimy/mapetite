@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -166,8 +167,8 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
             ),
             Expanded(
               child: Center(
-                child: Image.asset(
-                  'assets/logos/logo_wording.png',
+                child: SvgPicture.asset(
+                  'assets/logos/logo_wording.svg',
                   height: 54,
                   fit: BoxFit.contain,
                 ),

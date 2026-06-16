@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -73,8 +74,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const SizedBox(height: AppSpacing.huge),
                     Center(
-                      child: Image.asset(
-                        'assets/logos/logo_wording.png',
+                      child: SvgPicture.asset(
+                        'assets/logos/logo_wording.svg',
                         width: 200,
                         fit: BoxFit.contain,
                       ),

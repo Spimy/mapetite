@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -65,8 +66,8 @@ class AboutScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
       child: Column(
         children: [
-          Image.asset(
-            'assets/logos/logo_wording.png',
+          SvgPicture.asset(
+            'assets/logos/logo_wording.svg',
             width: 200,
             fit: BoxFit.contain,
           ),
