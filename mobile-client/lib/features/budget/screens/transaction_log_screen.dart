@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -34,6 +36,8 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
   final _searchCtrl = TextEditingController();
   String _activeFilter = 'All';
   bool _isExporting = false;
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _activeSnack;
+  Timer? _snackTimer;
 
   final List<_TxData> _allTransactions = [
     const _TxData(
@@ -88,6 +92,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
 
   @override
   void dispose() {
+    _snackTimer?.cancel();
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -113,8 +118,9 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
     final origIdx = _transactions.indexOf(tx);
     _undoBuffer = [(tx, origIdx)];
     setState(() => _transactions.remove(tx));
-    _messengerKey.currentState!.clearSnackBars();
-    _messengerKey.currentState!.showSnackBar(
+    _snackTimer?.cancel();
+    _activeSnack?.close();
+    _activeSnack = _messengerKey.currentState!.showSnackBar(
       SnackBar(
         content: Text('Transaction deleted',
             style: AppTypography.body1.copyWith(color: AppColors.white)),
@@ -127,6 +133,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
           label: 'Undo',
           textColor: AppColors.primaryLight,
           onPressed: () {
+            _snackTimer?.cancel();
             if (_undoBuffer.isNotEmpty) {
               final (restored, insertAt) = _undoBuffer.removeAt(0);
               setState(() {
@@ -140,6 +147,9 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
         ),
       ),
     );
+    _snackTimer = Timer(const Duration(seconds: 4), () {
+      _messengerKey.currentState?.hideCurrentSnackBar();
+    });
   }
 
   Future<bool> _confirmDelete(BuildContext context, _TxData tx) async {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +21,9 @@ class BudgetOverviewScreen extends ConsumerStatefulWidget {
 }
 
 class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
-  int _selectedMonthOffset = 0; // 0 = current month
+  int _selectedMonthOffset = 0;
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _activeSnack;
+  Timer? _snackTimer;
 
   static const _monthNames = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -31,6 +34,12 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
     final now = DateTime.now();
     final dt = DateTime(now.year, now.month - _selectedMonthOffset);
     return '${_monthNames[dt.month - 1]} ${dt.year}';
+  }
+
+  @override
+  void dispose() {
+    _snackTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -402,26 +411,32 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
                       final deleted =
                           await showTransactionDetailSheet(context, recent[i]);
                       if (deleted != null && mounted) {
-                        messenger
-                          ..clearSnackBars()
-                          ..showSnackBar(SnackBar(
-                            content: Text('Expense deleted',
-                                style: AppTypography.body1
-                                    .copyWith(color: AppColors.white)),
-                            backgroundColor: AppColors.neutral700,
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 4),
-                            shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(AppSpacing.radiusMd)),
-                            action: SnackBarAction(
-                              label: 'Undo',
-                              textColor: AppColors.primaryLight,
-                              onPressed: () => ref
+                        _snackTimer?.cancel();
+                        _activeSnack?.close();
+                        _activeSnack = messenger.showSnackBar(SnackBar(
+                          content: Text('Expense deleted',
+                              style: AppTypography.body1
+                                  .copyWith(color: AppColors.white)),
+                          backgroundColor: AppColors.neutral700,
+                          behavior: SnackBarBehavior.floating,
+                          duration: const Duration(seconds: 4),
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.radiusMd)),
+                          action: SnackBarAction(
+                            label: 'Undo',
+                            textColor: AppColors.primaryLight,
+                            onPressed: () {
+                              _snackTimer?.cancel();
+                              ref
                                   .read(budgetProvider.notifier)
-                                  .restoreTransaction(deleted),
-                            ),
-                          ));
+                                  .restoreTransaction(deleted);
+                            },
+                          ),
+                        ));
+                        _snackTimer = Timer(const Duration(seconds: 4), () {
+                          messenger.hideCurrentSnackBar();
+                        });
                       }
                     },
                   ),
