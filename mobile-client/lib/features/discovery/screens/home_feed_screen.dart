@@ -169,7 +169,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
               child: Center(
                 child: SvgPicture.asset(
                   'assets/logos/logo_wording.svg',
-                  height: 36,
+                  height: 44,
                   fit: BoxFit.contain,
                 ),
               ),

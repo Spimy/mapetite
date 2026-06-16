@@ -52,11 +52,12 @@ class AppDrawer extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: SvgPicture.asset(
-                'assets/logos/logo_wording.svg',
-                height: 32,
-                fit: BoxFit.contain,
-                alignment: Alignment.centerLeft,
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/logos/logo_wording.svg',
+                  height: 48,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
             Row(
