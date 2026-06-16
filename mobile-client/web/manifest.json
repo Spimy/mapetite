@@ -1,11 +1,11 @@
 {
-    "name": "mapetite",
-    "short_name": "mapetite",
+    "name": "Mapetite",
+    "short_name": "Mapetite",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#065F46",
+    "theme_color": "#065F46",
+    "description": "Eat smart. Discover halal food near you, track your budget, and get AI-powered meal suggestions.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
