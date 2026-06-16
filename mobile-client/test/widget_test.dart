@@ -11,7 +11,7 @@ void main() {
     await tester.pumpWidget(
       const ProviderScope(child: MapetiteApp()),
     );
-    expect(find.text('Mapetite'), findsOneWidget);
+    expect(find.text('Eat Smart. Live Well.'), findsOneWidget);
     // Advance past the splash screen timer and allow async navigation to settle.
     await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
