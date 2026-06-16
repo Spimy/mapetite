@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Run from the repo root (mapetite/)
-SVG="logos/Logo(Icon_Version).svg"
+SVG="mobile-client/assets/logos/logo_icon.svg"
 RSVG="/opt/homebrew/bin/rsvg-convert"
 
 # helper: render SVG to opaque white-background PNG
@@ -40,8 +40,8 @@ render 144  "$ANDROID/mipmap-xxhdpi/ic_launcher.png"
 render 192  "$ANDROID/mipmap-xxxhdpi/ic_launcher.png"
 echo "Android icons generated"
 
-# Web favicon -----------------------------------------------------------------
-render 32 "mobile-client/web/favicon.png"
+# Web favicon (transparent — no background) -----------------------------------
+"$RSVG" --width 32 --height 32 "$SVG" -o "mobile-client/web/favicon.png"
 echo "Web favicon generated"
 
 # Web manifest icons ----------------------------------------------------------
@@ -55,7 +55,7 @@ from PIL import Image
 import subprocess
 
 RSVG = "/opt/homebrew/bin/rsvg-convert"
-SVG  = "logos/Logo(Icon_Version).svg"
+SVG  = "mobile-client/assets/logos/logo_icon.svg"
 OUT  = "mobile-client/web/icons"
 
 def make_maskable(target_px, out_file):
