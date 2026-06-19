@@ -1,29 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
+
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
-import '../../../shared/services/setup_service.dart';
-import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/custom_button.dart';
+import '../controllers/auth_controller.dart';
 import '../widgets/password_strength_bar.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _locationController = TextEditingController();
-  bool _isLoading = false;
+
   bool _termsAccepted = false;
   String _passwordValue = '';
   bool _verificationSent = false;
@@ -31,6 +35,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -40,24 +45,71 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _onCreateAccount() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-    // TODO: Replace with real auth service — send verification email
-    await Future.delayed(const Duration(milliseconds: 1500));
-    // Persist so the profile wizard can pre-fill even after this screen is gone.
-    await SetupService.savePendingUserInfo(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-    );
-    if (mounted) {
+
+    final success = await ref.read(authControllerProvider.notifier).register(
+          fullName: _nameController.text,
+          username: _usernameController.text,
+          email: _emailController.text,
+          password: _passwordController.text,
+          confirmPassword: _confirmPasswordController.text,
+        );
+
+    if (!mounted) return;
+
+    final authState = ref.read(authControllerProvider);
+
+    if (success) {
       setState(() {
-        _isLoading = false;
         _verificationSent = true;
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            authState.successMessage ?? 'Account created successfully.',
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            authState.errorMessage ?? 'Registration failed. Please try again.',
+          ),
+        ),
+      );
     }
+  }
+
+  String? _validateUsername(String? value) {
+    final requiredError = Validators.required(value, field: 'Username');
+
+    if (requiredError != null) return requiredError;
+
+    final username = value!.trim();
+
+    if (username.length < 3) {
+      return 'Username must be at least 3 characters.';
+    }
+
+    if (username.contains(' ')) {
+      return 'Username cannot contain spaces.';
+    }
+
+    final usernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
+
+    if (!usernameRegex.hasMatch(username)) {
+      return 'Username can only contain letters, numbers, and underscores.';
+    }
+
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: _verificationSent
@@ -66,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               backgroundColor: AppColors.white,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back, color: AppColors.neutral),
-                onPressed: () => context.go('/login'),
+                onPressed: isLoading ? null : () => context.go('/login'),
               ),
             ),
       body: SafeArea(
@@ -74,13 +126,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           duration: const Duration(milliseconds: 300),
           child: _verificationSent
               ? _buildVerificationState()
-              : _buildFormState(),
+              : _buildFormState(isLoading),
         ),
       ),
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildFormState(bool isLoading) {
     return SingleChildScrollView(
       key: const ValueKey('form'),
       padding: const EdgeInsets.symmetric(
@@ -98,61 +150,93 @@ class _RegisterScreenState extends State<RegisterScreen> {
               style: AppTypography.body2,
             ),
             const SizedBox(height: AppSpacing.xxl),
+
             AppTextField(
               label: 'Full name',
               controller: _nameController,
-              enabled: !_isLoading,
+              enabled: !isLoading,
               textCapitalization: TextCapitalization.words,
-              validator: (v) => Validators.required(v, field: 'Full name'),
+              validator: (value) =>
+                  Validators.required(value, field: 'Full name'),
             ),
+
             const SizedBox(height: AppSpacing.lg),
+
+            AppTextField(
+              label: 'Username',
+              controller: _usernameController,
+              enabled: !isLoading,
+              textCapitalization: TextCapitalization.none,
+              validator: _validateUsername,
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+
             AppTextField(
               label: 'Email address',
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              enabled: !_isLoading,
+              enabled: !isLoading,
               validator: Validators.email,
             ),
+
             const SizedBox(height: AppSpacing.lg),
+
             AppTextField(
               label: 'Password',
               controller: _passwordController,
               obscureText: true,
-              enabled: !_isLoading,
+              enabled: !isLoading,
               validator: Validators.password,
-              onChanged: (value) => setState(() => _passwordValue = value),
+              onChanged: (value) {
+                setState(() {
+                  _passwordValue = value;
+                });
+              },
             ),
+
             const SizedBox(height: AppSpacing.sm),
+
             PasswordStrengthBar(password: _passwordValue),
+
             const SizedBox(height: AppSpacing.lg),
+
             AppTextField(
               label: 'Confirm password',
               controller: _confirmPasswordController,
               obscureText: true,
-              enabled: !_isLoading,
-              validator: (v) =>
-                  Validators.confirmPassword(v, _passwordController.text),
+              enabled: !isLoading,
+              validator: (value) =>
+                  Validators.confirmPassword(value, _passwordController.text),
             ),
+
             const SizedBox(height: AppSpacing.lg),
+
             AppTextField(
               label: 'Home location (suburb)',
               controller: _locationController,
-              enabled: !_isLoading,
+              enabled: !isLoading,
               prefixIcon: const Icon(
                 Icons.location_on_outlined,
                 color: AppColors.neutral400,
               ),
-              // TODO: Replace with Google Places autocomplete
             ),
+
             const SizedBox(height: AppSpacing.lg),
-            _buildTermsRow(),
+
+            _buildTermsRow(isLoading),
+
             const SizedBox(height: AppSpacing.xxl),
+
             AppButton(
               label: 'Create Account',
-              onPressed: _termsAccepted ? _onCreateAccount : null,
-              isLoading: _isLoading,
+              onPressed:
+                  _termsAccepted && !isLoading ? _onCreateAccount : null,
+              isLoading: isLoading,
             ),
+
             const SizedBox(height: AppSpacing.lg),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -161,7 +245,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: AppTypography.body2,
                 ),
                 TextButton(
-                  onPressed: () => context.go('/login'),
+                  onPressed: isLoading ? null : () => context.go('/login'),
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: const Size(0, AppSpacing.touchTarget),
@@ -177,6 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ],
             ),
+
             const SizedBox(height: AppSpacing.xxxl),
           ],
         ),
@@ -185,7 +270,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildVerificationState() {
-    final String email = _emailController.text.trim();
+    final email = _emailController.text.trim();
 
     return SingleChildScrollView(
       key: const ValueKey('verify'),
@@ -195,6 +280,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       child: Column(
         children: [
           const SizedBox(height: 64),
+
           Center(
             child: Container(
               width: 88,
@@ -210,30 +296,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
           ),
+
           const SizedBox(height: AppSpacing.xxl),
+
           Text(
             'Verify your email',
             style: AppTypography.headline2,
             textAlign: TextAlign.center,
           ),
+
           const SizedBox(height: AppSpacing.lg),
+
           Text(
             'We sent a verification link to $email. Click the link in your email to activate your account, then sign in.',
-            style: AppTypography.body1.copyWith(color: AppColors.neutral600),
+            style: AppTypography.body1.copyWith(
+              color: AppColors.neutral600,
+            ),
             textAlign: TextAlign.center,
           ),
+
           const SizedBox(height: AppSpacing.xxl),
+
           AppButton(
             label: 'Go to Sign In',
             onPressed: () => context.go('/login'),
           ),
+
           const SizedBox(height: AppSpacing.xxxl),
         ],
       ),
     );
   }
 
-  Widget _buildTermsRow() {
+  Widget _buildTermsRow(bool isLoading) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -243,11 +338,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Checkbox(
             value: _termsAccepted,
             activeColor: AppColors.primary,
-            onChanged: _isLoading
+            onChanged: isLoading
                 ? null
-                : (v) => setState(() => _termsAccepted = v ?? false),
+                : (value) {
+                    setState(() {
+                      _termsAccepted = value ?? false;
+                    });
+                  },
           ),
         ),
+
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(top: 12),
@@ -256,9 +356,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 style: AppTypography.body2,
                 children: [
                   const TextSpan(text: 'I agree to the '),
+
                   WidgetSpan(
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: isLoading ? null : () {},
                       child: Text(
                         'Terms of Service',
                         style: AppTypography.body2.copyWith(
@@ -269,10 +370,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                   ),
+
                   const TextSpan(text: ' and '),
+
                   WidgetSpan(
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: isLoading ? null : () {},
                       child: Text(
                         'Privacy Policy',
                         style: AppTypography.body2.copyWith(

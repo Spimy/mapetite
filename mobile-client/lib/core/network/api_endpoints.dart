@@ -1,9 +1,13 @@
 abstract class ApiEndpoints {
   // Auth
-  static const String login = '/auth/login/';
-  static const String register = '/auth/register/';
-  static const String logout = '/auth/logout/';
-  static const String refreshToken = '/auth/token/refresh/';
+  static const String register = '/api/auth/register/';
+  static const String login = '/api/token/';
+  static const String refreshToken = '/api/token/refresh/';
+  static const String verifyToken = '/api/token/verify/';
+  static const String me = '/api/me/';
+  static const String googleLogin = '/api/auth/google/';
+  static const String verifyEmail = '/api/auth/verify-email/';
+  static const String resendEmail = '/api/auth/resend-email/';
 
   // Profile
   static const String profile = '/profiles/me/';
