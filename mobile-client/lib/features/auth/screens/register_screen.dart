@@ -44,17 +44,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _onCreateAccount() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-    final success = await ref.read(authControllerProvider.notifier).register(
-          fullName: _nameController.text,
-          username: _usernameController.text,
-          email: _emailController.text,
-          password: _passwordController.text,
-          confirmPassword: _confirmPasswordController.text,
-        );
+    final bool success =
+        await ref.read(authControllerProvider.notifier).register(
+              fullName: _nameController.text,
+              username: _usernameController.text,
+              email: _emailController.text,
+              password: _passwordController.text,
+              confirmPassword: _confirmPasswordController.text,
+            );
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     final authState = ref.read(authControllerProvider);
 
@@ -66,19 +71,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            authState.successMessage ?? 'Account created successfully.',
+            authState.successMessage ?? 'Verification email sent.',
           ),
         ),
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            authState.errorMessage ?? 'Registration failed. Please try again.',
-          ),
-        ),
-      );
+
+      return;
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          authState.errorMessage ??
+              'Unable to create your account. Please try again.',
+        ),
+      ),
+      );
   }
 
   String? _validateUsername(String? value) {

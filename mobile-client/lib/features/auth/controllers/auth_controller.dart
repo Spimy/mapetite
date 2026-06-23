@@ -57,10 +57,19 @@ class AuthController extends StateNotifier<AuthState> {
       );
 
       return false;
+    } on FormatException catch (_) {
+      state = const AuthState(
+        isLoading: false,
+        errorMessage:
+            'The server returned an invalid response. Please try again.',
+      );
+
+      return false;
     } catch (_) {
       state = const AuthState(
         isLoading: false,
-        errorMessage: 'Unexpected error occurred. Please try again.',
+        errorMessage:
+            'Registration failed unexpectedly. Please try again.',
       );
 
       return false;

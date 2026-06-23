@@ -3,75 +3,97 @@ import 'package:dio/dio.dart';
 class AppException implements Exception {
   final String message;
   final int? statusCode;
-  final Map<String, dynamic>? errors;
+  final Map<String, dynamic>? fieldErrors;
 
   const AppException({
     required this.message,
     this.statusCode,
-    this.errors,
+    this.fieldErrors,
   });
 
-  factory AppException.fromDio(DioException e) {
-    final statusCode = e.response?.statusCode;
-    final data = e.response?.data;
+  factory AppException.fromDio(DioException error) {
+    final int? statusCode = error.response?.statusCode;
+    final dynamic responseData = error.response?.data;
 
-    final message = switch (e.type) {
-      DioExceptionType.connectionTimeout ||
-      DioExceptionType.sendTimeout ||
-      DioExceptionType.receiveTimeout =>
-        'Connection timed out. Please try again.',
-      DioExceptionType.connectionError =>
-        'Unable to connect to the server.',
-      _ => _extractMessage(data),
-    };
+    if (error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout) {
+      return const AppException(
+        message: 'Connection timed out. Please try again.',
+      );
+    }
+
+    if (error.type == DioExceptionType.connectionError) {
+      return const AppException(
+        message:
+            'Unable to connect to the server. Check that the backend is running.',
+      );
+    }
+
+    if (responseData is Map<String, dynamic>) {
+      return AppException(
+        message: _extractMessage(responseData),
+        statusCode: statusCode,
+        fieldErrors: responseData,
+      );
+    }
+
+    if (responseData is String && responseData.trim().isNotEmpty) {
+      return AppException(
+        message: responseData,
+        statusCode: statusCode,
+      );
+    }
 
     return AppException(
-      message: message,
+      message: 'Something went wrong. Please try again.',
       statusCode: statusCode,
-      errors: data is Map<String, dynamic> ? data : null,
     );
   }
 
-  static String _extractMessage(dynamic data) {
-    if (data is Map<String, dynamic>) {
-      if (data['detail'] != null) {
-        return data['detail'].toString();
-      }
+  static String _extractMessage(Map<String, dynamic> data) {
+    final dynamic detail = data['detail'];
 
-      for (final entry in data.entries) {
-        final value = entry.value;
+    if (detail != null) {
+      return detail.toString();
+    }
 
-        if (value is List && value.isNotEmpty) {
-          return value.first.toString();
+    final List<String> messages = <String>[];
+
+    for (final MapEntry<String, dynamic> entry in data.entries) {
+      final String fieldName = _formatFieldName(entry.key);
+      final dynamic value = entry.value;
+
+      if (value is List) {
+        for (final dynamic item in value) {
+          messages.add('$fieldName: ${item.toString()}');
         }
-
-        if (value is String) {
-          return value;
-        }
+      } else if (value is String) {
+        messages.add('$fieldName: $value');
+      } else if (value != null) {
+        messages.add('$fieldName: ${value.toString()}');
       }
     }
 
-    if (data is String && data.isNotEmpty) {
-      return data;
+    if (messages.isNotEmpty) {
+      return messages.join('\n');
     }
 
-    return 'Something went wrong. Please try again.';
+    return 'Registration failed. Please check your details and try again.';
   }
 
-  factory AppException.unauthorised() {
-    return const AppException(
-      message: 'Session expired. Please log in again.',
-      statusCode: 401,
-    );
-  }
-
-  factory AppException.notFound(String resource) {
-    return AppException(
-      message: '$resource not found.',
-      statusCode: 404,
-    );
+  static String _formatFieldName(String fieldName) {
+    return switch (fieldName) {
+      'password1' => 'Password',
+      'password2' => 'Confirm password',
+      'username' => 'Username',
+      'email' => 'Email',
+      _ => fieldName,
+    };
   }
 
   @override
-  String toString() => 'AppException($statusCode): $message';
+  String toString() {
+    return 'AppException(statusCode: $statusCode, message: $message)';
+  }
 }

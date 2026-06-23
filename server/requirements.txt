@@ -11,6 +11,7 @@ debugpy==1.8.20
 dj-rest-auth==7.2.0
 Django==6.0.5
 django-allauth==65.16.1
+django-cors-headers==4.9.0
 django-environ==0.13.0
 djangorestframework==3.17.1
 djangorestframework_simplejwt==5.5.1

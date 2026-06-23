@@ -10,16 +10,20 @@ class AuthService {
       data: request.toJson(),
     );
 
-    final data = response.data;
-
-    if (data is Map<String, dynamic>) {
-      return RegisterResponse.fromJson(data);
+    if (response.statusCode != 201) {
+      throw StateError(
+        'Unexpected registration response: ${response.statusCode}',
+      );
     }
 
-    return const RegisterResponse(
-      detail: 'Registration successful. Please check your email.',
-    );
-  }
+    final dynamic responseData = response.data;
 
-  // TODO: Implement login functionality after register works.
+    if (responseData is! Map<String, dynamic>) {
+      throw const FormatException(
+        'The registration server response was invalid.',
+      );
+    }
+
+    return RegisterResponse.fromJson(responseData);
+  }
 }
