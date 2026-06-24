@@ -1,10 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/undo_toast.dart';
 import '../models/budget_transaction.dart';
 import '../widgets/add_transaction_sheet.dart';
 
@@ -36,8 +36,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
   final _searchCtrl = TextEditingController();
   String _activeFilter = 'All';
   bool _isExporting = false;
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _activeSnack;
-  Timer? _snackTimer;
+  VoidCallback? _cancelToast;
 
   final List<_TxData> _allTransactions = [
     const _TxData(
@@ -92,7 +91,6 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
 
   @override
   void dispose() {
-    _snackTimer?.cancel();
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -118,40 +116,22 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
     final origIdx = _transactions.indexOf(tx);
     _undoBuffer = [(tx, origIdx)];
     setState(() => _transactions.remove(tx));
-    _snackTimer?.cancel();
-    _activeSnack?.close();
-    _activeSnack = _messengerKey.currentState!.showSnackBar(
-      SnackBar(
-        content: Text('Transaction deleted',
-            style: AppTypography.body1.copyWith(color: AppColors.white)),
-        backgroundColor: AppColors.neutral700,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
-        action: SnackBarAction(
-          label: 'Undo',
-          textColor: AppColors.primaryLight,
-          onPressed: () {
-            _snackTimer?.cancel();
-            _activeSnack = null;
-            if (_undoBuffer.isNotEmpty) {
-              final (restored, insertAt) = _undoBuffer.removeAt(0);
-              setState(() {
-                _transactions.insert(
-                  insertAt.clamp(0, _transactions.length),
-                  restored,
-                );
-              });
-            }
-          },
-        ),
-      ),
+    _cancelToast?.call();
+    _cancelToast = showUndoToast(
+      context: context,
+      message: 'Transaction deleted',
+      onUndo: () {
+        if (_undoBuffer.isNotEmpty) {
+          final (restored, insertAt) = _undoBuffer.removeAt(0);
+          setState(() {
+            _transactions.insert(
+              insertAt.clamp(0, _transactions.length),
+              restored,
+            );
+          });
+        }
+      },
     );
-    _snackTimer = Timer(const Duration(seconds: 4), () {
-      _messengerKey.currentState?.hideCurrentSnackBar();
-      _activeSnack = null;
-    });
   }
 
   Future<bool> _confirmDelete(BuildContext context, _TxData tx) async {
@@ -457,27 +437,24 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
       itemCount: items.length,
       itemBuilder: (context, i) {
         final tx = items[i];
-        return Dismissible(
+        return Slidable(
           key: ValueKey(tx.id),
-          direction: DismissDirection.endToStart,
-          background: Container(
-            color: AppColors.error,
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: AppSpacing.lg),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Delete',
-                    style: AppTypography.label
-                        .copyWith(color: AppColors.white)),
-                const SizedBox(width: AppSpacing.sm),
-                const Icon(Icons.delete_outline,
-                    color: AppColors.white, size: AppSpacing.iconMd),
-              ],
-            ),
+          endActionPane: ActionPane(
+            motion: const DrawerMotion(),
+            extentRatio: 0.25,
+            children: [
+              SlidableAction(
+                onPressed: (_) async {
+                  final confirmed = await _confirmDelete(context, tx);
+                  if (confirmed && mounted) _delete(tx);
+                },
+                backgroundColor: AppColors.error,
+                foregroundColor: AppColors.white,
+                icon: Icons.delete_outline,
+                label: 'Delete',
+              ),
+            ],
           ),
-          confirmDismiss: (_) => _confirmDelete(context, tx),
-          onDismissed: (_) => _delete(tx),
           child: _buildTxRow(tx),
         );
       },
