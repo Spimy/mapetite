@@ -4,6 +4,26 @@ abstract class Validators {
     return null;
   }
 
+  static String? username(String? value) {
+    final String? requiredError = required(value, field: 'Username');
+
+    if (requiredError != null) {
+      return requiredError;
+    }
+
+    final String username = value!.trim();
+
+    if (username.length < 3) {
+      return 'Username must be at least 3 characters.';
+    }
+
+    if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(username)) {
+      return 'Username can only contain letters and numbers.';
+    }
+
+    return null;
+  }
+
   static String? email(String? value) {
     if (value == null || value.trim().isEmpty) return 'Email is required.';
     final regex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');

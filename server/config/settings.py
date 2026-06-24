@@ -85,6 +85,7 @@ REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_COOKIE": None,
     "TOKEN_MODEL": None,
+    "REGISTER_SERIALIZER": "apps.users.serializers.MapetiteRegisterSerializer",
 }
 
 # Allauth and dj-rest-auth settings
@@ -122,12 +123,15 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 ]
 
-# Allow Flutter Web during local development.
-# The development port can change each time Flutter runs.
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^http://localhost:\d+$",
-    r"^http://127\.0\.0\.1:\d+$",
-]
+if DEBUG:
+    # Allow Flutter Web local-development servers only.
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^http://localhost:\d+$",
+        r"^http://127\.0\.0\.1:\d+$",
+    ]
+
+    # Apply CORS only to API routes.
+    CORS_URLS_REGEX = r"^/api/.*$"
 
 # Only enable CORS headers for API routes.
 CORS_URLS_REGEX = r"^/api/.*$"

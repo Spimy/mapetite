@@ -89,30 +89,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
   }
 
-  String? _validateUsername(String? value) {
-    final requiredError = Validators.required(value, field: 'Username');
-
-    if (requiredError != null) return requiredError;
-
-    final username = value!.trim();
-
-    if (username.length < 3) {
-      return 'Username must be at least 3 characters.';
-    }
-
-    if (username.contains(' ')) {
-      return 'Username cannot contain spaces.';
-    }
-
-    final usernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
-
-    if (!usernameRegex.hasMatch(username)) {
-      return 'Username can only contain letters, numbers, and underscores.';
-    }
-
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
@@ -175,7 +151,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               controller: _usernameController,
               enabled: !isLoading,
               textCapitalization: TextCapitalization.none,
-              validator: _validateUsername,
+              validator: Validators.username,
             ),
 
             const SizedBox(height: AppSpacing.lg),

@@ -1,3 +1,4 @@
+import '../../../core/errors/app_exception.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../models/register_request.dart';
@@ -11,16 +12,20 @@ class AuthService {
     );
 
     if (response.statusCode != 201) {
-      throw StateError(
-        'Unexpected registration response: ${response.statusCode}',
+      throw AppException(
+        message:
+            'Registration failed. The server returned an unexpected response.',
+        statusCode: response.statusCode,
       );
     }
 
     final dynamic responseData = response.data;
 
     if (responseData is! Map<String, dynamic>) {
-      throw const FormatException(
-        'The registration server response was invalid.',
+      throw AppException(
+        message:
+            'Registration failed because the server returned an invalid response.',
+        statusCode: response.statusCode,
       );
     }
 
