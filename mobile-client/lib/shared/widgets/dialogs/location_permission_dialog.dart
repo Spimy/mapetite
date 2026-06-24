@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../providers/location_provider.dart';
 import '../custom_button.dart';
 
 void showLocationPermissionDialog(BuildContext context) {
   showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (_) => const LocationPermissionDialog(),
   );
 }
 
-class LocationPermissionDialog extends StatelessWidget {
+class LocationPermissionDialog extends ConsumerWidget {
   const LocationPermissionDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Dialog(
       backgroundColor: AppColors.white,
       surfaceTintColor: Colors.transparent,
@@ -30,7 +33,7 @@ class LocationPermissionDialog extends StatelessWidget {
             Container(
               width: 56,
               height: 56,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.primaryLight,
                 shape: BoxShape.circle,
               ),
@@ -48,16 +51,16 @@ class LocationPermissionDialog extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              "'Mapetite' wants to use your location to show nearby restaurants and grocery stores.",
+              'Mapetite wants to use your location to show nearby restaurants and grocery stores.',
               style: AppTypography.body1.copyWith(color: AppColors.neutral600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xxl),
             AppButton(
               label: 'Allow While Using App',
-              onPressed: () {
-                // TODO: Call Geolocator.requestPermission()
+              onPressed: () async {
                 Navigator.of(context).pop();
+                await ref.read(locationProvider.notifier).requestLocation();
               },
             ),
             const SizedBox(height: AppSpacing.sm),

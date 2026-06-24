@@ -20,7 +20,6 @@ import '../features/budget/screens/transaction_log_screen.dart';
 import '../features/recipes/screens/recipe_listing_screen.dart';
 import '../features/recipes/screens/recipe_detail_screen.dart';
 import '../features/recipes/screens/create_recipe_screen.dart';
-import '../features/grocery/screens/grocery_list_screen.dart';
 import '../features/grocery_list/screens/grocery_list_screen.dart' as sl;
 import '../features/grocery_list/screens/route_optimiser_screen.dart';
 import '../features/groceries/screens/grocery_match_screen.dart';
@@ -203,7 +202,7 @@ final GoRouter appRouter = GoRouter(
 
     GoRoute(
       path: AppRoutes.myList,
-      builder: (context, state) => const GroceryListScreen(),
+      redirect: (_, _) => AppRoutes.list,
     ),
     GoRoute(
       path: AppRoutes.settings,
@@ -237,6 +236,10 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.groceries,
       builder: (context, state) => const _WipScreen(label: 'Grocery Stores'),
       routes: [
+        GoRoute(
+          path: 'match',
+          builder: (context, state) => const GroceryMatchScreen(recipeId: ''),
+        ),
         GoRoute(
           path: ':id',
           builder: (context, state) => GroceryStoreDetailScreen(

@@ -129,11 +129,11 @@ class BudgetBarChart extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _LegendDot(color: AppColors.primary, label: 'Groceries'),
-            const SizedBox(width: AppSpacing.lg),
+            SizedBox(width: AppSpacing.lg),
             _LegendDot(color: AppColors.warning, label: 'Dining Out'),
           ],
         ),

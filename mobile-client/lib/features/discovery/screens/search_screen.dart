@@ -303,14 +303,14 @@ class _SearchScreenState extends State<SearchScreen> {
                 Row(
                   children: row1.map((def) => Padding(
                     padding: const EdgeInsets.only(right: AppSpacing.md),
-                    child: _CategoryCard(def: def, onTap: () => context.go(def.route)),
+                    child: _CategoryCard(def: def, onTap: () => context.push(def.route)),
                   )).toList(),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Row(
                   children: row2.map((def) => Padding(
                     padding: const EdgeInsets.only(right: AppSpacing.md),
-                    child: _CategoryCard(def: def, onTap: () => context.go(def.route)),
+                    child: _CategoryCard(def: def, onTap: () => context.push(def.route)),
                   )).toList(),
                 ),
               ],

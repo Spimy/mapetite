@@ -1,11 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/providers/location_provider.dart';
+import '../../../shared/widgets/location_sheet.dart';
 import '../../../shared/widgets/app_chip.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dietary_chip.dart';
@@ -332,7 +335,7 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              "Try adjusting your search or filters.",
+              'Try adjusting your search or filters.',
               style: AppTypography.body1.copyWith(color: AppColors.neutral600),
               textAlign: TextAlign.center,
             ),
@@ -409,30 +412,39 @@ class _FilterIconButton extends StatelessWidget {
 
 // ── Location Pill ─────────────────────────────────────────────────────────────
 
-class _LocationPill extends StatelessWidget {
+class _LocationPill extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs + 2,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.location_on, size: 14, color: AppColors.primary),
-          const SizedBox(width: 2),
-          Text(
-            'Subang Jaya',
-            style: AppTypography.body2.copyWith(color: AppColors.primary),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final city = ref.watch(locationCityProvider);
+    return GestureDetector(
+      onTap: () => showLocationSheet(context),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 140),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs + 2,
           ),
-          const SizedBox(width: 2),
-          const Icon(Icons.expand_more, size: 14, color: AppColors.primary),
-        ],
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.location_on, size: 14, color: AppColors.primary),
+              const SizedBox(width: 2),
+              Flexible(
+                child: Text(
+                  city,
+                  style: AppTypography.body2.copyWith(color: AppColors.primary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -778,8 +790,8 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                     _CuisineIconGrid(
                       active: _cuisines,
                       onToggle: (c) => setState(() {
-                        if (_cuisines.contains(c)) _cuisines.remove(c);
-                        else _cuisines.add(c);
+                        if (_cuisines.contains(c)) { _cuisines.remove(c); }
+                        else { _cuisines.add(c); }
                       }),
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -795,8 +807,8 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                           label: 'Halal',
                           isActive: _dietary.contains('Halal'),
                           onToggle: () => setState(() {
-                            if (_dietary.contains('Halal')) _dietary.remove('Halal');
-                            else _dietary.add('Halal');
+                            if (_dietary.contains('Halal')) { _dietary.remove('Halal'); }
+                            else { _dietary.add('Halal'); }
                           }),
                           svgAsset: 'assets/icons/dietary/halal-icon.svg',
                         ),
@@ -804,8 +816,8 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                           label: 'Vegan',
                           isActive: _dietary.contains('Vegan'),
                           onToggle: () => setState(() {
-                            if (_dietary.contains('Vegan')) _dietary.remove('Vegan');
-                            else _dietary.add('Vegan');
+                            if (_dietary.contains('Vegan')) { _dietary.remove('Vegan'); }
+                            else { _dietary.add('Vegan'); }
                           }),
                           icon: Icons.eco,
                         ),
@@ -813,8 +825,8 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                           label: 'Vegetarian',
                           isActive: _dietary.contains('Vegetarian'),
                           onToggle: () => setState(() {
-                            if (_dietary.contains('Vegetarian')) _dietary.remove('Vegetarian');
-                            else _dietary.add('Vegetarian');
+                            if (_dietary.contains('Vegetarian')) { _dietary.remove('Vegetarian'); }
+                            else { _dietary.add('Vegetarian'); }
                           }),
                           icon: Icons.spa,
                         ),
@@ -887,8 +899,8 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                           label: allergen,
                           isActive: _allergenFree.contains(allergen),
                           onToggle: () => setState(() {
-                            if (_allergenFree.contains(allergen)) _allergenFree.remove(allergen);
-                            else _allergenFree.add(allergen);
+                            if (_allergenFree.contains(allergen)) { _allergenFree.remove(allergen); }
+                            else { _allergenFree.add(allergen); }
                           }),
                           icon: AppChip.allergenIconMap[allergen] ?? Icons.warning_amber,
                         );

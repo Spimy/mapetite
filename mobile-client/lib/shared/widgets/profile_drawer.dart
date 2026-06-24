@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_typography.dart';
@@ -36,6 +37,16 @@ class ProfileDrawer extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          'assets/logos/logo_wording.svg',
+                          height: 100,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
                     Row(
                       children: [
                         Container(

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/undo_toast.dart';
 import '../models/budget_transaction.dart';
 import '../widgets/add_transaction_sheet.dart';
 
@@ -30,9 +32,11 @@ class TransactionLogScreen extends StatefulWidget {
 }
 
 class _TransactionLogScreenState extends State<TransactionLogScreen> {
+  final _messengerKey = GlobalKey<ScaffoldMessengerState>();
   final _searchCtrl = TextEditingController();
   String _activeFilter = 'All';
   bool _isExporting = false;
+  VoidCallback? _cancelToast;
 
   final List<_TxData> _allTransactions = [
     const _TxData(
@@ -73,7 +77,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
   ];
 
   late List<_TxData> _transactions;
-  late List<_TxData> _undoBuffer;
+  late List<(_TxData, int)> _undoBuffer;
 
   static const _filters = ['All', 'Dining', 'Groceries'];
 
@@ -81,7 +85,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
   void initState() {
     super.initState();
     _transactions = List.from(_allTransactions);
-    _undoBuffer = [];
+    _undoBuffer = <(_TxData, int)>[];
     _searchCtrl.addListener(() => setState(() {}));
   }
 
@@ -109,38 +113,90 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
   }
 
   void _delete(_TxData tx) {
-    _undoBuffer = [tx];
+    final origIdx = _transactions.indexOf(tx);
+    _undoBuffer = [(tx, origIdx)];
     setState(() => _transactions.remove(tx));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Transaction deleted',
-            style: AppTypography.body1.copyWith(color: AppColors.white)),
-        backgroundColor: AppColors.neutral700,
-        behavior: SnackBarBehavior.floating,
+    _cancelToast?.call();
+    _cancelToast = showUndoToast(
+      context: context,
+      message: 'Transaction deleted',
+      onUndo: () {
+        if (_undoBuffer.isNotEmpty) {
+          final (restored, insertAt) = _undoBuffer.removeAt(0);
+          setState(() {
+            _transactions.insert(
+              insertAt.clamp(0, _transactions.length),
+              restored,
+            );
+          });
+        }
+      },
+    );
+  }
+
+  Future<bool> _confirmDelete(BuildContext context, _TxData tx) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.white,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
-        action: SnackBarAction(
-          label: 'Undo',
-          textColor: AppColors.primaryLight,
-          onPressed: () {
-            if (_undoBuffer.isNotEmpty) {
-              final restored = _undoBuffer.removeAt(0);
-              final origIdx = _allTransactions.indexOf(restored);
-              setState(() {
-                final insertAt =
-                    origIdx.clamp(0, _transactions.length);
-                _transactions.insert(insertAt, restored);
-              });
-            }
-          },
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
+        icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 28),
+        title: Text('Delete transaction?', style: AppTypography.headline2),
+        content: Text(
+          'Remove "${tx.merchant}" from your transaction log?',
+          style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+          textAlign: TextAlign.center,
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.neutral,
+                    side: const BorderSide(color: AppColors.border),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                  ),
+                  child: Text('Cancel',
+                      style: AppTypography.button
+                          .copyWith(color: AppColors.neutral)),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: AppColors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                  ),
+                  child: Text('Delete', style: AppTypography.button),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
+    return result ?? false;
   }
 
   Future<void> _exportTransactions() async {
     setState(() => _isExporting = true);
-    ScaffoldMessenger.of(context).showSnackBar(
+    _messengerKey.currentState!.showSnackBar(
       SnackBar(
         content: Row(
           children: [
@@ -167,7 +223,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
     await Future.delayed(const Duration(milliseconds: 1800));
     if (!mounted) return;
     setState(() => _isExporting = false);
-    ScaffoldMessenger.of(context).showSnackBar(
+    _messengerKey.currentState!.showSnackBar(
       SnackBar(
         content: Row(
           children: [
@@ -195,7 +251,9 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ScaffoldMessenger(
+      key: _messengerKey,
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.white,
@@ -225,7 +283,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
               child: Container(
                 width: 36,
                 height: 36,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.neutral100,
                   shape: BoxShape.circle,
                 ),
@@ -260,6 +318,7 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
           borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
         ),
         child: const Icon(Icons.add, color: AppColors.white),
+      ),
       ),
     );
   }
@@ -378,26 +437,24 @@ class _TransactionLogScreenState extends State<TransactionLogScreen> {
       itemCount: items.length,
       itemBuilder: (context, i) {
         final tx = items[i];
-        return Dismissible(
+        return Slidable(
           key: ValueKey(tx.id),
-          direction: DismissDirection.endToStart,
-          background: Container(
-            color: AppColors.error,
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: AppSpacing.lg),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Delete',
-                    style: AppTypography.label
-                        .copyWith(color: AppColors.white)),
-                const SizedBox(width: AppSpacing.sm),
-                const Icon(Icons.delete_outline,
-                    color: AppColors.white, size: AppSpacing.iconMd),
-              ],
-            ),
+          endActionPane: ActionPane(
+            motion: const DrawerMotion(),
+            extentRatio: 0.25,
+            children: [
+              SlidableAction(
+                onPressed: (_) async {
+                  final confirmed = await _confirmDelete(context, tx);
+                  if (confirmed && mounted) _delete(tx);
+                },
+                backgroundColor: AppColors.error,
+                foregroundColor: AppColors.white,
+                icon: Icons.delete_outline,
+                label: 'Delete',
+              ),
+            ],
           ),
-          onDismissed: (_) => _delete(tx),
           child: _buildTxRow(tx),
         );
       },

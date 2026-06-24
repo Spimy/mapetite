@@ -68,7 +68,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Mapetite'), findsOneWidget);
     expect(find.text('Welcome back'), findsOneWidget);
     expect(find.text('Sign In'), findsOneWidget);
     expect(find.text('Forgot password?'), findsOneWidget);

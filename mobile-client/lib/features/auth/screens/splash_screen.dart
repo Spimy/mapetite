@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
@@ -36,13 +37,12 @@ class _SplashScreenState extends State<SplashScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Mapetite',
-                    style: AppTypography.display.copyWith(
-                      color: AppColors.primary,
-                    ),
+                  SvgPicture.asset(
+                    'assets/logos/logo_wording.svg',
+                    width: 220,
+                    fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: AppSpacing.sm),
+                  const SizedBox(height: AppSpacing.md),
                   Text(
                     'Eat Smart. Live Well.',
                     style: AppTypography.body1.copyWith(

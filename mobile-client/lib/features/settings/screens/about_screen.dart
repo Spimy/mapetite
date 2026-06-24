@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -65,21 +66,12 @@ class AboutScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
       child: Column(
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(Icons.map, size: 40, color: AppColors.white),
+          SvgPicture.asset(
+            'assets/logos/logo_wording.svg',
+            width: 200,
+            fit: BoxFit.contain,
           ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'Mapetite',
-            style: AppTypography.display.copyWith(color: AppColors.primary),
-          ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.lg),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 280),
             child: Text(
@@ -127,7 +119,7 @@ class AboutScreen extends StatelessWidget {
       children: [
         Text('Our Commitments', style: AppTypography.headline2),
         const SizedBox(height: AppSpacing.md),
-        _SdgCard(
+        const _SdgCard(
           number: '3',
           color: AppColors.success,
           title: 'Good Health & Well-being',
@@ -135,7 +127,7 @@ class AboutScreen extends StatelessWidget {
               'Promoting healthy dietary choices and allergen-safe options.',
         ),
         const SizedBox(height: AppSpacing.sm),
-        _SdgCard(
+        const _SdgCard(
           number: '11',
           color: AppColors.warning,
           title: 'Sustainable Cities',
@@ -143,7 +135,7 @@ class AboutScreen extends StatelessWidget {
               'Supporting local businesses and walkable urban food discovery.',
         ),
         const SizedBox(height: AppSpacing.sm),
-        _SdgCard(
+        const _SdgCard(
           number: '12',
           color: AppColors.secondary,
           title: 'Responsible Consumption',

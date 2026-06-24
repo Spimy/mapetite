@@ -134,7 +134,7 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
               child: const Text('Cancel')),
           TextButton(
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: Text('Discard',
+              child: const Text('Discard',
                   style: TextStyle(color: AppColors.error))),
         ],
       ),

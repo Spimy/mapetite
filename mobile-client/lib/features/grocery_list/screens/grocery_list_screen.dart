@@ -9,6 +9,7 @@ import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/profile_drawer.dart';
 import '../../../features/grocery/models/grocery_list_model.dart';
 import '../../../features/grocery/providers/grocery_list_provider.dart';
+import '../../../features/recipes/providers/selected_ingredients_provider.dart';
 
 class ShoppingListScreen extends ConsumerStatefulWidget {
   const ShoppingListScreen({super.key});
@@ -18,27 +19,25 @@ class ShoppingListScreen extends ConsumerStatefulWidget {
 }
 
 class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
-  final _addItemCtrl = TextEditingController();
-
-  @override
-  void dispose() {
-    _addItemCtrl.dispose();
-    super.dispose();
-  }
-
-  void _addItem() {
-    final name = _addItemCtrl.text.trim();
-    if (name.isEmpty) return;
-    ref.read(groceryListProvider.notifier).addItem(
-          GroceryListItem(
-            id: 'sl_${DateTime.now().millisecondsSinceEpoch}',
-            name: name,
-            quantity: '1',
-            storeName: '',
-            estimatedPrice: 0,
-          ),
-        );
-    _addItemCtrl.clear();
+  void _showAddItemSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusXl),
+        ),
+      ),
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: _AddItemSheet(
+          onAdd: (item) => ref.read(groceryListProvider.notifier).addItem(item),
+        ),
+      ),
+    );
   }
 
   void _showMoreMenu() {
@@ -55,6 +54,72 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
           Navigator.of(context).pop();
           ref.read(groceryListProvider.notifier).clearCompleted();
         },
+        onClearAll: () {
+          Navigator.of(context).pop();
+          _showClearAllDialog();
+        },
+      ),
+    );
+  }
+
+  void _showClearAllDialog() {
+    showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        ),
+        icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 32),
+        title: Text('Clear My List?', style: AppTypography.headline2),
+        content: Text(
+          'This will remove all items from your list. This cannot be undone.',
+          style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actionsPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg,
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.neutral,
+                    side: const BorderSide(color: AppColors.border),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                  ),
+                  child: Text('Cancel',
+                      style: AppTypography.button
+                          .copyWith(color: AppColors.neutral)),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                    ref.read(groceryListProvider.notifier).clearAll();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: AppColors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                  ),
+                  child: Text('Clear List', style: AppTypography.button),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -249,53 +314,23 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
   }
 
   Widget _buildAddItemRow() {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.neutral100,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: TextField(
-              controller: _addItemCtrl,
-              style: AppTypography.body1,
-              onSubmitted: (_) => _addItem(),
-              decoration: InputDecoration(
-                hintText: 'Add an item...',
-                hintStyle: AppTypography.body1.copyWith(
-                  color: AppColors.neutral400,
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-              ),
-            ),
+    return SizedBox(
+      width: double.infinity,
+      height: 44,
+      child: OutlinedButton.icon(
+        onPressed: _showAddItemSheet,
+        icon: const Icon(Icons.add, size: 18, color: AppColors.primary),
+        label: Text(
+          'Add item',
+          style: AppTypography.button.copyWith(color: AppColors.primary),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.primary),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           ),
         ),
-        const SizedBox(width: AppSpacing.sm),
-        SizedBox(
-          width: 80,
-          height: 44,
-          child: ElevatedButton(
-            onPressed: _addItem,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.white,
-              padding: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              ),
-              elevation: 0,
-            ),
-            child: Text('Add', style: AppTypography.button),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -374,13 +409,54 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
       ),
       child: SafeArea(
         top: false,
-        child: AppButton(
-          label: 'Plan Shopping Route',
-          leadingIcon: Icons.route_outlined,
-          onPressed: () => context.push('/list/route'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppButton(
+              label: 'Find Grocery Store',
+              leadingIcon: Icons.store_outlined,
+              onPressed: () => _findGroceryStore(context),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppButton(
+              label: 'Plan Shopping Route',
+              leadingIcon: Icons.route_outlined,
+              variant: AppButtonVariant.outlined,
+              onPressed: () => context.push('/list/route'),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  void _findGroceryStore(BuildContext context) {
+    final items = ref.read(groceryListProvider);
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Add items to your list first.',
+            style: AppTypography.body1.copyWith(color: AppColors.white),
+          ),
+          backgroundColor: AppColors.warning,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+        ),
+      );
+      return;
+    }
+    ref.read(selectedIngredientsProvider.notifier).state = items
+        .map((item) => SelectedIngredient(
+              name: item.name,
+              quantity: item.quantity,
+              storeName: item.storeName,
+              cost: item.estimatedPrice,
+            ))
+        .toList();
+    context.push('/groceries/match');
   }
 }
 
@@ -495,8 +571,12 @@ class _AnimatedCheckbox extends StatelessWidget {
 
 class _MoreMenuSheet extends StatelessWidget {
   final VoidCallback onClearCompleted;
+  final VoidCallback onClearAll;
 
-  const _MoreMenuSheet({required this.onClearCompleted});
+  const _MoreMenuSheet({
+    required this.onClearCompleted,
+    required this.onClearAll,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -528,7 +608,220 @@ class _MoreMenuSheet extends StatelessWidget {
             onTap: onClearCompleted,
             contentPadding: EdgeInsets.zero,
           ),
+          const Divider(height: 1, thickness: 1, color: AppColors.border),
+          ListTile(
+            leading: const Icon(
+              Icons.delete_forever_outlined,
+              color: AppColors.error,
+            ),
+            title: Text(
+              'Clear all items',
+              style: AppTypography.body1.copyWith(color: AppColors.error),
+            ),
+            onTap: onClearAll,
+            contentPadding: EdgeInsets.zero,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Add Item Sheet ───────────────────────────────────────────────────────────
+
+class _AddItemSheet extends StatefulWidget {
+  final ValueChanged<GroceryListItem> onAdd;
+
+  const _AddItemSheet({required this.onAdd});
+
+  @override
+  State<_AddItemSheet> createState() => _AddItemSheetState();
+}
+
+class _AddItemSheetState extends State<_AddItemSheet> {
+  final _nameCtrl = TextEditingController();
+  final _quantityCtrl = TextEditingController();
+  final _storeCtrl = TextEditingController();
+  final _priceCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _quantityCtrl.dispose();
+    _storeCtrl.dispose();
+    _priceCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) return;
+    widget.onAdd(
+      GroceryListItem(
+        id: 'sl_${DateTime.now().millisecondsSinceEpoch}',
+        name: name,
+        quantity:
+            _quantityCtrl.text.trim().isEmpty ? '1' : _quantityCtrl.text.trim(),
+        storeName: _storeCtrl.text.trim(),
+        estimatedPrice: double.tryParse(_priceCtrl.text.trim()) ?? 0.0,
+      ),
+    );
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xl,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.neutral200,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text('Add Item', style: AppTypography.headline2),
+          const SizedBox(height: AppSpacing.lg),
+          const _FieldLabel('Item name'),
+          const SizedBox(height: AppSpacing.xs),
+          _SheetField(
+            controller: _nameCtrl,
+            hint: 'e.g. Organic Eggs',
+            autofocus: true,
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _FieldLabel('Quantity'),
+                    const SizedBox(height: AppSpacing.xs),
+                    _SheetField(
+                      controller: _quantityCtrl,
+                      hint: 'e.g. 2 pcs',
+                      textInputAction: TextInputAction.next,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _FieldLabel('Est. Cost (RM)'),
+                    const SizedBox(height: AppSpacing.xs),
+                    _SheetField(
+                      controller: _priceCtrl,
+                      hint: '0.00',
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true),
+                      textInputAction: TextInputAction.next,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const _FieldLabel('Store (optional)'),
+          const SizedBox(height: AppSpacing.xs),
+          _SheetField(
+            controller: _storeCtrl,
+            hint: 'e.g. Jaya Grocer',
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _submit(),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          SizedBox(
+            width: double.infinity,
+            height: AppSpacing.buttonHeight,
+            child: ElevatedButton(
+              onPressed: _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+              ),
+              child: Text('Add to List', style: AppTypography.button),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String text;
+  const _FieldLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: AppTypography.label.copyWith(color: AppColors.neutral700),
+    );
+  }
+}
+
+class _SheetField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hint;
+  final bool autofocus;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+
+  const _SheetField({
+    required this.controller,
+    required this.hint,
+    this.autofocus = false,
+    this.keyboardType,
+    this.textInputAction,
+    this.onSubmitted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.neutral100,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: TextField(
+        controller: controller,
+        autofocus: autofocus,
+        keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        onSubmitted: onSubmitted,
+        style: AppTypography.body1.copyWith(color: AppColors.neutral),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: AppTypography.body1.copyWith(color: AppColors.neutral400),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm + 2,
+          ),
+        ),
       ),
     );
   }

@@ -6,10 +6,10 @@ import '../../../core/theme/app_colors.dart';
 import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
 
-void showTransactionDetailSheet(
+Future<BudgetTransaction?> showTransactionDetailSheet(
     BuildContext context, BudgetTransaction tx) {
   final container = ProviderScope.containerOf(context);
-  showModalBottomSheet(
+  return showModalBottomSheet<BudgetTransaction>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
@@ -158,47 +158,64 @@ class _TransactionDetailSheet extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete expense?'),
-        content: Text('Remove "${transaction.name}" from your records?'),
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        ),
+        icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 28),
+        title: Text('Delete expense?', style: AppTypography.headline2),
+        content: Text(
+          'Remove "${transaction.name}" from your records?',
+          style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+          textAlign: TextAlign.center,
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
         actions: [
-          TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Cancel')),
-          TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Delete',
-                  style: TextStyle(color: AppColors.error))),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.neutral,
+                    side: const BorderSide(color: AppColors.border),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                  ),
+                  child: Text('Cancel',
+                      style: AppTypography.button
+                          .copyWith(color: AppColors.neutral)),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: AppColors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                  ),
+                  child: Text('Delete', style: AppTypography.button),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
     if (confirmed == true && context.mounted) {
-      ref.read(budgetProvider.notifier).deleteTransaction(transaction.id);
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Expanded(
-                child: Text('Expense deleted',
-                    style: AppTypography.body1.copyWith(color: AppColors.white)),
-              ),
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.check, color: AppColors.white, size: 14),
-              ),
-            ],
-          ),
-          backgroundColor: AppColors.secondary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
-        ),
-      );
+      final container = ProviderScope.containerOf(context);
+      final deleted = transaction;
+      container.read(budgetProvider.notifier).deleteTransaction(deleted.id);
+      Navigator.of(context).pop(deleted);
     }
   }
 }

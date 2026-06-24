@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,10 @@ import '../models/mocks/home_feed_mocks.dart';
 import '../providers/home_feed_providers.dart';
 import '../../../routes/app_router.dart';
 import '../../../features/notifications/providers/notification_provider.dart';
+import '../../../shared/providers/location_provider.dart';
+import '../../../shared/widgets/dialogs/location_permission_dialog.dart';
+import '../../../shared/widgets/location_sheet.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeFeedScreen extends ConsumerStatefulWidget {
   const HomeFeedScreen({super.key});
@@ -69,6 +74,19 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     );
 
     _animController.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkLocationPermission());
+  }
+
+  void _showLocationSheet(BuildContext context, WidgetRef ref) =>
+      showLocationSheet(context);
+
+  Future<void> _checkLocationPermission() async {
+    final permission = await Geolocator.checkPermission();
+    if (!mounted) return;
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.unableToDetermine) {
+      showLocationPermissionDialog(context);
+    }
   }
 
   @override
@@ -147,15 +165,12 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                 tooltip: 'Open menu',
               ),
             ),
-            const Expanded(
+            Expanded(
               child: Center(
-                child: Text(
-                  'Mapetite',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
+                child: SvgPicture.asset(
+                  'assets/logos/logo_wording.svg',
+                  height: 54,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
@@ -229,15 +244,32 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                 'left this month · ',
                 style: AppTypography.body1.copyWith(color: AppColors.neutral600),
               ),
-              const Icon(
-                Icons.location_on_outlined,
-                size: 14,
-                color: AppColors.neutral600,
-              ),
-              const SizedBox(width: 2),
-              Text(
-                HomeFeedMocks.userLocation,
-                style: AppTypography.body1.copyWith(color: AppColors.neutral600),
+              Flexible(
+                child: GestureDetector(
+                  onTap: () => _showLocationSheet(context, ref),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          ref.watch(locationCityProvider),
+                          style: AppTypography.body1.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -468,7 +500,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                 _TopPickHeroImage(restaurant: restaurant),
                 _TopPickBody(
                   restaurant: restaurant,
-                  area: HomeFeedMocks.userLocation,
+                  area: ref.watch(locationCityProvider),
                 ),
               ],
             ),
@@ -982,19 +1014,32 @@ class _TopPickBody extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Row(
             children: [
-              const Icon(
-                Icons.location_on_outlined,
-                size: 14,
-                color: AppColors.neutral600,
+              Text(
+                '${restaurant.distanceKm.toStringAsFixed(1)} km away · ',
+                style: AppTypography.body2.copyWith(color: AppColors.neutral600),
               ),
-              const SizedBox(width: 2),
-              Expanded(
-                child: Text(
-                  '${restaurant.distanceKm.toStringAsFixed(1)} km away · $area',
-                  style:
-                      AppTypography.body2.copyWith(color: AppColors.neutral600),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              Flexible(
+                child: GestureDetector(
+                  onTap: () => showLocationSheet(context),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.location_on_outlined,
+                          size: 14, color: AppColors.primary),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          area,
+                          style: AppTypography.body2.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -1191,3 +1236,4 @@ class _BellButton extends ConsumerWidget {
     );
   }
 }
+

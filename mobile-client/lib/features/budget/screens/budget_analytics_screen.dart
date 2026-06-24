@@ -157,10 +157,10 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
           // Legend
-          Row(
+          const Row(
             children: [
               _LegendDot(color: AppColors.primary, label: 'Dine Out'),
-              const SizedBox(width: AppSpacing.lg),
+              SizedBox(width: AppSpacing.lg),
               _LegendDot(color: AppColors.secondary, label: 'Cook-In'),
             ],
           ),
@@ -237,7 +237,7 @@ class _BudgetAnalyticsScreenState extends State<BudgetAnalyticsScreen> {
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  getDrawingHorizontalLine: (_) => FlLine(
+                  getDrawingHorizontalLine: (_) => const FlLine(
                     color: AppColors.border,
                     strokeWidth: 1,
                     dashArray: [4, 4],

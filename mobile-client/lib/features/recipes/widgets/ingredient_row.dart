@@ -22,65 +22,83 @@ class IngredientRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: Checkbox(
-                  value: isChecked,
-                  onChanged: (v) => onChanged(v ?? false),
-                  activeColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          color: isChecked
+              ? const Color(0xFFFFF8E1)  // amber-50 tint — "needs buying"
+              : Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => onChanged(!isChecked),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: isChecked
+                          ? const Color(0xFFF59E0B)  // amber
+                          : AppColors.white,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: isChecked
+                            ? const Color(0xFFF59E0B)
+                            : AppColors.neutral400,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: isChecked
+                        ? const Icon(
+                            Icons.shopping_cart,
+                            size: 14,
+                            color: AppColors.white,
+                          )
+                        : null,
                   ),
-                  side: const BorderSide(color: AppColors.neutral400, width: 1.5),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            ingredient.name,
-                            style: AppTypography.body1.copyWith(
-                              color: isChecked
-                                  ? AppColors.neutral400
-                                  : AppColors.neutral,
-                              decoration: isChecked
-                                  ? TextDecoration.lineThrough
-                                  : null,
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              ingredient.name,
+                              style: AppTypography.body1.copyWith(
+                                color: isChecked
+                                    ? const Color(0xFF92400E)  // amber-800
+                                    : AppColors.neutral,
+                                fontWeight: isChecked
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          ingredient.quantity,
-                          style: AppTypography.body1.copyWith(
-                            color: AppColors.neutral600,
-                            fontWeight: FontWeight.w500,
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(
+                            ingredient.quantity,
+                            style: AppTypography.body1.copyWith(
+                              color: AppColors.neutral600,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    if (ingredient.notSourcedNearby)
-                      _WarningBadge()
-                    else if (ingredient.storeName != null)
-                      _StoreBadge(ingredient: ingredient),
-                  ],
+                        ],
+                      ),
+                      if (ingredient.notSourcedNearby)
+                        _WarningBadge()
+                      else if (ingredient.storeName != null)
+                        _StoreBadge(ingredient: ingredient),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         if (!isLast)

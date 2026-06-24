@@ -148,7 +148,8 @@ class _NotificationSettingsScreenState
       child: SwitchListTile(
         value: value,
         onChanged: onChanged,
-        activeColor: AppColors.primary,
+        activeThumbColor: AppColors.primary,
+        activeTrackColor: AppColors.primaryLight,
         title: Text(
           label,
           style: AppTypography.body1.copyWith(

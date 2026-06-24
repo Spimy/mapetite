@@ -9,6 +9,7 @@ import '../../../shared/widgets/app_chip.dart';
 import '../../../features/grocery/providers/grocery_list_provider.dart';
 import '../models/recipe_model.dart';
 import '../providers/recipe_provider.dart';
+import '../providers/selected_ingredients_provider.dart';
 import '../widgets/ingredient_row.dart';
 import '../widgets/recipe_step_tile.dart';
 import 'edit_recipe_screen.dart';
@@ -461,6 +462,18 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
             ),
           ],
         ),
+        const SizedBox(height: AppSpacing.xs),
+        Row(
+          children: [
+            const Icon(Icons.shopping_cart_outlined,
+                size: 13, color: AppColors.neutral400),
+            const SizedBox(width: 4),
+            Text(
+              'Tap ingredients you need to buy',
+              style: AppTypography.caption.copyWith(color: AppColors.neutral400),
+            ),
+          ],
+        ),
         const SizedBox(height: AppSpacing.sm),
         Container(
           decoration: BoxDecoration(
@@ -490,19 +503,74 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
 
   // ─── CTA ──────────────────────────────────────────────────────────────────
 
-  Widget _buildAddToListButton() {
+  void _findGroceryStore() {
     final recipe = widget.recipe;
+    final selected = recipe.ingredients.where((ing) {
+      final key = '${recipe.id}_${ing.name}';
+      return _checkedIngredientKeys.contains(key);
+    }).toList();
+
+    if (selected.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Select at least one ingredient you need to buy.',
+            style: AppTypography.body1.copyWith(color: AppColors.white),
+          ),
+          backgroundColor: AppColors.warning,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Write selection to provider so GroceryMatchScreen can read it.
+    ref.read(selectedIngredientsProvider.notifier).state = selected
+        .map((ing) => SelectedIngredient(
+              name: ing.name,
+              quantity: ing.quantity,
+              storeName: ing.storeName,
+              cost: ing.estimatedCost ?? 0.0,
+            ))
+        .toList();
+
+    // Auto-add selected items to My List.
+    ref.read(groceryListProvider.notifier).addFromIngredients(
+          selected
+              .map((ing) => (
+                    name: ing.name,
+                    quantity: ing.quantity,
+                    storeName: ing.storeName ?? '',
+                    cost: ing.estimatedCost ?? 0.0,
+                  ))
+              .toList(),
+        );
+
+    context.push('/recipes/${recipe.id}/match');
+  }
+
+  Widget _buildAddToListButton() {
+    final hasSelection = _checkedIngredientKeys.isNotEmpty;
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
           height: AppSpacing.buttonHeight,
           child: ElevatedButton.icon(
-            onPressed: () => context.push('/recipes/${recipe.id}/match'),
+            onPressed: _findGroceryStore,
             icon: const Icon(Icons.store_outlined, size: 20),
-            label: Text('Find Grocery Store', style: AppTypography.button),
+            label: Text(
+              hasSelection
+                  ? 'Find Grocery Store (${_checkedIngredientKeys.length})'
+                  : 'Find Grocery Store',
+              style: AppTypography.button,
+            ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor:
+                  hasSelection ? AppColors.primary : AppColors.neutral400,
               foregroundColor: AppColors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
@@ -517,9 +585,10 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
           height: AppSpacing.buttonHeight,
           child: OutlinedButton.icon(
             onPressed: _addSelectedToGroceryList,
-            icon: const Icon(Icons.playlist_add, size: 20, color: AppColors.primary),
+            icon: const Icon(Icons.playlist_add,
+                size: 20, color: AppColors.primary),
             label: Text(
-              'Add Selected to My List',
+              'Add to My List',
               style: AppTypography.button.copyWith(color: AppColors.primary),
             ),
             style: OutlinedButton.styleFrom(

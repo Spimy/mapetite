@@ -6,6 +6,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../routes/app_router.dart';
+import '../../../shared/widgets/undo_toast.dart';
 import '../providers/budget_provider.dart';
 import '../models/budget_transaction.dart';
 import '../widgets/transaction_detail_sheet.dart';
@@ -20,7 +21,8 @@ class BudgetOverviewScreen extends ConsumerStatefulWidget {
 }
 
 class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
-  int _selectedMonthOffset = 0; // 0 = current month
+  int _selectedMonthOffset = 0;
+  VoidCallback? _cancelToast;
 
   static const _monthNames = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -31,6 +33,11 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
     final now = DateTime.now();
     final dt = DateTime(now.year, now.month - _selectedMonthOffset);
     return '${_monthNames[dt.month - 1]} ${dt.year}';
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -395,7 +402,22 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
                   _TransactionRow(
                     tx: recent[i],
                     showDivider: i < recent.length - 1,
-                    onTap: () => showTransactionDetailSheet(context, recent[i]),
+                    onTap: () async {
+                      final deleted =
+                          await showTransactionDetailSheet(context, recent[i]);
+                      if (deleted == null) return;
+                      if (!context.mounted) return;
+                      _cancelToast?.call();
+                      _cancelToast = showUndoToast(
+                        context: context,
+                        message: 'Expense deleted',
+                        onUndo: () {
+                          ref
+                              .read(budgetProvider.notifier)
+                              .restoreTransaction(deleted);
+                        },
+                      );
+                    },
                   ),
               ],
             ),

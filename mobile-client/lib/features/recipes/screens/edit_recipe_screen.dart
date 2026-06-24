@@ -88,7 +88,7 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
 
     final origAllergens = Set<String>.from(r.allergens);
     if (!_selectedAllergens.containsAll(origAllergens) ||
-        !origAllergens.containsAll(_selectedAllergens)) return true;
+        !origAllergens.containsAll(_selectedAllergens)) { return true; }
 
     if (_ingredients.length != r.ingredients.length) return true;
     for (int i = 0; i < _ingredients.length; i++) {
@@ -141,8 +141,8 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
     for (final ctrl in [_titleCtrl, _descCtrl, _cookTimeCtrl, _servingsCtrl, _caloriesCtrl]) {
       ctrl.addListener(_onChanged);
     }
-    for (final e in _ingredients) e.addListener(_onChanged);
-    for (final c in _stepControllers) c.addListener(_onChanged);
+    for (final e in _ingredients) { e.addListener(_onChanged); }
+    for (final c in _stepControllers) { c.addListener(_onChanged); }
   }
 
   @override
@@ -152,8 +152,8 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
     _cookTimeCtrl.dispose();
     _servingsCtrl.dispose();
     _caloriesCtrl.dispose();
-    for (final e in _ingredients) e.dispose();
-    for (final c in _stepControllers) c.dispose();
+    for (final e in _ingredients) { e.dispose(); }
+    for (final c in _stepControllers) { c.dispose(); }
     super.dispose();
   }
 
