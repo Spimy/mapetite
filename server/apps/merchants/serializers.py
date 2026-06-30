@@ -1,7 +1,7 @@
 # apps/merchants/serializers.py
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import StoreProfile, StoreOperatingHour
+from .models import StoreProfile, StoreOperatingHour, StoreItem, ItemCategory
 
 
 class PaddedOperatingHoursListSerializer(serializers.ListSerializer):
@@ -57,16 +57,56 @@ class StoreOperatingHourSerializer(serializers.ModelSerializer):
         return False  # This field is added in the list serializer, not here
 
 
+class StoreItemSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source="category.name", read_only=True)
+
+    class Meta:
+        model = StoreItem
+        fields = [
+            "id",
+            "name",
+            "description",
+            "price",
+            "calories",
+            "category_name",
+            "stock_status",
+            "vegetarian",
+            "organic",
+            "gluten_free",
+            "dairy_free",
+            "contains_nuts",
+            "eco_packaging",
+            "locally_sourced",
+            "thumbnail",
+            "is_active",
+        ]
+
+
 class StoreProfileSerializer(serializers.ModelSerializer):
     operating_hours = StoreOperatingHourSerializer(many=True, read_only=True)
+    items = StoreItemSerializer(many=True, read_only=True)
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = StoreProfile
         fields = [
             "id",
             "business_name",
+            "description",
             "merchant_type",
+            "halal",
+            "vegan",
+            "street_address",
+            "image_url",
             "operating_hours",
+            "items",
             "latitude",
             "longitude",
         ]
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_image_url(self, obj):
+        request = self.context.get("request")
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        return None
