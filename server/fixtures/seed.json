@@ -1,0 +1,452 @@
+[
+      {
+        "model": "merchants.storeprofile",
+        "pk": 1,
+        "fields": {
+          "business_name": "Restoran Aman Bistro Signature",
+          "description": "24-hour mamak spot known for a diversified mamak menu with Western and Asian dishes.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": false,
+          "street_address": "1, Ground Floor, Jalan PJS 11/22, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+          "image": "merchants/stores/1.png",
+          "location": "POINT ( 101.602404505357 3.0678137315806064)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 2,
+        "fields": {
+          "business_name": "Restoran Nasi Kandar Shaaz",
+          "description": "Mamak spot known for its nasi kandar and mamak dishes.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": false,
+          "street_address": "1, Jalan PJS 11/20, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+          "image": "merchants/stores/2.jpeg",
+          "location": "POINT (101.60161359077749 3.068545536495694)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 3,
+        "fields": {
+          "business_name": "Nasi Kandar Anwar Maju",
+          "description": "A popular nasi kandar restaurant known for its delicious dishes.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": false,
+          "street_address": "1-A,Nadayu 28 Dagang, Jalan PJS 11/7, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/3.jpg",
+          "location": "POINT (101.60266366239603 3.0707409749325127)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 4,
+        "fields": {
+          "business_name": "Nasi Kandar Pelita Sunway",
+          "description": "A popular nasi kandar restaurant in the Mentari area known for its delicious dishes.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": false,
+          "street_address": "Sunway Metro, 37G, Jalan PJS 11/28b, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+          "image": "merchants/stores/4.webp",
+          "location": "POINT (101.6103201872229 3.0721311467542316)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 5,
+        "fields": {
+          "business_name": "Hock Kee Kopitiam (Sunway Square)",
+          "description": "A popular kopitiam known for its delicious Malaysian-inspired dishes.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": false,
+          "street_address": "L1-43 Level, 1, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+          "image": "merchants/stores/5.jpeg",
+          "location": "POINT (101.60580351087 3.0648803362079335)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 6,
+        "fields": {
+          "business_name": "Oriental Kopi (Sunway Pyramid)",
+          "description": "A Nanyang-styled restaurant that offers many Malaysian favourites.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": false,
+          "street_address": "G1.108 & 1.109 Ground Floor, Sunway Pyramid, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+          "image": "merchants/stores/6.jpg",
+          "location": "POINT (101.60598099427014 3.071718668110293)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 7,
+        "fields": {
+          "business_name": "Zhia Kitchen - Sunway Industrial Park",
+          "description": "A Chinese styled restaurant that offers many Chinese favourites.",
+          "merchant_type": "RESTAURANT",
+          "halal": false,
+          "vegan": false,
+          "street_address": "25, Jalan PJS 11/1, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+          "image": "merchants/stores/7.jpg",
+          "location": "POINT (101.59958276204075 3.0698410109452503)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 8,
+        "fields": {
+          "business_name": "Shan Wei Xuan",
+          "description": "An authentic Chinese noodle restaurant and dumplings.",
+          "merchant_type": "RESTAURANT",
+          "halal": false,
+          "vegan": false,
+          "street_address": "49, Jalan PJS 11/9, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/8.png",
+          "location": "POINT (101.60313250154243 3.066994860171392)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 9,
+        "fields": {
+          "business_name": "Restoran Gold Chili - Bandar Sunway",
+          "description": "A restaurant that offers a signature butter chicken dish and other Chinese variants such as sweet and sour and kung pao.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": false,
+          "street_address": "10, Jalan PJS 11/7, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/9.png",
+          "location": "POINT (101.60259689277673 3.068498265641239)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 10,
+        "fields": {
+          "business_name": "Dodo Korea - Sunway Square Mall",
+          "description": "A Korean restaurant that offers an affordable bento box set, perfect for students.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": false,
+          "street_address": "L1-33, Sunway Square, Jalan Lagoon Selatan, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/10.jpeg",
+          "location": "POINT (101.60369459976714 3.0652467447713363)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 11,
+        "fields": {
+          "business_name": "Kubis & Kale @ Bandar Sunway",
+          "description": "A healthy salad / bowl restaurant that offers healthier options.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": true,
+          "street_address": "Ground Floor, 2 & 4, Jalan PJS 11/5, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+          "image": "merchants/stores/11.png",
+          "location": "POINT (101.60190157955657 3.066649655464427)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 12,
+        "fields": {
+          "business_name": "The Fish Bowl @ Bandar Sunway",
+          "description": "A healthy salad / bowl restaurant that offers healthier options.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": true,
+          "street_address": "73, Jalan PJS 11/7, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+          "image": "merchants/stores/12.jpeg",
+          "location": "POINT (101.60239534846313 3.0659842558315775)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 13,
+        "fields": {
+          "business_name": "A'Decade @ Sunway Square Mall",
+          "description": "A small local cafe that serves a variety of local Malay dishes.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": false,
+          "street_address": "L2-22, Sunway Square Mall, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+          "image": "merchants/stores/13.jpg",
+          "location": "POINT (101.60462387052881 3.0647348909396155)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 14,
+        "fields": {
+          "business_name": "stuff'd @ Sunway Square Sunway",
+          "description": "A Burito, Bowl, Kebab and Salad shop that offers nutrious and grab-and-go meals.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": true,
+          "street_address": "LG1-27 (Lower Ground One, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+          "image": "merchants/stores/14.jpeg",
+          "location": "POINT (101.60419368317301 3.065102658611143)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 15,
+        "fields": {
+          "business_name": "Kooky Bowl",
+          "description": "A fushion restaurant that offers Japanese-Malaysian dishes.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": true,
+          "street_address": "23, Jalan PJS 11/9, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+          "image": "merchants/stores/15.jpeg",
+          "location": "POINT (101.6031624925095 3.067956578489205)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 16,
+        "fields": {
+          "business_name": "Simple Life Healthy Vegetarian Restaurant @ Sunway Pyramid Oasis",
+          "description": "A vegetarian restaurant that offers a variety of vegetarian dishes.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": true,
+          "street_address": "F1. 86A, Oasis Pyramid, Jalan PJS 11/15, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+          "image": "merchants/stores/16.jpg",
+          "location": "POINT (101.60514783879671 3.07304052169511)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 17,
+        "fields": {
+          "business_name": "Salad Atelier @ Sunway Square Mall",
+          "description": "A bowl, sphagetti, and salad shop that offers healthier options.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": true,
+          "street_address": "Lot L1-01, Sunway Square, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+          "image": "merchants/stores/17.png",
+          "location": "POINT (101.60593777206256 3.065111900720128)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 18,
+        "fields": {
+          "business_name": "Dandy @ Sunway Pyramid ",
+          "description": "A restaurant that offers a variety of Mediterranean dishes.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": true,
+          "street_address": "LG2-128A, Blue Atrium, 3, Jalan PJS 11/15, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/18.jpg",
+          "location": "POINT (101.613092 3.070368)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 19,
+        "fields": {
+          "business_name": "Ayam Gepuk Artisan Sunway",
+          "description": "A traditional Indonesian restaurant that offers the trending Ayam Gepuk dish.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": false,
+          "street_address": "50 @ Rock Cafe, Jalan PJS 11/20, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+          "image": "merchants/stores/19.jpeg",
+          "location": "POINT (101.60237539447746 3.0686410679246463)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 20,
+        "fields": {
+          "business_name": "Thyme Out HQ",
+          "description": "A Mexican restaurant that offers a variety of Mexican dishes.",
+          "merchant_type": "RESTAURANT",
+          "halal": true,
+          "vegan": true,
+          "street_address": "66, Jalan PJS 11/7, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/20.jpg",
+          "location": "POINT (101.60258835602089 3.066303775547407)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 21,
+        "fields": {
+          "business_name": "Village Grocer @ Sunway Square Mall",
+          "description": "A grocery store located within the Sunway Square Mall that offers a variety of groceries.",
+          "merchant_type": "GROCERY",
+          "halal": false,
+          "vegan": false,
+          "street_address": "Level LG 1, Unit No. LG1-05, Sunway Square Mall, Jalan Lagoon Selatan, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/21.jpeg",
+          "location": "POINT (101.60533767178103 3.0656925281584844)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 22,
+        "fields": {
+          "business_name": "Jaya Grocer @ Sunway Geo Avenue",
+          "description": "A grocery store chain that offers a variety of groceries and also offers a variety of fresh produce and daily bakes.",
+          "merchant_type": "GROCERY",
+          "halal": false,
+          "vegan": false,
+          "street_address": "D-01-01, Blok D, Sunway Geo Avenue Jalan Lagoon Selatan, South Quay, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/22.jpg",
+          "location": "POINT (101.60892110273518 3.065713955121291)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 23,
+        "fields": {
+          "business_name": "Jaya Grocer @ Sunway Pyramid",
+          "description": "The signature store of a grocery store chain that offers a variety of groceries and more premium options in this outlet.",
+          "merchant_type": "GROCERY",
+          "halal": false,
+          "vegan": false,
+          "street_address": "LG2-130, Lower Ground Floor 2, Sunway Pyramid, 3, Jalan PJS 11/15, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/23.jpg",
+          "location": "POINT (101.60596398470418 3.072431198124951)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 24,
+        "fields": {
+          "business_name": "KK Super Mart Bandar Sunway",
+          "description": "Mid-sized supermarket with affordable daily essentials.",
+          "merchant_type": "GROCERY",
+          "halal": false,
+          "vegan": false,
+          "street_address": "No.19, Jalan PJS 11/9, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/24.png",
+          "location": "POINT (101.60314139674088 3.0681546161162045)", 
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 25,
+        "fields": {
+          "business_name": "BilaBila Mart @ Sun-U Residence",
+          "description": "A mini-mart that offers a variety of groceries and daily essentials.",
+          "merchant_type": "GROCERY",
+          "halal": false,
+          "vegan": false,
+          "street_address": "Ground Floor, Tower A, Sun-u Residence, Jalan PJS 11/26, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+          "image": "merchants/stores/25.jpg",
+          "location": "POINT (101.60509250318107 3.065997697426775)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 26,
+        "fields": {
+          "business_name": "99 Speedmart 1555 Sunway Metro",
+          "description": "Mid-sized supermarket with affordable daily essentials.",
+          "merchant_type": "GROCERY",
+          "halal": false,
+          "vegan": false,
+          "street_address": "Sunway Metro, Parking lot, No: 17, Jalan PJS 11/28b, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+          "image": "merchants/stores/26.png",
+          "location": "POINT (101.60952949805359 3.0722532037008667)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 27,
+        "fields": {
+          "business_name": "Shin Sun Mi Market @ Sunway GEO",
+          "description": "A Korean mini-mart that offers a variety of Korean groceries and daily essentials.",
+          "merchant_type": "GROCERY",
+          "halal": false,
+          "vegan": false,
+          "street_address": "G-01-03, Sunway Geo, Jalan Lagoon Selatan, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/27.jpg",
+          "location": "POINT (101.60869589874949 3.0647342502177524)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 28,
+        "fields": {
+          "business_name": "TMG Express - Bandar Sunway",
+          "description": "A student friendly mini-mart that offers fresh fruits and vegetables at an affordable price.",
+          "merchant_type": "GROCERY",
+          "halal": false,
+          "vegan": false,
+          "street_address": "No 41, Jalan PJS 11/9, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/28.png",
+          "location": "POINT (101.6031370222521 3.067291088828313)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 29,
+        "fields": {
+          "business_name": "99 Speedmart 2483 Sunway PJS 11",
+          "description": "Mid-sized supermarket with affordable daily essentials.",
+          "merchant_type": "GROCERY",
+          "halal": false,
+          "vegan": false,
+          "street_address": "No: 65 (Ground Floor, Jalan PJS 11/9, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/29.png",
+          "location": "POINT (101.60313551343388 3.06634745280792)",
+          "owner": null
+        }
+      },
+      {
+        "model": "merchants.storeprofile",
+        "pk": 30,
+        "fields": {
+          "business_name": "KK Concept Store Sunway Geo Avenue ( GEO )",
+          "description": "Mid-sized supermarket with affordable daily essentials.",
+          "merchant_type": "GROCERY",
+          "halal": false,
+          "vegan": false,
+          "street_address": "E-01-09, Sunway Geo Avenue SDF, 1B, Jalan Lagoon Selatan, Bandar Sunway, 47500 Subang Jaya, Selangor",
+          "image": "merchants/stores/30.jpg",
+          "location": "POINT (101.60855605767038 3.0654263697051496)", 
+          "owner": null
+        }
+      }
+    ]
