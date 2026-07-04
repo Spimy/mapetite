@@ -448,5 +448,1895 @@
           "location": "POINT (101.60855605767038 3.0654263697051496)", 
           "owner": null
         }
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 31,
+            "fields": { 
+            "store": 1, 
+            "day_of_week": 0, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 32,
+            "fields": { 
+            "store": 1, 
+            "day_of_week": 1, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 33,
+            "fields": { 
+            "store": 1, 
+            "day_of_week": 2, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 34,
+            "fields": { 
+            "store": 1, 
+            "day_of_week": 3, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 35,
+            "fields": { 
+            "store": 1, 
+            "day_of_week": 4, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 36,
+            "fields": { 
+            "store": 1, 
+            "day_of_week": 5, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 37,
+            "fields": { 
+            "store": 1, 
+            "day_of_week": 6, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 38,
+            "fields": { 
+            "store": 2, 
+            "day_of_week": 0, 
+            "open_time": "06:30:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 39,
+            "fields": { 
+            "store": 2, 
+            "day_of_week": 1, 
+            "open_time": "06:30:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 40,
+            "fields": { 
+            "store": 2, 
+            "day_of_week": 2, 
+            "open_time": "06:30:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 41,
+            "fields": { 
+            "store": 2, 
+            "day_of_week": 3, 
+            "open_time": "06:30:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 42,
+            "fields": { 
+            "store": 2, 
+            "day_of_week": 4, 
+            "open_time": "06:30:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 43,
+            "fields": { 
+            "store": 2, 
+            "day_of_week": 5, 
+            "open_time": "06:30:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 44,
+            "fields": { 
+            "store": 2, 
+            "day_of_week": 6, 
+            "open_time": "06:30:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 45,
+            "fields": { 
+            "store": 3, 
+            "day_of_week": 0, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 46,
+            "fields": { 
+            "store": 3, 
+            "day_of_week": 1, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 47,
+            "fields": { 
+            "store": 3, 
+            "day_of_week": 2, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 48,
+            "fields": { 
+            "store": 3, 
+            "day_of_week": 3, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 49,
+            "fields": { 
+            "store": 3, 
+            "day_of_week": 4, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 50,
+            "fields": { 
+            "store": 3, 
+            "day_of_week": 5, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 51,
+            "fields": { 
+            "store": 3, 
+            "day_of_week": 6, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 52,
+            "fields": { 
+            "store": 4, 
+            "day_of_week": 0, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 53,
+            "fields": { 
+            "store": 4, 
+            "day_of_week": 1, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 54,
+            "fields": { 
+            "store": 4, 
+            "day_of_week": 2, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 55,
+            "fields": { 
+            "store": 4, 
+            "day_of_week": 3, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 56,
+            "fields": { 
+            "store": 4, 
+            "day_of_week": 4, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 57,
+            "fields": { 
+            "store": 4, 
+            "day_of_week": 5, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 58,
+            "fields": { 
+            "store": 4, 
+            "day_of_week": 6, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 59,
+            "fields": { 
+            "store": 5, 
+            "day_of_week": 0, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 60,
+            "fields": { 
+            "store": 5, 
+            "day_of_week": 1, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 61,
+            "fields": { 
+            "store": 5, 
+            "day_of_week": 2, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 62,
+            "fields": { 
+            "store": 5, 
+            "day_of_week": 3, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 63,
+            "fields": { 
+            "store": 5, 
+            "day_of_week": 4, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 64,
+            "fields": { 
+            "store": 5, 
+            "day_of_week": 5, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 65,
+            "fields": { 
+            "store": 5, 
+            "day_of_week": 6, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 66,
+            "fields": { 
+            "store": 6, 
+            "day_of_week": 0, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 67,
+            "fields": { 
+            "store": 6, 
+            "day_of_week": 1, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 68,
+            "fields": { 
+            "store": 6, 
+            "day_of_week": 2, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 69,
+            "fields": { 
+            "store": 6, 
+            "day_of_week": 3, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 70,
+            "fields": { 
+            "store": 6, 
+            "day_of_week": 4, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 71,
+            "fields": { 
+            "store": 6, 
+            "day_of_week": 5, 
+            "open_time": "08:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 72,
+            "fields": { 
+            "store": 6, 
+            "day_of_week": 6, 
+            "open_time": "08:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 73,
+            "fields": { 
+            "store": 7, 
+            "day_of_week": 0, 
+            "open_time": "11:00:00", 
+            "close_time": "21:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 74,
+            "fields": { 
+            "store": 7, 
+            "day_of_week": 1, 
+            "open_time": "11:00:00", 
+            "close_time": "21:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 75,
+            "fields": { 
+            "store": 7, 
+            "day_of_week": 2, 
+            "open_time": "11:00:00", 
+            "close_time": "21:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 76,
+            "fields": { 
+            "store": 7, 
+            "day_of_week": 3, 
+            "open_time": "11:00:00", 
+            "close_time": "21:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 77,
+            "fields": { 
+            "store": 7, 
+            "day_of_week": 4, 
+            "open_time": "11:00:00", 
+            "close_time": "21:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 78,
+            "fields": { 
+            "store": 7, 
+            "day_of_week": 5, 
+            "open_time": "11:00:00", 
+            "close_time": "21:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 79,
+            "fields": { 
+            "store": 7, 
+            "day_of_week": 6, 
+            "open_time": "11:00:00", 
+            "close_time": "21:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 80,
+            "fields": { 
+            "store": 8, 
+            "day_of_week": 0,
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 81,
+            "fields": { 
+            "store": 8, 
+            "day_of_week": 1, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 82,
+            "fields": { 
+            "store": 8, 
+            "day_of_week": 2, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 83,
+            "fields": { 
+            "store": 8, 
+            "day_of_week": 3, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 84,
+            "fields": { 
+            "store": 8, 
+            "day_of_week": 4, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 85,
+            "fields": { 
+            "store": 8, 
+            "day_of_week": 5, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 86,
+            "fields": { 
+            "store": 8, 
+            "day_of_week": 6, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 87,
+            "fields": { 
+            "store": 9, 
+            "day_of_week": 0, 
+            "open_time": "11:00:00", 
+            "close_time": "22:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 88,
+            "fields": { 
+            "store": 9, 
+            "day_of_week": 1, 
+            "open_time": "11:00:00", 
+            "close_time": "22:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 89,
+            "fields": { 
+            "store": 9, 
+            "day_of_week": 2, 
+            "open_time": "11:00:00", 
+            "close_time": "22:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 90,
+            "fields": { 
+            "store": 9, 
+            "day_of_week": 3, 
+            "open_time": "11:00:00", 
+            "close_time": "22:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 91,
+            "fields": { 
+            "store": 9, 
+            "day_of_week": 4, 
+            "open_time": "11:00:00", 
+            "close_time": "22:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 92,
+            "fields": { 
+            "store": 9, 
+            "day_of_week": 5, 
+            "open_time": "11:00:00", 
+            "close_time": "22:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 93,
+            "fields": { 
+            "store": 9, 
+            "day_of_week": 6, 
+            "open_time": "11:00:00", 
+            "close_time": "22:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 94,
+            "fields": { 
+            "store": 10, 
+            "day_of_week": 0, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 95,
+            "fields": { 
+            "store": 10, 
+            "day_of_week": 1, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 96,
+            "fields": { 
+            "store": 10, 
+            "day_of_week": 2, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 97,
+            "fields": { 
+            "store": 10, 
+            "day_of_week": 3, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 98,
+            "fields": { 
+            "store": 10, 
+            "day_of_week": 4, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 99,
+            "fields": { 
+            "store": 10, 
+            "day_of_week": 5, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 100,
+            "fields": { 
+            "store": 10, 
+            "day_of_week": 6, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 101,
+            "fields": { 
+            "store": 11, 
+            "day_of_week": 0, 
+            "open_time": "11:00:00", 
+            "close_time": "20:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 102,
+            "fields": { 
+            "store": 11, 
+            "day_of_week": 1, 
+            "open_time": "11:00:00", 
+            "close_time": "20:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 103,
+            "fields": { 
+            "store": 11, 
+            "day_of_week": 2, 
+            "open_time": "11:00:00", 
+            "close_time": "20:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 104,
+            "fields": { 
+            "store": 11, 
+            "day_of_week": 3, 
+            "open_time": "11:00:00", 
+            "close_time": "20:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 105,
+            "fields": { 
+            "store": 11, 
+            "day_of_week": 4, 
+            "open_time": "11:00:00", 
+            "close_time": "20:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 106,
+            "fields": { 
+            "store": 11, 
+            "day_of_week": 5, 
+            "open_time": "11:00:00", 
+            "close_time": "20:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 107,
+            "fields": { 
+            "store": 11, 
+            "day_of_week": 6, 
+            "open_time": "11:00:00", 
+            "close_time": "20:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 108,
+            "fields": { 
+            "store": 12, 
+            "day_of_week": 0, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 109,
+            "fields": { 
+            "store": 12, 
+            "day_of_week": 1, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 110,
+            "fields": { 
+            "store": 12, 
+            "day_of_week": 2, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 111,
+            "fields": { 
+            "store": 12, 
+            "day_of_week": 3, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 112,
+            "fields": { 
+            "store": 12, 
+            "day_of_week": 4, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 113,
+            "fields": { 
+            "store": 12, 
+            "day_of_week": 5, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 114,
+            "fields": { 
+            "store": 12, 
+            "day_of_week": 6, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 115,
+            "fields": { 
+            "store": 13, 
+            "day_of_week": 0, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 116,
+            "fields": { 
+            "store": 13, 
+            "day_of_week": 1, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 117,
+            "fields": { 
+            "store": 13, 
+            "day_of_week": 2, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 118,
+            "fields": { 
+            "store": 13, 
+            "day_of_week": 3, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 119,
+            "fields": { 
+            "store": 13, 
+            "day_of_week": 4, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 120,
+            "fields": { 
+            "store": 13, 
+            "day_of_week": 5, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 121,
+            "fields": { 
+            "store": 13, 
+            "day_of_week": 6, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 122,
+            "fields": { 
+            "store": 14, 
+            "day_of_week": 0, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 123,
+            "fields": { 
+            "store": 14, 
+            "day_of_week": 1, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 124,
+            "fields": { 
+            "store": 14, 
+            "day_of_week": 2, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 125,
+            "fields": { 
+            "store": 14, 
+            "day_of_week": 3, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 126,
+            "fields": { 
+            "store": 14, 
+            "day_of_week": 4, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 127,
+            "fields": { 
+            "store": 14, 
+            "day_of_week": 5, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 128,
+            "fields": { 
+            "store": 14, 
+            "day_of_week": 6, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 129,
+            "fields": { 
+            "store": 15, 
+            "day_of_week": 0, 
+            "open_time": "10:00:00", 
+            "close_time": "18:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 130,
+            "fields": { 
+            "store": 15, 
+            "day_of_week": 1, 
+            "open_time": "10:00:00", 
+            "close_time": "18:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 131,
+            "fields": { 
+            "store": 15, 
+            "day_of_week": 2, 
+            "open_time": "10:00:00", 
+            "close_time": "18:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 132,
+            "fields": { 
+            "store": 15, 
+            "day_of_week": 3, 
+            "open_time": "10:00:00", 
+            "close_time": "18:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 133,
+            "fields": { 
+            "store": 15, 
+            "day_of_week": 4, 
+            "open_time": "10:00:00", 
+            "close_time": "18:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 134,
+            "fields": { 
+            "store": 15, 
+            "day_of_week": 5, 
+            "open_time": "10:00:00", 
+            "close_time": "18:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 135,
+            "fields": { 
+            "store": 15, 
+            "day_of_week": 6, 
+            "open_time": null, 
+            "close_time": null } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 136,
+            "fields": { 
+            "store": 16, 
+            "day_of_week": 0, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 137,
+            "fields": { 
+            "store": 16, 
+            "day_of_week": 1, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 138,
+            "fields": { 
+            "store": 16, 
+            "day_of_week": 2, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 139,
+            "fields": { 
+            "store": 16, 
+            "day_of_week": 3, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 140,
+            "fields": { 
+            "store": 16, 
+            "day_of_week": 4, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 141,
+            "fields": { 
+            "store": 16, 
+            "day_of_week": 5, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 142,
+            "fields": { 
+            "store": 16, 
+            "day_of_week": 6, 
+            "open_time": "10:30:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 143,
+            "fields": { 
+            "store": 17, 
+            "day_of_week": 0, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 144,
+            "fields": { 
+            "store": 17, 
+            "day_of_week": 1, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 145,
+            "fields": { 
+            "store": 17, 
+            "day_of_week": 2, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 146,
+            "fields": { 
+            "store": 17, 
+            "day_of_week": 3, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 147,
+            "fields": { 
+            "store": 17, 
+            "day_of_week": 4, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 148,
+            "fields": { 
+            "store": 17, 
+            "day_of_week": 5, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 149,
+            "fields": { 
+            "store": 17, 
+            "day_of_week": 6, 
+            "open_time": "10:00:00", 
+            "close_time": "21:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 150,
+            "fields": { 
+            "store": 18, 
+            "day_of_week": 0, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 151,
+            "fields": { 
+            "store": 18, 
+            "day_of_week": 1, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 152,
+            "fields": { 
+            "store": 18, 
+            "day_of_week": 2, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 153,
+            "fields": { 
+            "store": 18, 
+            "day_of_week": 3, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 154,
+            "fields": { 
+            "store": 18, 
+            "day_of_week": 4, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 155,
+            "fields": { 
+            "store": 18, 
+            "day_of_week": 5, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 156,
+            "fields": { 
+            "store": 18, 
+            "day_of_week": 6, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 157,
+            "fields": { 
+            "store": 19, 
+            "day_of_week": 0, 
+            "open_time": "11:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 158,
+            "fields": { 
+            "store": 19, 
+            "day_of_week": 1, 
+            "open_time": "11:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 159,
+            "fields": { 
+            "store": 19, 
+            "day_of_week": 2, 
+            "open_time": "11:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 160,
+            "fields": { 
+            "store": 19, 
+            "day_of_week": 3, 
+            "open_time": "11:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 161,
+            "fields": { 
+            "store": 19, 
+            "day_of_week": 4, 
+            "open_time": "11:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 162,
+            "fields": { 
+            "store": 19, 
+            "day_of_week": 5, 
+            "open_time": "11:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 163,
+            "fields": { 
+            "store": 19, 
+            "day_of_week": 6, 
+            "open_time": "11:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 164,
+            "fields": { 
+            "store": 20, 
+            "day_of_week": 0, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 165,
+            "fields": { 
+            "store": 20, 
+            "day_of_week": 1, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 166,
+            "fields": { 
+            "store": 20, 
+            "day_of_week": 2, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 167,
+            "fields": { 
+            "store": 20, 
+            "day_of_week": 3, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 168,
+            "fields": { 
+            "store": 20, 
+            "day_of_week": 4, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 169,
+            "fields": { 
+            "store": 20, 
+            "day_of_week": 5, 
+            "open_time": "11:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 170,
+            "fields": { 
+            "store": 20, 
+            "day_of_week": 6, 
+            "open_time": null, 
+            "close_time": null } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 171,
+            "fields": { 
+            "store": 21, 
+            "day_of_week": 0, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 172,
+            "fields": { 
+            "store": 21, 
+            "day_of_week": 1, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 173,
+            "fields": { 
+            "store": 21, 
+            "day_of_week": 2, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 174,
+            "fields": { 
+            "store": 21, 
+            "day_of_week": 3, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 175,
+            "fields": { 
+            "store": 21, 
+            "day_of_week": 4, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 176,
+            "fields": { 
+            "store": 21, 
+            "day_of_week": 5, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 177,
+            "fields": { 
+            "store": 21, 
+            "day_of_week": 6, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 178,
+            "fields": { 
+            "store": 22, 
+            "day_of_week": 0, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 179,
+            "fields": { 
+            "store": 22, 
+            "day_of_week": 1, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 180,
+            "fields": { 
+            "store": 22, 
+            "day_of_week": 2, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 181,
+            "fields": { 
+            "store": 22, 
+            "day_of_week": 3, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 182,
+            "fields": { 
+            "store": 22, 
+            "day_of_week": 4, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 183,
+            "fields": { 
+            "store": 22, 
+            "day_of_week": 5, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 184,
+            "fields": { 
+            "store": 22, 
+            "day_of_week": 6, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 185,
+            "fields": { 
+            "store": 23, 
+            "day_of_week": 0, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 186,
+            "fields": { 
+            "store": 23, 
+            "day_of_week": 1, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 187,
+            "fields": { 
+            "store": 23, 
+            "day_of_week": 2, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 188,
+            "fields": { 
+            "store": 23, 
+            "day_of_week": 3, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 189,
+            "fields": { 
+            "store": 23, 
+            "day_of_week": 4, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 190,
+            "fields": { 
+            "store": 23, 
+            "day_of_week": 5, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 191,
+            "fields": { 
+            "store": 23, 
+            "day_of_week": 6, 
+            "open_time": "09:30:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 192,
+            "fields": { 
+            "store": 24, 
+            "day_of_week": 0, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 193,
+            "fields": { 
+            "store": 24, 
+            "day_of_week": 1, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 194,
+            "fields": { 
+            "store": 24, 
+            "day_of_week": 2, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 195,
+            "fields": { 
+            "store": 24, 
+            "day_of_week": 3, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 196,
+            "fields": { 
+            "store": 24, 
+            "day_of_week": 4, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 197,
+            "fields": { 
+            "store": 24, 
+            "day_of_week": 5, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 198,
+            "fields": { 
+            "store": 24, 
+            "day_of_week": 6, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 199,
+            "fields": { 
+            "store": 25, 
+            "day_of_week": 0, 
+            "open_time": "07:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 200,
+            "fields": { 
+            "store": 25, 
+            "day_of_week": 1, 
+            "open_time": "07:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 201,
+            "fields": { 
+            "store": 25, 
+            "day_of_week": 2, 
+            "open_time": "07:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 202,
+            "fields": { 
+            "store": 25, 
+            "day_of_week": 3, 
+            "open_time": "07:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 203,
+            "fields": { 
+            "store": 25, 
+            "day_of_week": 4, 
+            "open_time": "07:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 204,
+            "fields": { 
+            "store": 25, 
+            "day_of_week": 5, 
+            "open_time": "07:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 205,
+            "fields": { 
+            "store": 25, 
+            "day_of_week": 6, 
+            "open_time": "07:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 206,
+            "fields": { 
+            "store": 26, 
+            "day_of_week": 0, 
+            "open_time": "09:00:00", 
+            "close_time": "23:39:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 207,
+            "fields": { 
+            "store": 26, 
+            "day_of_week": 1, 
+            "open_time": "09:00:00", 
+            "close_time": "23:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 208,
+            "fields": { 
+            "store": 26, 
+            "day_of_week": 2, 
+            "open_time": "09:00:00", 
+            "close_time": "23:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 209,
+            "fields": { 
+            "store": 26, 
+            "day_of_week": 3, 
+            "open_time": "09:00:00", 
+            "close_time": "23:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 210,
+            "fields": { 
+            "store": 26, 
+            "day_of_week": 4, 
+            "open_time": "09:00:00", 
+            "close_time": "23:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 211,
+            "fields": { 
+            "store": 26, 
+            "day_of_week": 5, 
+            "open_time": "09:00:00", 
+            "close_time": "23:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 212,
+            "fields": { 
+            "store": 26, 
+            "day_of_week": 6, 
+            "open_time": "09:00:00", 
+            "close_time": "23:30:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 213,
+            "fields": { 
+            "store": 27, 
+            "day_of_week": 0, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 214,
+            "fields": { 
+            "store": 27, 
+            "day_of_week": 1, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 215,
+            "fields": { 
+            "store": 27, 
+            "day_of_week": 2, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 216,
+            "fields": { 
+            "store": 27, 
+            "day_of_week": 3, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 217,
+            "fields": { 
+            "store": 27, 
+            "day_of_week": 4, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 218,
+            "fields": { 
+            "store": 27, 
+            "day_of_week": 5, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 219,
+            "fields": { 
+            "store": 27, 
+            "day_of_week": 6, 
+            "open_time": "10:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 220,
+            "fields": { 
+            "store": 28, 
+            "day_of_week": 0, 
+            "open_time": "08:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 221,
+            "fields": { 
+            "store": 28, 
+            "day_of_week": 1, 
+            "open_time": "08:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 222,
+            "fields": { 
+            "store": 28, 
+            "day_of_week": 2, 
+            "open_time": "08:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 223,
+            "fields": { 
+            "store": 28, 
+            "day_of_week": 3, 
+            "open_time": "08:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 224,
+            "fields": { 
+            "store": 28, 
+            "day_of_week": 4, 
+            "open_time": "08:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 225,
+            "fields": { 
+            "store": 28, 
+            "day_of_week": 5, 
+            "open_time": "08:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 226,
+            "fields": { 
+            "store": 28, 
+            "day_of_week": 6, 
+            "open_time": "08:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 227,
+            "fields": { 
+            "store": 29, 
+            "day_of_week": 0, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 228,
+            "fields": { 
+            "store": 29, 
+            "day_of_week": 1, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 229,
+            "fields": { 
+            "store": 29, 
+            "day_of_week": 2, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 230,
+            "fields": { 
+            "store": 29, 
+            "day_of_week": 3, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 231,
+            "fields": { 
+            "store": 29, 
+            "day_of_week": 4, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 232,
+            "fields": { 
+            "store": 29, 
+            "day_of_week": 5, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 233,
+            "fields": { 
+            "store": 29, 
+            "day_of_week": 6, 
+            "open_time": "09:00:00", 
+            "close_time": "22:00:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 234,
+            "fields": { 
+            "store": 30, 
+            "day_of_week": 0, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 235,
+            "fields": { 
+            "store": 30, 
+            "day_of_week": 1, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 236,
+            "fields": { 
+            "store": 30, 
+            "day_of_week": 2, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 237,
+            "fields": { 
+            "store": 30, 
+            "day_of_week": 3, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 238,
+            "fields": { 
+            "store": 30, 
+            "day_of_week": 4, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 239,
+            "fields": { 
+            "store": 30, 
+            "day_of_week": 5, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
+      },
+      { 
+            "model": "merchants.storeoperatinghour",
+            "pk": 240,
+            "fields": { 
+            "store": 30, 
+            "day_of_week": 6, 
+            "open_time": "00:00:00", 
+            "close_time": "23:59:00" } 
       }
-    ]
+]
