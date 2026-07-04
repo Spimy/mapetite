@@ -2653,5 +2653,455 @@
             "model": "merchants.itemcategory",
             "pk": 303,
             "fields": { "store": 20, "name": "Quesadillas", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 304,
+            "fields": { "store": 21, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 305,
+            "fields": { "store": 21, "name": "Fruits", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 306,
+            "fields": { "store": 21, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 307,
+            "fields": { "store": 21, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 308,
+            "fields": { "store": 21, "name": "Pantry", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 309,
+            "fields": { "store": 21, "name": "Bakery", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 310,
+            "fields": { "store": 21, "name": "Frozen", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 311,
+            "fields": { "store": 21, "name": "Condiments", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 312,
+            "fields": { "store": 21, "name": "Diary & Eggs", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 313,
+            "fields": { "store": 22, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 314,
+            "fields": { "store": 22, "name": "Fruits", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 315,
+            "fields": { "store": 22, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 316,
+            "fields": { "store": 22, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 317,
+            "fields": { "store": 22, "name": "Pantry", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 318,
+            "fields": { "store": 22, "name": "Bakery", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 319,
+            "fields": { "store": 22, "name": "Frozen", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 320,
+            "fields": { "store": 22, "name": "Condiments", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 321,
+            "fields": { "store": 22, "name": "Diary & Eggs", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 322,
+            "fields": { "store": 23, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 323,
+            "fields": { "store": 23, "name": "Fruits", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 324,
+            "fields": { "store": 23, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 325,
+            "fields": { "store": 23, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 326,
+            "fields": { "store": 23, "name": "Pantry", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 327,
+            "fields": { "store": 23, "name": "Bakery", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 328,
+            "fields": { "store": 23, "name": "Frozen", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 329,
+            "fields": { "store": 23, "name": "Condiments", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 330,
+            "fields": { "store": 23, "name": "Diary & Eggs", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 331,
+            "fields": { "store": 24, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 332,
+            "fields": { "store": 24, "name": "Fruits", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 333,
+            "fields": { "store": 24, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 334,
+            "fields": { "store": 24, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 335,
+            "fields": { "store": 24, "name": "Pantry", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 336,
+            "fields": { "store": 24, "name": "Bakery", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 337,
+            "fields": { "store": 24, "name": "Frozen", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 338,
+            "fields": { "store": 24, "name": "Condiments", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 339,
+            "fields": { "store": 24, "name": "Diary & Eggs", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 340,
+            "fields": { "store": 25, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 341,
+            "fields": { "store": 25, "name": "Fruits", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 342,
+            "fields": { "store": 25, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 343,
+            "fields": { "store": 25, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 344,
+            "fields": { "store": 25, "name": "Pantry", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 345,
+            "fields": { "store": 25, "name": "Bakery", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 346,
+            "fields": { "store": 25, "name": "Frozen", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 347,
+            "fields": { "store": 25, "name": "Condiments", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 348,
+            "fields": { "store": 25, "name": "Diary & Eggs", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 349,
+            "fields": { "store": 26, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 350,
+            "fields": { "store": 26, "name": "Fruits", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 351,
+            "fields": { "store": 26, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 352,
+            "fields": { "store": 26, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 353,
+            "fields": { "store": 26, "name": "Pantry", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 354,
+            "fields": { "store": 26, "name": "Bakery", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 355,
+            "fields": { "store": 26, "name": "Frozen", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 356,
+            "fields": { "store": 26, "name": "Condiments", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 357,
+            "fields": { "store": 26, "name": "Diary & Eggs", "display_order": 0 }
+      }, 
+      {
+            "model": "merchants.itemcategory",
+            "pk": 358,
+            "fields": { "store": 27, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 359,
+            "fields": { "store": 27, "name": "Fruits", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 360,
+            "fields": { "store": 27, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 361,
+            "fields": { "store": 27, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 362,
+            "fields": { "store": 27, "name": "Pantry", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 363,
+            "fields": { "store": 27, "name": "Bakery", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 364,
+            "fields": { "store": 27, "name": "Frozen", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 365,
+            "fields": { "store": 27, "name": "Condiments", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 366,
+            "fields": { "store": 27, "name": "Diary & Eggs", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 367,
+            "fields": { "store": 28, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 368,
+            "fields": { "store": 28, "name": "Fruits", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 369,
+            "fields": { "store": 28, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 370,
+            "fields": { "store": 28, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 371,
+            "fields": { "store": 28, "name": "Pantry", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 372,
+            "fields": { "store": 28, "name": "Bakery", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 373,
+            "fields": { "store": 28, "name": "Frozen", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 374,
+            "fields": { "store": 28, "name": "Condiments", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 375,
+            "fields": { "store": 28, "name": "Diary & Eggs", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 376,
+            "fields": { "store": 29, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 377,
+            "fields": { "store": 29, "name": "Fruits", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 378,
+            "fields": { "store": 29, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 379,
+            "fields": { "store": 29, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 380,
+            "fields": { "store": 29, "name": "Pantry", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 381,
+            "fields": { "store": 29, "name": "Bakery", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 382,
+            "fields": { "store": 29, "name": "Frozen", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 383,
+            "fields": { "store": 29, "name": "Condiments", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 384,
+            "fields": { "store": 29, "name": "Diary & Eggs", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 385,
+            "fields": { "store": 30, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 386,
+            "fields": { "store": 30, "name": "Fruits", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 387,
+            "fields": { "store": 30, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 388,
+            "fields": { "store": 30, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 389,
+            "fields": { "store": 30, "name": "Pantry", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 390,
+            "fields": { "store": 30, "name": "Bakery", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 391,
+            "fields": { "store": 30, "name": "Frozen", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 392,
+            "fields": { "store": 30, "name": "Condiments", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 393,
+            "fields": { "store": 30, "name": "Diary & Eggs", "display_order": 0 }
       }
 ]
