@@ -2338,5 +2338,320 @@
             "day_of_week": 6, 
             "open_time": "00:00:00", 
             "close_time": "23:59:00" } 
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 241,
+            "fields": { "store": 1, "name": "Roti", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 242,
+            "fields": { "store": 1, "name": "Rice & Noodles", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 243,
+            "fields": { "store": 1, "name": "Beverage", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 244,
+            "fields": { "store": 2, "name": "Mains", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 245,
+            "fields": { "store": 2, "name": "Rice", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 246,
+            "fields": { "store": 2, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 247,
+            "fields": { "store": 3, "name": "Mains", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 248,
+            "fields": { "store": 3, "name": "Rice", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 249,
+            "fields": { "store": 3, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 250,
+            "fields": { "store": 4, "name": "Mains", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 251,
+            "fields": { "store": 4, "name": "Rice", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 252,
+            "fields": { "store": 4, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 253,
+            "fields": { "store": 5, "name": "Local Dishes", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 254,
+            "fields": { "store": 5, "name": "Breakfast", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 255,
+            "fields": { "store": 5, "name": "Pastries", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 256,
+            "fields": { "store": 6, "name": "Local Dishes", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 257,
+            "fields": { "store": 6, "name": "Breakfast", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 258,
+            "fields": { "store": 6, "name": "Pastries", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 259,
+            "fields": { "store": 7, "name": "Rice & Noodles", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 260,
+            "fields": { "store": 7, "name": "Meat", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 261,
+            "fields": { "store": 7, "name": "Seafood", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 262,
+            "fields": { "store": 7, "name": "Tofu", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 263,
+            "fields": { "store": 7, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 264,
+            "fields": { "store": 8, "name": "Noodles", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 265,
+            "fields": { "store": 8, "name": "Rice Bowls", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 266,
+            "fields": { "store": 8, "name": "Sides", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 267,
+            "fields": { "store": 9, "name": "Chicken Set", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 268,
+            "fields": { "store": 9, "name": "Seafood Set", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 269,
+            "fields": { "store": 9, "name": "Vegetables", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 270,
+            "fields": { "store": 9, "name": "Tofu", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 271,
+            "fields": { "store": 10, "name": "Mains", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 272,
+            "fields": { "store": 10, "name": "Sides", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 273,
+            "fields": { "store": 11, "name": "Bases", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 274,
+            "fields": { "store": 11, "name": "Proteins", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 275,
+            "fields": { "store": 11, "name": "Sides", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 276,
+            "fields": { "store": 11, "name": "Toppings", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 277,
+            "fields": { "store": 12, "name": "Bases", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 278,
+            "fields": { "store": 12, "name": "Proteins", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 279,
+            "fields": { "store": 12, "name": "Sides", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 280,
+            "fields": { "store": 12, "name": "Toppings", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 281,
+            "fields": { "store": 13, "name": "Mains", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 282,
+            "fields": { "store": 13, "name": "Sides", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 283,
+            "fields": { "store": 14, "name": "Burritos", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 284,
+            "fields": { "store": 14, "name": "Kebabs", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 285,
+            "fields": { "store": 14, "name": "Bowls", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 286,
+            "fields": { "store": 14, "name": "Quesadillas", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 287,
+            "fields": { "store": 15, "name": "Mains", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 288,
+            "fields": { "store": 15, "name": "Sides", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 289,
+            "fields": { "store": 16, "name": "Rice", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 290,
+            "fields": { "store": 16, "name": "Noodles", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 291,
+            "fields": { "store": 16, "name": "Hot Pot", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 292,
+            "fields": { "store": 16, "name": "Sides", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 293,
+            "fields": { "store": 17, "name": "Bases", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 294,
+            "fields": { "store": 17, "name": "Proteins", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 295,
+            "fields": { "store": 17, "name": "Sides", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 296,
+            "fields": { "store": 17, "name": "Toppings", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 297,
+            "fields": { "store": 18, "name": "Mains", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 298,
+            "fields": { "store": 18, "name": "Sides", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 299,
+            "fields": { "store": 19, "name": "Mains", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 300,
+            "fields": { "store": 19, "name": "Sides", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 301,
+            "fields": { "store": 20, "name": "Tacos", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 302,
+            "fields": { "store": 20, "name": "Burritos", "display_order": 0 }
+      },
+      {
+            "model": "merchants.itemcategory",
+            "pk": 303,
+            "fields": { "store": 20, "name": "Quesadillas", "display_order": 0 }
       }
 ]
