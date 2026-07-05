@@ -6,6 +6,7 @@
   ],
   "service": "web",
   "workspaceFolder": "/workspace/server",
+  "shutdownAction": "stopCompose",
   "customizations": {
     "vscode": {
       "extensions": [

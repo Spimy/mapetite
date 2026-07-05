@@ -17,3 +17,7 @@ shell:
 # Jump inside the container's terminal as root
 bash:
 	docker compose exec web bash
+
+# Flutter commands
+flutter-run:
+	cd mobile-client && flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080
