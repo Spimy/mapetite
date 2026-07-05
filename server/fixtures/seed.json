@@ -24,7 +24,7 @@
           "halal": true,
           "vegan": false,
           "street_address": "1, Jalan PJS 11/20, Bandar Sunway, 47500 Petaling Jaya, Selangor",
-          "image": "merchants/stores/2.jpeg",
+          "image": "merchants/stores/2.png",
           "location": "POINT (101.60161359077749 3.068545536495694)",
           "owner": null
         }
@@ -39,7 +39,7 @@
           "halal": true,
           "vegan": false,
           "street_address": "1-A,Nadayu 28 Dagang, Jalan PJS 11/7, Bandar Sunway, 47500 Subang Jaya, Selangor",
-          "image": "merchants/stores/3.jpg",
+          "image": "merchants/stores/3.png",
           "location": "POINT (101.60266366239603 3.0707409749325127)",
           "owner": null
         }
@@ -54,7 +54,7 @@
           "halal": true,
           "vegan": false,
           "street_address": "Sunway Metro, 37G, Jalan PJS 11/28b, Bandar Sunway, 46150 Petaling Jaya, Selangor",
-          "image": "merchants/stores/4.webp",
+          "image": "merchants/stores/4.png",
           "location": "POINT (101.6103201872229 3.0721311467542316)",
           "owner": null
         }
@@ -69,7 +69,7 @@
           "halal": true,
           "vegan": false,
           "street_address": "L1-43 Level, 1, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
-          "image": "merchants/stores/5.jpeg",
+          "image": "merchants/stores/5.png",
           "location": "POINT (101.60580351087 3.0648803362079335)",
           "owner": null
         }
@@ -84,7 +84,7 @@
           "halal": true,
           "vegan": false,
           "street_address": "G1.108 & 1.109 Ground Floor, Sunway Pyramid, Bandar Sunway, 47500 Petaling Jaya, Selangor",
-          "image": "merchants/stores/6.jpg",
+          "image": "merchants/stores/6.png",
           "location": "POINT (101.60598099427014 3.071718668110293)",
           "owner": null
         }
@@ -99,7 +99,7 @@
           "halal": false,
           "vegan": false,
           "street_address": "25, Jalan PJS 11/1, Bandar Sunway, 47500 Petaling Jaya, Selangor",
-          "image": "merchants/stores/7.jpg",
+          "image": "merchants/stores/7.png",
           "location": "POINT (101.59958276204075 3.0698410109452503)",
           "owner": null
         }
@@ -144,7 +144,7 @@
           "halal": true,
           "vegan": false,
           "street_address": "L1-33, Sunway Square, Jalan Lagoon Selatan, Bandar Sunway, 47500 Subang Jaya, Selangor",
-          "image": "merchants/stores/10.jpeg",
+          "image": "merchants/stores/10.png",
           "location": "POINT (101.60369459976714 3.0652467447713363)",
           "owner": null
         }
@@ -174,7 +174,7 @@
           "halal": true,
           "vegan": true,
           "street_address": "73, Jalan PJS 11/7, Bandar Sunway, 46150 Petaling Jaya, Selangor",
-          "image": "merchants/stores/12.jpeg",
+          "image": "merchants/stores/12.png",
           "location": "POINT (101.60239534846313 3.0659842558315775)",
           "owner": null
         }
@@ -189,7 +189,7 @@
           "halal": true,
           "vegan": false,
           "street_address": "L2-22, Sunway Square Mall, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
-          "image": "merchants/stores/13.jpg",
+          "image": "merchants/stores/13.png",
           "location": "POINT (101.60462387052881 3.0647348909396155)",
           "owner": null
         }
@@ -204,7 +204,7 @@
           "halal": true,
           "vegan": true,
           "street_address": "LG1-27 (Lower Ground One, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
-          "image": "merchants/stores/14.jpeg",
+          "image": "merchants/stores/14.png",
           "location": "POINT (101.60419368317301 3.065102658611143)",
           "owner": null
         }
@@ -219,7 +219,7 @@
           "halal": true,
           "vegan": true,
           "street_address": "23, Jalan PJS 11/9, Bandar Sunway, 46150 Petaling Jaya, Selangor",
-          "image": "merchants/stores/15.jpeg",
+          "image": "merchants/stores/15.png",
           "location": "POINT (101.6031624925095 3.067956578489205)",
           "owner": null
         }
@@ -234,7 +234,7 @@
           "halal": true,
           "vegan": true,
           "street_address": "F1. 86A, Oasis Pyramid, Jalan PJS 11/15, Bandar Sunway, 47500 Petaling Jaya, Selangor",
-          "image": "merchants/stores/16.jpg",
+          "image": "merchants/stores/16.png",
           "location": "POINT (101.60514783879671 3.07304052169511)",
           "owner": null
         }
@@ -264,7 +264,7 @@
           "halal": true,
           "vegan": true,
           "street_address": "LG2-128A, Blue Atrium, 3, Jalan PJS 11/15, Bandar Sunway, 47500 Subang Jaya, Selangor",
-          "image": "merchants/stores/18.jpg",
+          "image": "merchants/stores/18.png",
           "location": "POINT (101.613092 3.070368)",
           "owner": null
         }
@@ -279,7 +279,7 @@
           "halal": true,
           "vegan": false,
           "street_address": "50 @ Rock Cafe, Jalan PJS 11/20, Bandar Sunway, 46150 Petaling Jaya, Selangor",
-          "image": "merchants/stores/19.jpeg",
+          "image": "merchants/stores/19.png",
           "location": "POINT (101.60237539447746 3.0686410679246463)",
           "owner": null
         }
@@ -294,7 +294,7 @@
           "halal": true,
           "vegan": true,
           "street_address": "66, Jalan PJS 11/7, Bandar Sunway, 47500 Subang Jaya, Selangor",
-          "image": "merchants/stores/20.jpg",
+          "image": "merchants/stores/20.png",
           "location": "POINT (101.60258835602089 3.066303775547407)",
           "owner": null
         }
@@ -309,7 +309,7 @@
           "halal": false,
           "vegan": false,
           "street_address": "Level LG 1, Unit No. LG1-05, Sunway Square Mall, Jalan Lagoon Selatan, 47500 Subang Jaya, Selangor",
-          "image": "merchants/stores/21.jpeg",
+          "image": "merchants/stores/21.png",
           "location": "POINT (101.60533767178103 3.0656925281584844)",
           "owner": null
         }
@@ -324,7 +324,7 @@
           "halal": false,
           "vegan": false,
           "street_address": "D-01-01, Blok D, Sunway Geo Avenue Jalan Lagoon Selatan, South Quay, Bandar Sunway, 47500 Subang Jaya, Selangor",
-          "image": "merchants/stores/22.jpg",
+          "image": "merchants/stores/22.png",
           "location": "POINT (101.60892110273518 3.065713955121291)",
           "owner": null
         }
@@ -339,7 +339,7 @@
           "halal": false,
           "vegan": false,
           "street_address": "LG2-130, Lower Ground Floor 2, Sunway Pyramid, 3, Jalan PJS 11/15, Bandar Sunway, 47500 Subang Jaya, Selangor",
-          "image": "merchants/stores/23.jpg",
+          "image": "merchants/stores/23.png",
           "location": "POINT (101.60596398470418 3.072431198124951)",
           "owner": null
         }
@@ -369,7 +369,7 @@
           "halal": false,
           "vegan": false,
           "street_address": "Ground Floor, Tower A, Sun-u Residence, Jalan PJS 11/26, Bandar Sunway, 47500 Petaling Jaya, Selangor",
-          "image": "merchants/stores/25.jpg",
+          "image": "merchants/stores/25.png",
           "location": "POINT (101.60509250318107 3.065997697426775)",
           "owner": null
         }
@@ -399,7 +399,7 @@
           "halal": false,
           "vegan": false,
           "street_address": "G-01-03, Sunway Geo, Jalan Lagoon Selatan, 47500 Subang Jaya, Selangor",
-          "image": "merchants/stores/27.jpg",
+          "image": "merchants/stores/27.png",
           "location": "POINT (101.60869589874949 3.0647342502177524)",
           "owner": null
         }
@@ -444,7 +444,7 @@
           "halal": false,
           "vegan": false,
           "street_address": "E-01-09, Sunway Geo Avenue SDF, 1B, Jalan Lagoon Selatan, Bandar Sunway, 47500 Subang Jaya, Selangor",
-          "image": "merchants/stores/30.jpg",
+          "image": "merchants/stores/30.png",
           "location": "POINT (101.60855605767038 3.0654263697051496)", 
           "owner": null
         }
@@ -2347,12 +2347,12 @@
       {
             "model": "merchants.itemcategory",
             "pk": 242,
-            "fields": { "store": 1, "name": "Rice & Noodles", "display_order": 0 }
+            "fields": { "store": 1, "name": "Rice & Noodles", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 243,
-            "fields": { "store": 1, "name": "Beverage", "display_order": 0 }
+            "fields": { "store": 1, "name": "Beverage", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2362,12 +2362,12 @@
       {
             "model": "merchants.itemcategory",
             "pk": 245,
-            "fields": { "store": 2, "name": "Rice", "display_order": 0 }
+            "fields": { "store": 2, "name": "Rice", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 246,
-            "fields": { "store": 2, "name": "Vegetables", "display_order": 0 }
+            "fields": { "store": 2, "name": "Vegetables", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2377,12 +2377,12 @@
       {
             "model": "merchants.itemcategory",
             "pk": 248,
-            "fields": { "store": 3, "name": "Rice", "display_order": 0 }
+            "fields": { "store": 3, "name": "Rice", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 249,
-            "fields": { "store": 3, "name": "Vegetables", "display_order": 0 }
+            "fields": { "store": 3, "name": "Vegetables", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2392,12 +2392,12 @@
       {
             "model": "merchants.itemcategory",
             "pk": 251,
-            "fields": { "store": 4, "name": "Rice", "display_order": 0 }
+            "fields": { "store": 4, "name": "Rice", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 252,
-            "fields": { "store": 4, "name": "Vegetables", "display_order": 0 }
+            "fields": { "store": 4, "name": "Vegetables", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2407,12 +2407,12 @@
       {
             "model": "merchants.itemcategory",
             "pk": 254,
-            "fields": { "store": 5, "name": "Breakfast", "display_order": 0 }
+            "fields": { "store": 5, "name": "Breakfast", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 255,
-            "fields": { "store": 5, "name": "Pastries", "display_order": 0 }
+            "fields": { "store": 5, "name": "Pastries", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2422,12 +2422,12 @@
       {
             "model": "merchants.itemcategory",
             "pk": 257,
-            "fields": { "store": 6, "name": "Breakfast", "display_order": 0 }
+            "fields": { "store": 6, "name": "Breakfast", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 258,
-            "fields": { "store": 6, "name": "Pastries", "display_order": 0 }
+            "fields": { "store": 6, "name": "Pastries", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2437,22 +2437,22 @@
       {
             "model": "merchants.itemcategory",
             "pk": 260,
-            "fields": { "store": 7, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 7, "name": "Meat", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 261,
-            "fields": { "store": 7, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 7, "name": "Seafood", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 262,
-            "fields": { "store": 7, "name": "Tofu", "display_order": 0 }
+            "fields": { "store": 7, "name": "Tofu", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 263,
-            "fields": { "store": 7, "name": "Vegetables", "display_order": 0 }
+            "fields": { "store": 7, "name": "Vegetables", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2462,12 +2462,12 @@
       {
             "model": "merchants.itemcategory",
             "pk": 265,
-            "fields": { "store": 8, "name": "Rice Bowls", "display_order": 0 }
+            "fields": { "store": 8, "name": "Rice Bowls", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 266,
-            "fields": { "store": 8, "name": "Sides", "display_order": 0 }
+            "fields": { "store": 8, "name": "Sides", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2477,17 +2477,17 @@
       {
             "model": "merchants.itemcategory",
             "pk": 268,
-            "fields": { "store": 9, "name": "Seafood Set", "display_order": 0 }
+            "fields": { "store": 9, "name": "Seafood Set", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 269,
-            "fields": { "store": 9, "name": "Vegetables", "display_order": 0 }
+            "fields": { "store": 9, "name": "Vegetables", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 270,
-            "fields": { "store": 9, "name": "Tofu", "display_order": 0 }
+            "fields": { "store": 9, "name": "Tofu", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2497,7 +2497,7 @@
       {
             "model": "merchants.itemcategory",
             "pk": 272,
-            "fields": { "store": 10, "name": "Sides", "display_order": 0 }
+            "fields": { "store": 10, "name": "Sides", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2507,17 +2507,17 @@
       {
             "model": "merchants.itemcategory",
             "pk": 274,
-            "fields": { "store": 11, "name": "Proteins", "display_order": 0 }
+            "fields": { "store": 11, "name": "Proteins", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 275,
-            "fields": { "store": 11, "name": "Sides", "display_order": 0 }
+            "fields": { "store": 11, "name": "Sides", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 276,
-            "fields": { "store": 11, "name": "Toppings", "display_order": 0 }
+            "fields": { "store": 11, "name": "Toppings", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2527,17 +2527,17 @@
       {
             "model": "merchants.itemcategory",
             "pk": 278,
-            "fields": { "store": 12, "name": "Proteins", "display_order": 0 }
+            "fields": { "store": 12, "name": "Proteins", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 279,
-            "fields": { "store": 12, "name": "Sides", "display_order": 0 }
+            "fields": { "store": 12, "name": "Sides", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 280,
-            "fields": { "store": 12, "name": "Toppings", "display_order": 0 }
+            "fields": { "store": 12, "name": "Toppings", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2547,7 +2547,7 @@
       {
             "model": "merchants.itemcategory",
             "pk": 282,
-            "fields": { "store": 13, "name": "Sides", "display_order": 0 }
+            "fields": { "store": 13, "name": "Sides", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2557,17 +2557,17 @@
       {
             "model": "merchants.itemcategory",
             "pk": 284,
-            "fields": { "store": 14, "name": "Kebabs", "display_order": 0 }
+            "fields": { "store": 14, "name": "Kebabs", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 285,
-            "fields": { "store": 14, "name": "Bowls", "display_order": 0 }
+            "fields": { "store": 14, "name": "Bowls", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 286,
-            "fields": { "store": 14, "name": "Quesadillas", "display_order": 0 }
+            "fields": { "store": 14, "name": "Quesadillas", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2577,7 +2577,7 @@
       {
             "model": "merchants.itemcategory",
             "pk": 288,
-            "fields": { "store": 15, "name": "Sides", "display_order": 0 }
+            "fields": { "store": 15, "name": "Sides", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2587,17 +2587,17 @@
       {
             "model": "merchants.itemcategory",
             "pk": 290,
-            "fields": { "store": 16, "name": "Noodles", "display_order": 0 }
+            "fields": { "store": 16, "name": "Noodles", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 291,
-            "fields": { "store": 16, "name": "Hot Pot", "display_order": 0 }
+            "fields": { "store": 16, "name": "Hot Pot", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 292,
-            "fields": { "store": 16, "name": "Sides", "display_order": 0 }
+            "fields": { "store": 16, "name": "Sides", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2607,17 +2607,17 @@
       {
             "model": "merchants.itemcategory",
             "pk": 294,
-            "fields": { "store": 17, "name": "Proteins", "display_order": 0 }
+            "fields": { "store": 17, "name": "Proteins", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 295,
-            "fields": { "store": 17, "name": "Sides", "display_order": 0 }
+            "fields": { "store": 17, "name": "Sides", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 296,
-            "fields": { "store": 17, "name": "Toppings", "display_order": 0 }
+            "fields": { "store": 17, "name": "Toppings", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2627,7 +2627,7 @@
       {
             "model": "merchants.itemcategory",
             "pk": 298,
-            "fields": { "store": 18, "name": "Sides", "display_order": 0 }
+            "fields": { "store": 18, "name": "Sides", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2637,7 +2637,7 @@
       {
             "model": "merchants.itemcategory",
             "pk": 300,
-            "fields": { "store": 19, "name": "Sides", "display_order": 0 }
+            "fields": { "store": 19, "name": "Sides", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2647,12 +2647,12 @@
       {
             "model": "merchants.itemcategory",
             "pk": 302,
-            "fields": { "store": 20, "name": "Burritos", "display_order": 0 }
+            "fields": { "store": 20, "name": "Burritos", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 303,
-            "fields": { "store": 20, "name": "Quesadillas", "display_order": 0 }
+            "fields": { "store": 20, "name": "Quesadillas", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2662,42 +2662,42 @@
       {
             "model": "merchants.itemcategory",
             "pk": 305,
-            "fields": { "store": 21, "name": "Fruits", "display_order": 0 }
+            "fields": { "store": 21, "name": "Fruits", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 306,
-            "fields": { "store": 21, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 21, "name": "Meat", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 307,
-            "fields": { "store": 21, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 21, "name": "Seafood", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 308,
-            "fields": { "store": 21, "name": "Pantry", "display_order": 0 }
+            "fields": { "store": 21, "name": "Pantry", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 309,
-            "fields": { "store": 21, "name": "Bakery", "display_order": 0 }
+            "fields": { "store": 21, "name": "Bakery", "display_order": 5 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 310,
-            "fields": { "store": 21, "name": "Frozen", "display_order": 0 }
+            "fields": { "store": 21, "name": "Frozen", "display_order": 6 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 311,
-            "fields": { "store": 21, "name": "Condiments", "display_order": 0 }
+            "fields": { "store": 21, "name": "Condiments", "display_order": 7 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 312,
-            "fields": { "store": 21, "name": "Diary & Eggs", "display_order": 0 }
+            "fields": { "store": 21, "name": "Diary & Eggs", "display_order": 8 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2707,42 +2707,42 @@
       {
             "model": "merchants.itemcategory",
             "pk": 314,
-            "fields": { "store": 22, "name": "Fruits", "display_order": 0 }
+            "fields": { "store": 22, "name": "Fruits", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 315,
-            "fields": { "store": 22, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 22, "name": "Meat", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 316,
-            "fields": { "store": 22, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 22, "name": "Seafood", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 317,
-            "fields": { "store": 22, "name": "Pantry", "display_order": 0 }
+            "fields": { "store": 22, "name": "Pantry", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 318,
-            "fields": { "store": 22, "name": "Bakery", "display_order": 0 }
+            "fields": { "store": 22, "name": "Bakery", "display_order": 5 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 319,
-            "fields": { "store": 22, "name": "Frozen", "display_order": 0 }
+            "fields": { "store": 22, "name": "Frozen", "display_order": 6 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 320,
-            "fields": { "store": 22, "name": "Condiments", "display_order": 0 }
+            "fields": { "store": 22, "name": "Condiments", "display_order": 7 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 321,
-            "fields": { "store": 22, "name": "Diary & Eggs", "display_order": 0 }
+            "fields": { "store": 22, "name": "Diary & Eggs", "display_order": 8 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2752,42 +2752,42 @@
       {
             "model": "merchants.itemcategory",
             "pk": 323,
-            "fields": { "store": 23, "name": "Fruits", "display_order": 0 }
+            "fields": { "store": 23, "name": "Fruits", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 324,
-            "fields": { "store": 23, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 23, "name": "Meat", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 325,
-            "fields": { "store": 23, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 23, "name": "Seafood", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 326,
-            "fields": { "store": 23, "name": "Pantry", "display_order": 0 }
+            "fields": { "store": 23, "name": "Pantry", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 327,
-            "fields": { "store": 23, "name": "Bakery", "display_order": 0 }
+            "fields": { "store": 23, "name": "Bakery", "display_order": 5 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 328,
-            "fields": { "store": 23, "name": "Frozen", "display_order": 0 }
+            "fields": { "store": 23, "name": "Frozen", "display_order": 6 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 329,
-            "fields": { "store": 23, "name": "Condiments", "display_order": 0 }
+            "fields": { "store": 23, "name": "Condiments", "display_order": 7 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 330,
-            "fields": { "store": 23, "name": "Diary & Eggs", "display_order": 0 }
+            "fields": { "store": 23, "name": "Diary & Eggs", "display_order": 8 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2797,42 +2797,42 @@
       {
             "model": "merchants.itemcategory",
             "pk": 332,
-            "fields": { "store": 24, "name": "Fruits", "display_order": 0 }
+            "fields": { "store": 24, "name": "Fruits", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 333,
-            "fields": { "store": 24, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 24, "name": "Meat", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 334,
-            "fields": { "store": 24, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 24, "name": "Seafood", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 335,
-            "fields": { "store": 24, "name": "Pantry", "display_order": 0 }
+            "fields": { "store": 24, "name": "Pantry", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 336,
-            "fields": { "store": 24, "name": "Bakery", "display_order": 0 }
+            "fields": { "store": 24, "name": "Bakery", "display_order": 5 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 337,
-            "fields": { "store": 24, "name": "Frozen", "display_order": 0 }
+            "fields": { "store": 24, "name": "Frozen", "display_order": 6 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 338,
-            "fields": { "store": 24, "name": "Condiments", "display_order": 0 }
+            "fields": { "store": 24, "name": "Condiments", "display_order": 7 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 339,
-            "fields": { "store": 24, "name": "Diary & Eggs", "display_order": 0 }
+            "fields": { "store": 24, "name": "Diary & Eggs", "display_order": 8 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2842,42 +2842,42 @@
       {
             "model": "merchants.itemcategory",
             "pk": 341,
-            "fields": { "store": 25, "name": "Fruits", "display_order": 0 }
+            "fields": { "store": 25, "name": "Fruits", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 342,
-            "fields": { "store": 25, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 25, "name": "Meat", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 343,
-            "fields": { "store": 25, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 25, "name": "Seafood", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 344,
-            "fields": { "store": 25, "name": "Pantry", "display_order": 0 }
+            "fields": { "store": 25, "name": "Pantry", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 345,
-            "fields": { "store": 25, "name": "Bakery", "display_order": 0 }
+            "fields": { "store": 25, "name": "Bakery", "display_order": 5 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 346,
-            "fields": { "store": 25, "name": "Frozen", "display_order": 0 }
+            "fields": { "store": 25, "name": "Frozen", "display_order": 6 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 347,
-            "fields": { "store": 25, "name": "Condiments", "display_order": 0 }
+            "fields": { "store": 25, "name": "Condiments", "display_order": 7 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 348,
-            "fields": { "store": 25, "name": "Diary & Eggs", "display_order": 0 }
+            "fields": { "store": 25, "name": "Diary & Eggs", "display_order": 8 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2887,42 +2887,42 @@
       {
             "model": "merchants.itemcategory",
             "pk": 350,
-            "fields": { "store": 26, "name": "Fruits", "display_order": 0 }
+            "fields": { "store": 26, "name": "Fruits", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 351,
-            "fields": { "store": 26, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 26, "name": "Meat", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 352,
-            "fields": { "store": 26, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 26, "name": "Seafood", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 353,
-            "fields": { "store": 26, "name": "Pantry", "display_order": 0 }
+            "fields": { "store": 26, "name": "Pantry", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 354,
-            "fields": { "store": 26, "name": "Bakery", "display_order": 0 }
+            "fields": { "store": 26, "name": "Bakery", "display_order": 5 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 355,
-            "fields": { "store": 26, "name": "Frozen", "display_order": 0 }
+            "fields": { "store": 26, "name": "Frozen", "display_order": 6 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 356,
-            "fields": { "store": 26, "name": "Condiments", "display_order": 0 }
+            "fields": { "store": 26, "name": "Condiments", "display_order": 7 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 357,
-            "fields": { "store": 26, "name": "Diary & Eggs", "display_order": 0 }
+            "fields": { "store": 26, "name": "Diary & Eggs", "display_order": 8 }
       }, 
       {
             "model": "merchants.itemcategory",
@@ -2932,42 +2932,42 @@
       {
             "model": "merchants.itemcategory",
             "pk": 359,
-            "fields": { "store": 27, "name": "Fruits", "display_order": 0 }
+            "fields": { "store": 27, "name": "Fruits", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 360,
-            "fields": { "store": 27, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 27, "name": "Meat", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 361,
-            "fields": { "store": 27, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 27, "name": "Seafood", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 362,
-            "fields": { "store": 27, "name": "Pantry", "display_order": 0 }
+            "fields": { "store": 27, "name": "Pantry", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 363,
-            "fields": { "store": 27, "name": "Bakery", "display_order": 0 }
+            "fields": { "store": 27, "name": "Bakery", "display_order": 5 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 364,
-            "fields": { "store": 27, "name": "Frozen", "display_order": 0 }
+            "fields": { "store": 27, "name": "Frozen", "display_order": 6 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 365,
-            "fields": { "store": 27, "name": "Condiments", "display_order": 0 }
+            "fields": { "store": 27, "name": "Condiments", "display_order": 7 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 366,
-            "fields": { "store": 27, "name": "Diary & Eggs", "display_order": 0 }
+            "fields": { "store": 27, "name": "Diary & Eggs", "display_order": 8 }
       },
       {
             "model": "merchants.itemcategory",
@@ -2977,42 +2977,42 @@
       {
             "model": "merchants.itemcategory",
             "pk": 368,
-            "fields": { "store": 28, "name": "Fruits", "display_order": 0 }
+            "fields": { "store": 28, "name": "Fruits", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 369,
-            "fields": { "store": 28, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 28, "name": "Meat", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 370,
-            "fields": { "store": 28, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 28, "name": "Seafood", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 371,
-            "fields": { "store": 28, "name": "Pantry", "display_order": 0 }
+            "fields": { "store": 28, "name": "Pantry", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 372,
-            "fields": { "store": 28, "name": "Bakery", "display_order": 0 }
+            "fields": { "store": 28, "name": "Bakery", "display_order": 5 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 373,
-            "fields": { "store": 28, "name": "Frozen", "display_order": 0 }
+            "fields": { "store": 28, "name": "Frozen", "display_order": 6 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 374,
-            "fields": { "store": 28, "name": "Condiments", "display_order": 0 }
+            "fields": { "store": 28, "name": "Condiments", "display_order": 7 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 375,
-            "fields": { "store": 28, "name": "Diary & Eggs", "display_order": 0 }
+            "fields": { "store": 28, "name": "Diary & Eggs", "display_order": 8 }
       },
       {
             "model": "merchants.itemcategory",
@@ -3022,42 +3022,42 @@
       {
             "model": "merchants.itemcategory",
             "pk": 377,
-            "fields": { "store": 29, "name": "Fruits", "display_order": 0 }
+            "fields": { "store": 29, "name": "Fruits", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 378,
-            "fields": { "store": 29, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 29, "name": "Meat", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 379,
-            "fields": { "store": 29, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 29, "name": "Seafood", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 380,
-            "fields": { "store": 29, "name": "Pantry", "display_order": 0 }
+            "fields": { "store": 29, "name": "Pantry", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 381,
-            "fields": { "store": 29, "name": "Bakery", "display_order": 0 }
+            "fields": { "store": 29, "name": "Bakery", "display_order": 5 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 382,
-            "fields": { "store": 29, "name": "Frozen", "display_order": 0 }
+            "fields": { "store": 29, "name": "Frozen", "display_order": 6 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 383,
-            "fields": { "store": 29, "name": "Condiments", "display_order": 0 }
+            "fields": { "store": 29, "name": "Condiments", "display_order": 7 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 384,
-            "fields": { "store": 29, "name": "Diary & Eggs", "display_order": 0 }
+            "fields": { "store": 29, "name": "Diary & Eggs", "display_order": 8 }
       },
       {
             "model": "merchants.itemcategory",
@@ -3067,41 +3067,2791 @@
       {
             "model": "merchants.itemcategory",
             "pk": 386,
-            "fields": { "store": 30, "name": "Fruits", "display_order": 0 }
+            "fields": { "store": 30, "name": "Fruits", "display_order": 1 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 387,
-            "fields": { "store": 30, "name": "Meat", "display_order": 0 }
+            "fields": { "store": 30, "name": "Meat", "display_order": 2 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 388,
-            "fields": { "store": 30, "name": "Seafood", "display_order": 0 }
+            "fields": { "store": 30, "name": "Seafood", "display_order": 3 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 389,
-            "fields": { "store": 30, "name": "Pantry", "display_order": 0 }
+            "fields": { "store": 30, "name": "Pantry", "display_order": 4 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 390,
-            "fields": { "store": 30, "name": "Bakery", "display_order": 0 }
+            "fields": { "store": 30, "name": "Bakery", "display_order": 5 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 391,
-            "fields": { "store": 30, "name": "Frozen", "display_order": 0 }
+            "fields": { "store": 30, "name": "Frozen", "display_order": 6 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 392,
-            "fields": { "store": 30, "name": "Condiments", "display_order": 0 }
+            "fields": { "store": 30, "name": "Condiments", "display_order": 7 }
       },
       {
             "model": "merchants.itemcategory",
             "pk": 393,
-            "fields": { "store": 30, "name": "Diary & Eggs", "display_order": 0 }
-      }
+            "fields": { "store": 30, "name": "Diary & Eggs", "display_order": 8 }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 394,
+            "fields": {
+              "store": 1,
+              "category": 241,
+              "name": "Roti Canai",
+              "description": "Thin and plain flatbread served with a side of curry.",
+              "price": "2.00",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/1_394.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 395,
+            "fields": {
+              "store": 1,
+              "category": 241,
+              "name": "Roti Telur",
+              "description": "Thin and plain flatbread made along with egg served with a side of curry.",
+              "price": "3.50",
+              "stock_status": "IN_STOCK",
+              "calories": 380,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/1_395.png"
+            }
+      }, 
+      {
+            "model": "merchants.storeitem",
+            "pk": 396,
+            "fields": {
+              "store": 1,
+              "category": 241,
+              "name": "Roti Planta",
+              "description": "Thin and plain flatbread made along with margarine and sugar served with a side of curry.",
+              "price": "4.00",
+              "stock_status": "IN_STOCK",
+              "calories": 500,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/1_396.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 397,
+            "fields": {
+              "store": 1,
+              "category": 242,
+              "name": "Nasi Goreng Biasa",
+              "description": "A normal mamak fried rice with eggs and vegetables.",
+              "price": "8.00",
+              "stock_status": "IN_STOCK",
+              "calories": 600,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/1_397.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 398,
+            "fields": {
+              "store": 1,
+              "category": 242,
+              "name": "Nasi Goreng Ayam Berempah",
+              "description": "A normal mamak fried rice with chicken, eggs, and vegetables.",
+              "price": "13.00",
+              "stock_status": "IN_STOCK",
+              "calories": 850,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/1_398.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 399,
+            "fields": {
+              "store": 1,
+              "category": 242,
+              "name": "Maggi Goreng Biasa",
+              "description": "A normal mamak fried noodle with eggs, and vegetables.",
+              "price": "6.00",
+              "stock_status": "IN_STOCK",
+              "calories": 550,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/1_399.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 400,
+            "fields": {
+              "store": 1,
+              "category": 242,
+              "name": "Maggi Goreng Ayam",
+              "description": "A normal mamak fried noodle with chicken, eggs, and vegetables.",
+              "price": "12.50",
+              "stock_status": "IN_STOCK",
+              "calories": 850,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/1_400.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 401,
+            "fields": {
+              "store": 1,
+              "category": 243,
+              "name": "Teh Tarik",
+              "description": "A normal mamak tea that's made with milk and sugar.",
+              "price": "2.50",
+              "stock_status": "IN_STOCK",
+              "calories": 100,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/1_401.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 402,
+            "fields": {
+              "store": 2,
+              "category": 244,
+              "name": "Ayam Goreng",
+              "description": "Fried chicken main that can be paired with rice or roti.",
+              "price": "5.50",
+              "stock_status": "IN_STOCK",
+              "calories": 550,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/2_402.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 403,
+            "fields": {
+              "store": 2,
+              "category": 244,
+              "name": "Mutton Curry",
+              "description": "A mutton curry with potatoes and vegetables that can be paired with rice or roti.",
+              "price": "9.50",
+              "stock_status": "IN_STOCK",
+              "calories": 850,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/2_403.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 404,
+            "fields": {
+              "store": 2,
+              "category": 244,
+              "name": "Ikan Bakar",
+              "description": "A grilled fish that can be paired with rice or roti.",
+              "price": "9.50",
+              "stock_status": "IN_STOCK",
+              "calories": 450,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/2_404.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 405,
+            "fields": {
+              "store": 2,
+              "category": 245,
+              "name": "Nasi Biasa",
+              "description": "Plain rice for Nasi Kandar meal.",
+              "price": "1.50",
+              "stock_status": "IN_STOCK",
+              "calories": 200,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/2_405.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 406,
+            "fields": {
+              "store": 2,
+              "category": 245,
+              "name": "Nasi Briyani",
+              "description": "Briyani rice with nuts and vegetables for Nasi Kandar meal.",
+              "price": "3.50",
+              "stock_status": "IN_STOCK",
+              "calories": 200,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/2_406.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 407,
+            "fields": {
+              "store": 2,
+              "category": 246,
+              "name": "Kangkung Goreng",
+              "description": "A fried spinach side that can be paired with rice or roti.",
+              "price": "4.50",
+              "stock_status": "IN_STOCK",
+              "calories": 180,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/2_407.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 408,
+            "fields": {
+              "store": 2,
+              "category": 246,
+              "name": "Peria Goreng",
+              "description": "A fried bitter gourd side that can be paired with rice or roti.",
+              "price": "2.50",
+              "stock_status": "IN_STOCK",
+              "calories": 150,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/2_408.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 409,
+            "fields": {
+              "store": 2,
+              "category": 246,
+              "name": "Sayur Bendi",
+              "description": "A lady's finger vegetable side that can be paired with rice or roti.",
+              "price": "1.00",
+              "stock_status": "IN_STOCK",
+              "calories": 80,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/2_409.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 410,
+            "fields": {
+              "store": 3,
+              "category": 247,
+              "name": "Curry Ayam",
+              "description": "A curry chicken main that can be paired with rice or roti.",
+              "price": "7.50",
+              "stock_status": "IN_STOCK",
+              "calories": 450,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/3_410.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 411,
+            "fields": {
+              "store": 3,
+              "category": 247,
+              "name": "Curry Ikan",
+              "description": "A curry fish main that can be paired with rice or roti.",
+              "price": "6.50",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/3_411.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 412,
+            "fields": {
+              "store": 3,
+              "category": 248,
+              "name": "Nasi Biasa",
+              "description": "Plain rice for Nasi Kandar meal.",
+              "price": "1.50",
+              "stock_status": "IN_STOCK",
+              "calories": 200,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/3_412.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 413,
+            "fields": {
+              "store": 3,
+              "category": 248,
+              "name": "Nasi Briyani",
+              "description": "Briyani rice with nuts and vegetables for Nasi Kandar meal.",
+              "price": "3.50",
+              "stock_status": "IN_STOCK",
+              "calories": 200,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/3_413.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 414,
+            "fields": {
+              "store": 3,
+              "category": 249,
+              "name": "Sayur Bendi",
+              "description": "A lady's finger vegetable side that can be paired with rice or roti.",
+              "price": "1.00",
+              "stock_status": "IN_STOCK",
+              "calories": 80,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/3_414.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 415,
+            "fields": {
+              "store": 3,
+              "category": 249,
+              "name": "Kobis Goreng",
+              "description": "A fried cabbage side that can be paired with rice or roti.",
+              "price": "2.00",
+              "stock_status": "IN_STOCK",
+              "calories": 120,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/3_415.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 416,
+            "fields": {
+              "store": 4,
+              "category": 250,
+              "name": "Ayam Goreng Berempah",
+              "description": "A fried chicken main that can be paired with rice or roti.",
+              "price": "8.50",
+              "stock_status": "IN_STOCK",
+              "calories": 550,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/3_416.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 417,
+            "fields": {
+              "store": 4,
+              "category": 250,
+              "name": "Ikan Bakar",
+              "description": "A grilled fish that can be paired with rice or roti.",
+              "price": "6.50",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/4_417.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 418,
+            "fields": {
+              "store": 4,
+              "category": 251,
+              "name": "Nasi Biasa",
+              "description": "Plain rice for Nasi Kandar meal.",
+              "price": "1.50",
+              "stock_status": "IN_STOCK",
+              "calories": 200,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/4_418.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 419,
+            "fields": {
+              "store": 4,
+              "category": 251,
+              "name": "Nasi Briyani",
+              "description": "Briyani rice with nuts and vegetables for Nasi Kandar meal.",
+              "price": "3.50",
+              "stock_status": "IN_STOCK",
+              "calories": 200,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/4_419.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 420,
+            "fields": {
+              "store": 4,
+              "category": 252,
+              "name": "Kangkung Goreng",
+              "description": "A fried spinach side that can be paired with rice or roti.",
+              "price": "4.00",
+              "stock_status": "IN_STOCK",
+              "calories": 200,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/4_420.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 421,
+            "fields": {
+              "store": 4,
+              "category": 252,
+              "name": "Kobis Goreng",
+              "description": "A fried bitter gourd side that can be paired with rice or roti.",
+              "price": "2.00",
+              "stock_status": "IN_STOCK",
+              "calories": 150,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/4_421.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 422,
+            "fields": {
+              "store": 5,
+              "category": 253,
+              "name": "Nasi Lemak Banjir",
+              "description": "A special version of Nasi Lemak with a mix of vegetables, seafood, and chicken.",
+              "price": "26.90",
+              "stock_status": "IN_STOCK",
+              "calories": 1500,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/5_422.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 423,
+            "fields": {
+              "store": 5,
+              "category": 253,
+              "name": "Laksa",
+              "description": "A traditional Malaysian soup with noodles and seafood.",
+              "price": "19.90",
+              "stock_status": "IN_STOCK",
+              "calories": 900,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/5_423.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 424,
+            "fields": {
+              "store": 5,
+              "category": 254,
+              "name": "Kaya Butter Toast",
+              "description": "A traditional Malaysian toast with butter and kaya.",
+              "price": "7.90",
+              "stock_status": "IN_STOCK",
+              "calories": 120,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/5_424.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 425,
+            "fields": {
+              "store": 5,
+              "category": 254,
+              "name": "Pandan Kaya Roti Bun",
+              "description": "A traditional Malaysian roti bun with pandan and kaya.",
+              "price": "8.90",
+              "stock_status": "IN_STOCK",
+              "calories": 150,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/5_425.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 426,
+            "fields": {
+              "store": 5,
+              "category": 255,
+              "name": "Egg Tart",
+              "description": "A famous Chinese pastry with a crispy crust and a sweet egg filling.",
+              "price": "10.90",
+              "stock_status": "IN_STOCK",
+              "calories": 200,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/5_426.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 427,
+            "fields": {
+              "store": 6,
+              "category": 256,
+              "name": "Chicken Hor Fun",
+              "description": "A traditional Chinese noodle dish with chicken and vegetables.",
+              "price": "19.90",
+              "stock_status": "IN_STOCK",
+              "calories": 750,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/6_427.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 428,
+            "fields": {
+              "store": 6,
+              "category": 256,
+              "name": "Prawn Fried Rice",
+              "description": "A traditional Chinese fried rice dish with prawns and vegetables.",
+              "price": "23.50",
+              "stock_status": "IN_STOCK",
+              "calories": 1000,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/6_428.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 429,
+            "fields": {
+              "store": 6,
+              "category": 256,
+              "name": "Mee Siam",
+              "description": "A traditional Malaysian noodle dish with chicken and vegetables.",
+              "price": "12.90",
+              "stock_status": "IN_STOCK",
+              "calories": 600,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/6_429.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 430,
+            "fields": {
+              "store": 6,
+              "category": 257,
+              "name": "Butter Kaya Toast",
+              "description": "A traditional Malaysian toast with butter and kaya.",
+              "price": "5.50",
+              "stock_status": "IN_STOCK",
+              "calories": 150,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/6_430.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 431,
+            "fields": {
+              "store": 6,
+              "category": 258,
+              "name": "Polo Bun",
+              "description": "A traditional Hainanese bun with a sweet creamy and butter filling.",
+              "price": "8.50",
+              "stock_status": "IN_STOCK",
+              "calories": 250,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/6_431.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 432,
+            "fields": {
+              "store": 6,
+              "category": 258,
+              "name": "Egg Tarts",
+              "description": "A traditional Chinese pastry with a crispy crust and a sweet egg filling.",
+              "price": "5.50",
+              "stock_status": "IN_STOCK",
+              "calories": 200,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/6_432.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 433,
+            "fields": {
+              "store": 6,
+              "category": 258,
+              "name": "Egg Tarts",
+              "description": "A traditional Chinese pastry with a crispy crust and a sweet egg filling.",
+              "price": "5.50",
+              "stock_status": "IN_STOCK",
+              "calories": 200,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/6_432.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 434,
+            "fields": {
+              "store": 7,
+              "category": 259,
+              "name": "White Rice",
+              "description": "Plain rice for Chinese meal.",
+              "price": "2.00",
+              "stock_status": "IN_STOCK",
+              "calories": 150,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/7_434.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 435,
+            "fields": {
+              "store": 7,
+              "category": 259,
+              "name": "Sing Chow Mai Fun",
+              "description": "A traditional Chinese noodle dish with prawn and vegetables.",
+              "price": "15.00",
+              "stock_status": "IN_STOCK",
+              "calories": 600,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/7_435.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 436,
+            "fields": {
+              "store": 7,
+              "category": 260,
+              "name": "Sweet and Sour Pork",
+              "description": "A traditional Chinese pork dish with a sweet and sour sauce.",
+              "price": "12.50",
+              "stock_status": "IN_STOCK",
+              "calories": 800,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/7_436.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 437,
+            "fields": {
+              "store": 7,
+              "category": 260,
+              "name": "Kung Pao Chicken",
+              "description": "A traditional Chinese chicken dish with a spicy and sweet sauce.",
+              "price": "15.50",
+              "stock_status": "IN_STOCK",
+              "calories": 750,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/7_437.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 438,
+            "fields": {
+              "store": 7,
+              "category": 261,
+              "name": "Mala Red Snapper Fish",
+              "description": "A traditional Chinese fish dish with a spicy and sweet sauce.",
+              "price": "30.50",
+              "stock_status": "IN_STOCK",
+              "calories": 1100,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/7_438.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 439,
+            "fields": {
+              "store": 7,
+              "category": 261,
+              "name": "Salted Egg Squid Rings",
+              "description": "A traditional Chinese squid dish with a salted egg sauce.",
+              "price": "20.50",
+              "stock_status": "IN_STOCK",
+              "calories": 600,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/7_439.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 440,
+            "fields": {
+              "store": 7,
+              "category": 262,
+              "name": "Mapo Tofu",
+              "description": "A traditional Chinese spicy tofu dish with pork and vegetables.",
+              "price": "15.50",
+              "stock_status": "IN_STOCK",
+              "calories": 750,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/7_440.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 441,
+            "fields": {
+              "store": 7,
+              "category": 263,
+              "name": "Garlic Bak Choi",
+              "description": "A Chinese vegetable dish.",
+              "price": "10.50",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/7_441.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 442,
+            "fields": {
+              "store": 7,
+              "category": 263,
+              "name": "Oyster SauceKailan",
+              "description": "A Chinese vegetable dish with garlic and oyster sauce.",
+              "price": "12.50",
+              "stock_status": "IN_STOCK",
+              "calories": 250,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/7_442.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 443,
+            "fields": {
+              "store": 7,
+              "category": 263,
+              "name": "Spring Onion Mushroom",
+              "description": "A Chinese vegetable dish with spring onion and mushroom.",
+              "price": "14.50",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/7_443.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 444,
+            "fields": {
+              "store": 8,
+              "category": 264,
+              "name": "Tomato Noodle with Mince Pork",
+              "description": "A Chinese noodle dish with tomato and mince pork.",
+              "price": "16.50",
+              "stock_status": "IN_STOCK",
+              "calories": 750,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/8_444.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 445,
+            "fields": {
+              "store": 8,
+              "category": 264,
+              "name": "Chili Pork Flat Noodle",
+              "description": "A Chinese noodle dish with chili pork and flat noodles.",
+              "price": "18.50",
+              "stock_status": "IN_STOCK",
+              "calories": 850,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/8_445.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 446,
+            "fields": {
+              "store": 8,
+              "category": 265,
+              "name": "Soy Mince Pork Rice Bowl",
+              "description": "A Chinese rice bowl dish with spring onion soy mince pork.",
+              "price": "14.50",
+              "stock_status": "IN_STOCK",
+              "calories": 650,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/8_446.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 447,
+            "fields": {
+              "store": 8,
+              "category": 266,
+              "name": "Shaanxi Pork Sandwich",
+              "description": "A traditional Shaanxi Chinese sandwich with pork.",
+              "price": "8.50",
+              "stock_status": "IN_STOCK",
+              "calories": 550,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/8_447.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 448,
+            "fields": {
+              "store": 8,
+              "category": 266,
+              "name": "Vegetable Dumplings",
+              "description": "A traditional Chinese dumpling dish with vegetables.",
+              "price": "10.50",
+              "stock_status": "IN_STOCK",
+              "calories": 700,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/8_448.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 449,
+            "fields": {
+              "store": 9,
+              "category": 267,
+              "name": "Chicken Buttermilk Set",
+              "description": "A creamy buttermilk set with rice, chicken, and vegetables.",
+              "price": "25.50",
+              "stock_status": "IN_STOCK",
+              "calories": 1000,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/9_449.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 450,
+            "fields": {
+              "store": 9,
+              "category": 267,
+              "name": "Chicken Black Pepper Set",
+              "description": "A black pepper chicken set with rice, chicken, and vegetables.",
+              "price": "19.50",
+              "stock_status": "IN_STOCK",
+              "calories": 800,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/9_450.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 451,
+            "fields": {
+              "store": 9,
+              "category": 268,
+              "name": "Fish Buttermilk Set",
+              "description": "A creamy buttermilk set with rice, fish, and vegetables.",
+              "price": "26.50",
+              "stock_status": "IN_STOCK",
+              "calories": 900,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/9_451.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 452,
+            "fields": {
+              "store": 9,
+              "category": 269,
+              "name": "Sambal Belacan Lady's Fingers",
+              "description": "A traditional Malaysian dish with lady's fingers and sambal belacan.",
+              "price": "10.50",
+              "stock_status": "IN_STOCK",
+              "calories": 600,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/9_452.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 453,
+            "fields": {
+              "store": 9,
+              "category": 270,
+              "name": "Chinese Tofu",
+              "description": "A side dish of cheese tofu with vegetables.",
+              "price": "8.50",
+              "stock_status": "IN_STOCK",
+              "calories": 450,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/9_453.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 454,
+            "fields": {
+              "store": 10,
+              "category": 271,
+              "name": "DakGangJeong",
+              "description": "Sweet soy fried chicken, served with rice and savory sides",
+              "price": "19.90",
+              "stock_status": "IN_STOCK",
+              "calories": 1000,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/10_454.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 455,
+            "fields": {
+              "store": 10,
+              "category": 271,
+              "name": "Bulgogi Beef",
+              "description": "Savory marinated beef, perfectly paired with rice and fresh sides",
+              "price": "19.90",
+              "stock_status": "IN_STOCK",
+              "calories": 1200,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/10_455.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 456,
+            "fields": {
+              "store": 10,
+              "category": 272,
+              "name": "Claypot Sundubu JjiGae",
+              "description": "Creamy tofu stew, served in a traditional Korean claypot",
+              "price": "19.90",
+              "stock_status": "IN_STOCK",
+              "calories": 700,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/10_456.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 457,
+            "fields": {
+              "store": 11,
+              "category": 273,
+              "name": "Brown Rice",
+              "description": "A healthy brown rice base",
+              "price": "5.00",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_457.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 458,
+            "fields": {
+              "store": 11,
+              "category": 273,
+              "name": "Salad Greens",
+              "description": "A healthy salad greens base",
+              "price": "5.00",
+              "stock_status": "IN_STOCK",
+              "calories": 100,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_458.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 459,
+            "fields": {
+              "store": 11,
+              "category": 273,
+              "name": "Quinoa",
+              "description": "A healthy quinoa base",
+              "price": "6.00",
+              "stock_status": "IN_STOCK",
+              "calories": 180,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_459.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 460,
+            "fields": {
+              "store": 11,
+              "category": 274,
+              "name": "Chicken Herb",
+              "description": "A healthy chicken herb protein",
+              "price": "8.00",
+              "stock_status": "IN_STOCK",
+              "calories": 500,
+              "vegetarian": false,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_460.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 461,
+            "fields": {
+              "store": 11,
+              "category": 274,
+              "name": "Shoyu Salmon",
+              "description": "A healthy shoyu salmon protein",
+              "price": "12.00",
+              "stock_status": "IN_STOCK",
+              "calories": 400,
+              "vegetarian": false,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_461.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 462,
+            "fields": {
+              "store": 11,
+              "category": 274,
+              "name": "Soy Glazed Tofu",
+              "description": "A healthy soy glazed tofu protein",
+              "price": "6.00",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_462.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 463,
+            "fields": {
+              "store": 11,
+              "category": 275,
+              "name": "Edamame",
+              "description": "A healthy edamame side dish",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 50,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_463.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 464,
+            "fields": {
+              "store": 11,
+              "category": 275,
+              "name": "Baked Pumpkin",
+              "description": "A healthy baked pumpkin side dish",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 100,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_464.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 465,
+            "fields": {
+              "store": 11,
+              "category": 275,
+              "name": "Boiled Eggs",
+              "description": "A healthy boiled egg side dish",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 70,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_465.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 466,
+            "fields": {
+              "store": 11,
+              "category": 275,
+              "name": "Asparagus",
+              "description": "A healthy asparagus side dish",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 20,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_466.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 467,
+            "fields": {
+              "store": 11,
+              "category": 276,
+              "name": "Sunflower Seeds",
+              "description": "A healthy sunflower seeds topping",
+              "price": "2.00",
+              "stock_status": "IN_STOCK",
+              "calories": 50,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_467.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 468,
+            "fields": {
+              "store": 11,
+              "category": 276,
+              "name": "Almond Nuts",
+              "description": "A healthy almond nuts topping",
+              "price": "2.50",
+              "stock_status": "IN_STOCK",
+              "calories": 160,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_468.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 469,
+            "fields": {
+              "store": 11,
+              "category": 276,
+              "name": "Cherry Tomatoes",
+              "description": "A healthy cherry tomatoes topping",
+              "price": "1.50",
+              "stock_status": "IN_STOCK",
+              "calories": 20,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_469.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 470,
+            "fields": {
+              "store": 12,
+              "category": 277,
+              "name": "Purple Rice",
+              "description": "A healthy brown rice base",
+              "price": "4.00",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_470.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 471,
+            "fields": {
+              "store": 12,
+              "category": 277,
+              "name": "Mixed Greens",
+              "description": "A healthy mixed greens base",
+              "price": "6.00",
+              "stock_status": "IN_STOCK",
+              "calories": 100,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/11_458.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 472,
+            "fields": {
+              "store": 12,
+              "category": 277,
+              "name": "Quinoa",
+              "description": "A healthy quinoa base",
+              "price": "5.00",
+              "stock_status": "IN_STOCK",
+              "calories": 180,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_472.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 473,
+            "fields": {
+              "store": 12,
+              "category": 278,
+              "name": "Barbeque Chicken",
+              "description": "A healthy barbeque chicken protein",
+              "price": "8.00",
+              "stock_status": "IN_STOCK",
+              "calories": 400,
+              "vegetarian": false,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_473.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 474,
+            "fields": {
+              "store": 12,
+              "category": 278,
+              "name": "Smoked Salmon",
+              "description": "A healthy smoked salmon protein",
+              "price": "12.00",
+              "stock_status": "IN_STOCK",
+              "calories": 400,
+              "vegetarian": false,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_474.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 475,
+            "fields": {
+              "store": 12,
+              "category": 278,
+              "name": "Soy Glazed Tofu",
+              "description": "A healthy soy glazed tofu protein",
+              "price": "6.00",
+              "stock_status": "IN_STOCK",
+              "calories": 400,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_475.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 476,
+            "fields": {
+              "store": 12,
+              "category": 279,
+              "name": "Fresh Mango Slices",
+              "description": "A healthy fresh mango slices side dish",
+              "price": "4.00",
+              "stock_status": "IN_STOCK",
+              "calories": 100,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_476.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 477,
+            "fields": {
+              "store": 12,
+              "category": 279,
+              "name": "Baked Pumpkin",
+              "description": "A healthy baked pumpkin side dish",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 100,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_477.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 478,
+            "fields": {
+              "store": 12,
+              "category": 279,
+              "name": "Boiled Eggs",
+              "description": "A healthy boiled egg side dish",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 70,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_478.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 479,
+            "fields": {
+              "store": 12,
+              "category": 279,
+              "name": "Baked Broccoli",
+              "description": "A healthy baked broccoli side dish",
+              "price": "2.00",
+              "stock_status": "IN_STOCK",
+              "calories": 50,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_479.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 480,
+            "fields": {
+              "store": 12,
+              "category": 280,
+              "name": "Almond Nuts",
+              "description": "A healthy almond nuts topping",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 160,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_480.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 481,
+            "fields": {
+              "store": 12,
+              "category": 280,
+              "name": "Seaweed Flakes",
+              "description": "A healthy seaweed flakes topping",
+              "price": "2.00",
+              "stock_status": "IN_STOCK",
+              "calories": 30,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/12_481.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 482,
+            "fields": {
+              "store": 13,
+              "category": 281,
+              "name": "Nasi Kerabu biasa",
+              "description": "A Kelantan traditional rice dish with blue colour rice and vegetables",
+              "price": "13.90",
+              "stock_status": "IN_STOCK",
+              "calories": 450,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/13_482.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 483,
+            "fields": {
+              "store": 13,
+              "category": 281,
+              "name": "Indomie Goreng Ayam",
+              "description": "An indomie goreng ayam instant noodle with eggs and vegetables",
+              "price": "19.90",
+              "stock_status": "IN_STOCK",
+              "calories": 1100,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/13_483.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 484,
+            "fields": {
+              "store": 13,
+              "category": 282,
+              "name": "Fruit Rojak",
+              "description": "A fruit rojak with a mix of fruits, vegetables, and tofu skin",
+              "price": "10.90",
+              "stock_status": "IN_STOCK",
+              "calories": 600,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/13_484.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 485,
+            "fields": {
+              "store": 14,
+              "category": 283,
+              "name": "Chicken Burrito",
+              "description": "A burrito with a mix of ingredients",
+              "price": "20.90",
+              "stock_status": "IN_STOCK",
+              "calories": 950,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/14_485.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 486,
+            "fields": {
+              "store": 14,
+              "category": 284,
+              "name": "Chicken Kebab",
+              "description": "A chicken kebab with a mix of ingredients",
+              "price": "15.90",
+              "stock_status": "IN_STOCK",
+              "calories": 750,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/14_486.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 487,
+            "fields": {
+              "store": 14,
+              "category": 285,
+              "name": "Salmon Daily Bowl",
+              "description": "A salmon daily bowl with a mix of vegetables and salmon",
+              "price": "22.90",
+              "stock_status": "IN_STOCK",
+              "calories": 650,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/14_487.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 488,
+            "fields": {
+              "store": 14,
+              "category": 285,
+              "name": "Vege Daily Bowl",
+              "description": "A vege daily bowl with a mix of vegetables with guacamole and salsa",
+              "price": "18.90",
+              "stock_status": "IN_STOCK",
+              "calories": 550,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/14_487.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 489,
+            "fields": {
+              "store": 14,
+              "category": 286,
+              "name": "Chicken Quesadilla",
+              "description": "A chicken quesadilla with a mix of ingredients",
+              "price": "15.90",
+              "stock_status": "IN_STOCK",
+              "calories": 750,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/14_489.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 490,
+            "fields": {
+              "store": 15,
+              "category": 287,
+              "name": "Chicken Set",
+              "description": "A chicken set with noodle, tofu, and soup as part of the set",
+              "price": "19.90",
+              "stock_status": "IN_STOCK",
+              "calories": 850,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/15_490.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 491,
+            "fields": {
+              "store": 15,
+              "category": 287,
+              "name": "Seafood Set",
+              "description": "A seafood set with rice, fish, and vegetables as part of the set",
+              "price": "22.90",
+              "stock_status": "IN_STOCK",
+              "calories": 800,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/15_491.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 492,
+            "fields": {
+              "store": 15,
+              "category": 288,
+              "name": "Strawberry Earl Grey Cake",
+              "description": "A strawberry earl grey sponge cake",
+              "price": "15.90",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": true,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/15_492.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 493,
+            "fields": {
+              "store": 16,
+              "category": 289,
+              "name": "Organic Lei Cha",
+              "description": "An organic lei cha with vegetables, tofu and a green tea broth",
+              "price": "25.50",
+              "stock_status": "IN_STOCK",
+              "calories": 650,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/16_493.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 494,
+            "fields": {
+              "store": 16,
+              "category": 290,
+              "name": "Vegetable Curry Bowl",
+              "description": "An organic curry mee with vegetables, tofu skin, eggplants and a curry broth",
+              "price": "29.15",
+              "stock_status": "IN_STOCK",
+              "calories": 820,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/16_494.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 495,
+            "fields": {
+              "store": 16,
+              "category": 291,
+              "name": "Mushroom and Tofu Hotpot",
+              "description": "A mushroom and tofu hotpot with vegetables, tofu and a clear broth",
+              "price": "32.90",
+              "stock_status": "IN_STOCK",
+              "calories": 750,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": false,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/16_495.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 496,
+            "fields": {
+              "store": 16,
+              "category": 292,
+              "name": "Dragon Fruit Salad",
+              "description": "A dragon fruit salad for vegetarians ",
+              "price": "10.90",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/16_496.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 497,
+            "fields": {
+              "store": 17,
+              "category": 293,
+              "name": "Organic Brown Rice",
+              "description": "An organic brown rice base",
+              "price": "5.00",
+              "stock_status": "IN_STOCK",
+              "calories": 320,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_497.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 498,
+            "fields": {
+              "store": 17,
+              "category": 293,
+              "name": "Organic Salad Greens",
+              "description": "An organic salad greens base",
+              "price": "5.00",
+              "stock_status": "IN_STOCK",
+              "calories": 80,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_498.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 499,
+            "fields": {
+              "store": 17,
+              "category": 293,
+              "name": "Organic Quinoa",
+              "description": "An organic quinoa base",
+              "price": "6.00",
+              "stock_status": "IN_STOCK",
+              "calories": 180,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_499.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 500,
+            "fields": {
+              "store": 17,
+              "category": 294,
+              "name": "Organic Chicken Herb",
+              "description": "An organic chicken herb protein",
+              "price": "8.00",
+              "stock_status": "IN_STOCK",
+              "calories": 450,
+              "vegetarian": false,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_500.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 501,
+            "fields": {
+              "store": 17,
+              "category": 294,
+              "name": "Organic Shoyu Salmon",
+              "description": "An organic shoyu salmon protein",
+              "price": "12.00",
+              "stock_status": "IN_STOCK",
+              "calories": 380,
+              "vegetarian": false,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_501.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 502,
+            "fields": {
+              "store": 17,
+              "category": 294,
+              "name": "Organic Soy Glazed Tofu",
+              "description": "An organic soy glazed tofu protein",
+              "price": "6.00",
+              "stock_status": "IN_STOCK",
+              "calories": 350,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_502.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 503,
+            "fields": {
+              "store": 17,
+              "category": 295,
+              "name": "Japanese Edamame",
+              "description": "A japanese edamame side dish",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 50,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_503.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 504,
+            "fields": {
+              "store": 17,
+              "category": 295,
+              "name": "Organic Baked Pumpkin",
+              "description": "An organic baked pumpkin side dish",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 100,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_504.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 505,
+            "fields": {
+              "store": 17,
+              "category": 295,
+              "name": "Organic Boiled Eggs",
+              "description": "An organic boiled egg side dish",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 70,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_505.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 506,
+            "fields": {
+              "store": 17,
+              "category": 295,
+              "name": "Organic Asparagus",
+              "description": "An organic asparagus side dish",
+              "price": "3.00",
+              "stock_status": "IN_STOCK",
+              "calories": 20,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_506.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 507,
+            "fields": {
+              "store": 17,
+              "category": 296,
+              "name": "Organic Sunflower Seeds",
+              "description": "An organic sunflower seeds topping",
+              "price": "2.00",
+              "stock_status": "IN_STOCK",
+              "calories": 50,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_507.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 468,
+            "fields": {
+              "store": 17,
+              "category": 296,
+              "name": "Organic Almond Nuts",
+              "description": "An organic almond nuts topping",
+              "price": "2.50",
+              "stock_status": "IN_STOCK",
+              "calories": 160,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": true,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_508.png"
+            }
+      },
+      {
+            "model": "merchants.storeitem",
+            "pk": 508,
+            "fields": {
+              "store": 17,
+              "category": 296,
+              "name": "Organic Cherry Tomatoes",
+              "description": "An organic cherry tomatoes topping",
+              "price": "1.50",
+              "stock_status": "IN_STOCK",
+              "calories": 20,
+              "vegetarian": true,
+              "organic": true,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/17_509.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 509,
+            "fields": {
+              "store": 18,
+              "category": 297,
+              "name": "Dandy Special Bun Burger",
+              "description": "A dandy special beef bun burger for sharing",
+              "price": "21.50",
+              "stock_status": "IN_STOCK",
+              "calories": 800,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/18_509.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 510,
+            "fields": {
+              "store": 18,
+              "category": 297,
+              "name": "Dandy Lamb Mediterranean Rice",
+              "description": "A dandy lamb mediterranean rice for sharing",
+              "price": "30.50",
+              "stock_status": "IN_STOCK",
+              "calories": 1100,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/18_510.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 511,
+            "fields": {
+              "store": 18,
+              "category": 297,
+              "name": "Dandy Lamb Mediterranean Rice",
+              "description": "A dandy lamb mediterranean rice for sharing",
+              "price": "30.50",
+              "stock_status": "IN_STOCK",
+              "calories": 1100,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/18_511.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 512,
+            "fields": {
+              "store": 18,
+              "category": 298,
+              "name": "Pavlova Cake",
+              "description": "A strawberry pavlova cake for sharing",
+              "price": "42.00",
+              "stock_status": "IN_STOCK",
+              "calories": 1500,
+              "vegetarian": true,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/18_512.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 513,
+            "fields": {
+              "store": 19,
+              "category": 299,
+              "name": "Ayam Gepuk Chicken Set",
+              "description": "A ayam gepuk chicken set with one chicken and vegetables",
+              "price": "12.90",
+              "stock_status": "IN_STOCK",
+              "calories": 700,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": true,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/19_513.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 514,
+            "fields": {
+              "store": 19,
+              "category": 300,
+              "name": "Fried Chicken",
+              "description": "Additional fried chicken",
+              "price": "7.90",
+              "stock_status": "IN_STOCK",
+              "calories": 400,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": true,
+              "dairy_free": true,
+              "contains_nuts": false,
+              "eco_packaging": true,
+              "locally_sourced": true,
+              "is_active": true,
+              "thumbnail": "merchants/items/19_514.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 515,
+            "fields": {
+              "store": 20,
+              "category": 301,
+              "name": "Chicken Taco (x2)",
+              "description": "A chicken taco with lettuce, tomato, and cheese",
+              "price": "15.90",
+              "stock_status": "IN_STOCK",
+              "calories": 600,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/20_515.png"
+            }
+      },
+      { 
+            "model": "merchants.storeitem",
+            "pk": 516,
+            "fields": {
+              "store": 20,
+              "category": 302,
+              "name": "Chicken Kebab",
+              "description": "A chicken kebab with lettuce, tomato, and sour cream",
+              "price": "17.90",
+              "stock_status": "IN_STOCK",
+              "calories": 700,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/20_516.png"
+            }
+      }, 
+      { 
+            "model": "merchants.storeitem",
+            "pk": 517,
+            "fields": {
+              "store": 20,
+              "category": 303,
+              "name": "Chicken Quesadilla",
+              "description": "A chicken quesadilla with lettuce, tomato, and sour cream",
+              "price": "20.90",
+              "stock_status": "IN_STOCK",
+              "calories": 800,
+              "vegetarian": false,
+              "organic": false,
+              "gluten_free": false,
+              "dairy_free": false,
+              "contains_nuts": false,
+              "eco_packaging": false,
+              "locally_sourced": false,
+              "is_active": true,
+              "thumbnail": "merchants/items/20_517.png"
+            }
+      } 
 ]
