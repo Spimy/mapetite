@@ -1,36 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
+import 'package:mapetite/features/auth/models/auth_state.dart';
+
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
-import '../../../shared/services/setup_service.dart';
-import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/custom_button.dart';
+import '../controllers/auth_controller.dart';
 import '../widgets/password_strength_bar.dart';
 
-class RegisterScreen extends StatefulWidget {
+final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
+  (ref) {
+    // We grab the service from the provider above
+    final service = ref.watch(authServiceProvider);
+    return AuthController(service);
+  },
+);
+
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _locationController = TextEditingController();
-  bool _isLoading = false;
   bool _termsAccepted = false;
   String _passwordValue = '';
   bool _verificationSent = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -40,17 +50,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _onCreateAccount() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-    // TODO: Replace with real auth service — send verification email
-    await Future.delayed(const Duration(milliseconds: 1500));
-    // Persist so the profile wizard can pre-fill even after this screen is gone.
-    await SetupService.savePendingUserInfo(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-    );
-    if (mounted) {
+
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .register(
+          username: _usernameController.text.trim(),
+          email: _emailController.text.trim(),
+          password1: _passwordController.text,
+          password2: _confirmPasswordController.text,
+        );
+
+    if (success && mounted) {
+      // Logic for after successful registration
       setState(() {
-        _isLoading = false;
         _verificationSent = true;
       });
     }
@@ -58,6 +70,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+
+    // Listen for error messages and show a SnackBar when they change immediately.
+    // This ensures that the user sees the error message as soon as it occurs.
+    ref.listen(authControllerProvider, (previous, next) {
+      if (next.errorMessage != null &&
+          next.errorMessage != previous?.errorMessage) {
+        final messenger = ScaffoldMessenger.of(context);
+
+        messenger.clearSnackBars();
+
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: _verificationSent
@@ -73,14 +105,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: _verificationSent
-              ? _buildVerificationState()
-              : _buildFormState(),
+              // Pass the dynamic detail message here
+              ? _buildVerificationState(
+                  authState.successMessage ??
+                      'A verification email has been sent.',
+                )
+              // Pass the loading state to disable fields/buttons
+              : _buildFormState(authState.isLoading),
         ),
       ),
     );
   }
 
-  Widget _buildFormState() {
+  Widget _buildFormState(bool isLoading) {
     return SingleChildScrollView(
       key: const ValueKey('form'),
       padding: const EdgeInsets.symmetric(
@@ -99,18 +136,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             const SizedBox(height: AppSpacing.xxl),
             AppTextField(
-              label: 'Full name',
-              controller: _nameController,
-              enabled: !_isLoading,
+              label: 'Username',
+              controller: _usernameController,
+              enabled: !isLoading,
               textCapitalization: TextCapitalization.words,
-              validator: (v) => Validators.required(v, field: 'Full name'),
+              validator: (v) => Validators.required(v, field: 'Username'),
             ),
             const SizedBox(height: AppSpacing.lg),
             AppTextField(
               label: 'Email address',
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              enabled: !_isLoading,
+              enabled: !isLoading,
               validator: Validators.email,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -118,7 +155,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label: 'Password',
               controller: _passwordController,
               obscureText: true,
-              enabled: !_isLoading,
+              enabled: !isLoading,
               validator: Validators.password,
               onChanged: (value) => setState(() => _passwordValue = value),
             ),
@@ -129,7 +166,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label: 'Confirm password',
               controller: _confirmPasswordController,
               obscureText: true,
-              enabled: !_isLoading,
+              enabled: !isLoading,
               validator: (v) =>
                   Validators.confirmPassword(v, _passwordController.text),
             ),
@@ -137,7 +174,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             AppTextField(
               label: 'Home location (suburb)',
               controller: _locationController,
-              enabled: !_isLoading,
+              enabled: !isLoading,
               prefixIcon: const Icon(
                 Icons.location_on_outlined,
                 color: AppColors.neutral400,
@@ -145,21 +182,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // TODO: Replace with Google Places autocomplete
             ),
             const SizedBox(height: AppSpacing.lg),
-            _buildTermsRow(),
+            _buildTermsRow(isLoading),
             const SizedBox(height: AppSpacing.xxl),
             AppButton(
               label: 'Create Account',
               onPressed: _termsAccepted ? _onCreateAccount : null,
-              isLoading: _isLoading,
+              isLoading: isLoading,
             ),
             const SizedBox(height: AppSpacing.lg),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Already have an account? ',
-                  style: AppTypography.body2,
-                ),
+                Text('Already have an account? ', style: AppTypography.body2),
                 TextButton(
                   onPressed: () => context.go('/login'),
                   style: TextButton.styleFrom(
@@ -184,7 +218,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildVerificationState() {
+  Widget _buildVerificationState(String? successMessage) {
     final String email = _emailController.text.trim();
 
     return SingleChildScrollView(
@@ -218,7 +252,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'We sent a verification link to $email. Click the link in your email to activate your account, then sign in.',
+            successMessage ??
+                'We sent a verification link to $email. Click the link in your email to activate your account, then sign in.',
             style: AppTypography.body1.copyWith(color: AppColors.neutral600),
             textAlign: TextAlign.center,
           ),
@@ -233,7 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildTermsRow() {
+  Widget _buildTermsRow(bool isLoading) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -243,7 +278,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Checkbox(
             value: _termsAccepted,
             activeColor: AppColors.primary,
-            onChanged: _isLoading
+            onChanged: isLoading
                 ? null
                 : (v) => setState(() => _termsAccepted = v ?? false),
           ),

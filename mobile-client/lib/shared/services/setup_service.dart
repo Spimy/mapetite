@@ -20,14 +20,14 @@ abstract class SetupService {
     await prefs.remove(_setupKey);
   }
 
-  /// Persists name + email entered during registration so the profile
+  /// Persists username + email entered during registration so the profile
   /// wizard can pre-fill them even after the RegisterScreen is disposed.
   static Future<void> savePendingUserInfo({
-    required String name,
+    required String username,
     required String email,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_pendingNameKey, name);
+    await prefs.setString(_pendingNameKey, username);
     await prefs.setString(_pendingEmailKey, email);
   }
 
