@@ -11,13 +11,13 @@ abstract class ApiEndpoints {
   // Discovery
   static const String discover = '/discovery/';
 
-  // Restaurants
-  static const String restaurants = '/restaurants/';
-  static String restaurant(String id) => '/restaurants/$id/';
+  // Restaurants (maps to server's /api/stores/ endpoints, filtered by type)
+  static const String restaurants = '/api/stores/?type=RESTAURANT';
+  static String restaurant(String id) => '/api/stores/$id/';
 
-  // Groceries
-  static const String groceries = '/groceries/';
-  static String grocery(String id) => '/groceries/$id/';
+  // Groceries (maps to server's /api/stores/ endpoints, filtered by type)
+  static const String groceries = '/api/stores/?type=GROCERY';
+  static String grocery(String id) => '/api/stores/$id/';
 
   // Recipes
   static const String recipes = '/recipes/';
