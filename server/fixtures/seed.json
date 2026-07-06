@@ -1491,16 +1491,6 @@
   },
   {
     "model": "merchants.storeoperatinghour",
-    "pk": 135,
-    "fields": {
-      "store": 15,
-      "day_of_week": 6,
-      "open_time": null,
-      "close_time": null
-    }
-  },
-  {
-    "model": "merchants.storeoperatinghour",
     "pk": 136,
     "fields": {
       "store": 16,
@@ -1837,16 +1827,6 @@
       "day_of_week": 5,
       "open_time": "11:00:00",
       "close_time": "22:00:00"
-    }
-  },
-  {
-    "model": "merchants.storeoperatinghour",
-    "pk": 170,
-    "fields": {
-      "store": 20,
-      "day_of_week": 6,
-      "open_time": null,
-      "close_time": null
     }
   },
   {

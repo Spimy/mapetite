@@ -87,8 +87,8 @@ class StoreOperatingHour(models.Model):
             (6, "Sunday"),
         ]
     )
-    open_time = models.TimeField(null=True, blank=True)
-    close_time = models.TimeField(null=True, blank=True)
+    open_time = models.TimeField()
+    close_time = models.TimeField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
