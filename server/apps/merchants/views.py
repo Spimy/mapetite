@@ -12,6 +12,7 @@ from django.views.generic import ListView, RedirectView, TemplateView, View, Upd
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
+from django.db.models import QuerySet
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -28,11 +29,12 @@ from .mixins import StoreContextMixin
 class StoreListAPIView(ListAPIView):
     """Fetches all stores, optionally filtered by ?type=RESTAURANT or ?type=GROCERY"""
 
+    queryset = StoreProfile.objects.all()
     serializer_class = StoreProfileSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        queryset = StoreProfile.objects.prefetch_related("operating_hours", "items").all()
+    def get_queryset(self) -> QuerySet:
+        queryset = StoreProfile.objects.prefetch_related("operating_hours").all()
         merchant_type = self.request.query_params.get("type")
         if merchant_type:
             queryset = queryset.filter(merchant_type=merchant_type.upper())
@@ -42,7 +44,7 @@ class StoreListAPIView(ListAPIView):
 class StoreAPIView(RetrieveAPIView):
     """Fetches a single store with its operating hours and items"""
 
-    queryset = StoreProfile.objects.prefetch_related("operating_hours", "items").all()
+    queryset = StoreProfile.objects.prefetch_related("operating_hours").all()
     serializer_class = StoreProfileSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "id"

@@ -339,3 +339,23 @@ class StoreInvitation(models.Model):
 
     def __str__(self):
         return f"Invite to {self.email} for {self.store.business_name}"
+
+
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+
+@receiver(pre_save, sender=StoreProfile)
+@receiver(pre_save, sender=StoreOperatingHour)
+@receiver(pre_save, sender=ItemCategory)
+@receiver(pre_save, sender=StoreItem)
+def populate_timestamps_for_fixtures(sender, instance, **kwargs):
+    """
+    Ensure created_at and updated_at are populated during `loaddata`.
+    Django raw/fixtures loader (kwargs['raw'] is True) bypasses normal auto_now_add.
+    """
+    if kwargs.get('raw', False):
+        now = timezone.now()
+        if hasattr(instance, 'created_at') and not instance.created_at:
+            instance.created_at = now
+        if hasattr(instance, 'updated_at') and not instance.updated_at:
+            instance.updated_at = now

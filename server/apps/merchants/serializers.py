@@ -78,13 +78,11 @@ class StoreItemSerializer(serializers.ModelSerializer):
             "eco_packaging",
             "locally_sourced",
             "thumbnail",
-            "is_active",
         ]
 
 
 class StoreProfileSerializer(serializers.ModelSerializer):
     operating_hours = StoreOperatingHourSerializer(many=True, read_only=True)
-    items = StoreItemSerializer(many=True, read_only=True)
     image_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -99,7 +97,6 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "street_address",
             "image_url",
             "operating_hours",
-            "items",
             "latitude",
             "longitude",
         ]
