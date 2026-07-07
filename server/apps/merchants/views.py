@@ -49,6 +49,7 @@ class NearbyStoresListAPIView(ListAPIView):
 
     queryset = StoreProfile.objects.prefetch_related("operating_hours").all()
     serializer_class = NearbyStoresResponseSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         lat = self.request.GET.get('lat')
