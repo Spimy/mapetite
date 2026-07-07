@@ -4,6 +4,7 @@ from apps.merchants.paginator import Template404Paginator
 from apps.users.models import User
 from apps.users.forms import InviteStaffForm, StoreProfileForm, UserInfoForm
 from apps.users.mixins import MerchantRequiredMixin
+from config.settings import WGS84_SRID, DEFAULT_RADIUS_KM
 from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -15,12 +16,18 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.utils import timezone
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.measure import D
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 from .models import Promotion, StoreInvitation, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
 from .forms import ItemCategoryForm, PromotionForm, StoreItemForm
-from .serializers import StoreOperatingHourSerializer, StoreProfileSerializer
+from .serializers import StoreOperatingHourSerializer, StoreProfileSerializer, NearbyStoreSerializer, NearbyStoresResponseSerializer
 from .mixins import StoreContextMixin
+
 
 # Create your views here.
 # API views for merchants app
@@ -36,6 +43,63 @@ class StoreListAPIView(ListAPIView):
         if merchant_type:
             return super().get_queryset().filter(merchant_type=merchant_type.upper())
         return super().get_queryset()
+
+class NearbyStoresListAPIView(ListAPIView):
+    """Fetches stores within a certain radius of a given lat/lng point and filtered by ?type=RESTAURANT or ?type=GROCERY"""
+
+    queryset = StoreProfile.objects.prefetch_related("operating_hours").all()
+    serializer_class = NearbyStoresResponseSerializer
+
+    def get_queryset(self):
+        lat = self.request.GET.get('lat')
+        lng = self.request.GET.get('lng')
+        radius_km = self.request.GET.get('radius', DEFAULT_RADIUS_KM)
+        merchant_type = self.request.GET.get("type")
+
+        if not lat or not lng:
+            raise ValidationError("Please provide 'lat' and 'lng' query parameters.")
+        
+        if not radius_km or (radius_km is str and not radius_km.isdigit()):
+            raise ValidationError("Please provide a valid 'radius' query parameter in kilometers.")
+
+        try:
+            user_location = Point(float(lng), float(lat), srid=WGS84_SRID)
+            
+            if merchant_type:
+                return super().get_queryset().filter(
+                    location__distance_lte=(user_location, D(km=float(radius_km))),
+                    merchant_type=merchant_type.upper()
+                ).annotate(
+                    distance=Distance('location', user_location)
+                ).order_by('distance')
+            
+            return super().get_queryset().filter(
+                location__distance_lte=(user_location, D(km=float(radius_km)))
+            ).annotate(
+                distance=Distance('location', user_location)
+            ).order_by('distance')
+            
+        except ValueError:
+            raise ValidationError("Invalid coordinates provided.")
+
+    def list(self, request, *args, **kwargs):
+        # Queryset is already filtered and annotated in get_queryset()
+        queryset = self.get_queryset()
+        serializer = NearbyStoreSerializer(queryset, many=True)
+        
+        lat = request.query_params.get('lat')
+        lng = request.query_params.get('lng')
+        radius_km = request.query_params.get('radius', DEFAULT_RADIUS_KM)
+
+        return Response({
+            "search_point": {"lat": float(lat), "lng": float(lng)},
+            "radius_km": float(radius_km),
+            "count": queryset.count(),
+            "results": serializer.data
+        })
+
+
+# TODO: Recommendation system for nearby stores based on user preferences, past orders, and ratings while considering the store's operating hours and current status (open/closed).
 
 
 class StoreAPIView(RetrieveAPIView):
