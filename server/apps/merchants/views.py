@@ -4,7 +4,6 @@ from apps.merchants.paginator import Template404Paginator
 from apps.users.models import User
 from apps.users.forms import InviteStaffForm, StoreProfileForm, UserInfoForm
 from apps.users.mixins import MerchantRequiredMixin
-from django.http.response import HttpResponse as HttpResponse
 from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -12,7 +11,6 @@ from django.views.generic import ListView, RedirectView, TemplateView, View, Upd
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
-from django.db.models import QuerySet
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -29,16 +27,15 @@ from .mixins import StoreContextMixin
 class StoreListAPIView(ListAPIView):
     """Fetches all stores, optionally filtered by ?type=RESTAURANT or ?type=GROCERY"""
 
-    queryset = StoreProfile.objects.all()
+    queryset = StoreProfile.objects.prefetch_related("operating_hours").all()
     serializer_class = StoreProfileSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self) -> QuerySet:
-        queryset = StoreProfile.objects.prefetch_related("operating_hours").all()
-        merchant_type = self.request.query_params.get("type")
+    def get_queryset(self):
+        merchant_type = self.request.GET.get("type")
         if merchant_type:
-            queryset = queryset.filter(merchant_type=merchant_type.upper())
-        return queryset
+            return super().get_queryset().filter(merchant_type=merchant_type.upper())
+        return super().get_queryset()
 
 
 class StoreAPIView(RetrieveAPIView):
@@ -73,7 +70,7 @@ class DashboardRedirectView(MerchantRequiredMixin, RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         return reverse("merchants:dashboard_home", kwargs={"store_index": 0})
     
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any):
         store_index = request.POST.get("store_index")
 
         current_route = request.POST.get("current_route", "merchants:dashboard_home")
