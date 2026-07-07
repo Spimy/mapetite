@@ -100,7 +100,7 @@ class NearbyStoresListAPIView(ListAPIView):
         })
 
 
-# TODO: Recommendation system for nearby stores based on user preferences, past orders, and ratings while considering the store's operating hours and current status (open/closed).
+# TODO: Recommendation system for nearby stores based on user preferences and dietary restrictions while considering the store's operating hours and current status (open/closed).
 
 
 class StoreAPIView(RetrieveAPIView):
