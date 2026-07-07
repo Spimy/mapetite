@@ -12,6 +12,7 @@ urlpatterns = [
         view=views.StoreOperatingHoursAPIView.as_view(),
         name="store_operating_hours",
     ),
+    path("api/stores/<int:store_id>/items/", view=views.StoreItemsAPIView.as_view(), name="store_items"),
     path('api/stores/nearby/', views.NearbyStoresListAPIView.as_view(), name='nearby_stores'),
     # --- Dashboard URLs ---
     path("dashboard/", view=views.DashboardRedirectView.as_view(), name="dashboard"),

@@ -25,7 +25,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from .models import Promotion, StoreInvitation, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
 from .forms import ItemCategoryForm, PromotionForm, StoreItemForm
-from .serializers import StoreOperatingHourSerializer, StoreProfileSerializer, NearbyStoreSerializer, NearbyStoresResponseSerializer
+from .serializers import StoreItemSerializer, StoreOperatingHourSerializer, StoreProfileSerializer, NearbyStoreSerializer, NearbyStoresResponseSerializer
 from .mixins import StoreContextMixin
 
 
@@ -123,6 +123,20 @@ class StoreOperatingHoursAPIView(ListAPIView):
         store_id = self.kwargs.get("store_id")
         get_object_or_404(StoreProfile, id=store_id)
         return super().get_queryset().filter(store_id=store_id).order_by("day_of_week")
+    
+    
+class StoreItemsAPIView(ListAPIView):
+    """Fetches all items for a specific store"""
+
+    queryset = StoreItem.objects.select_related("category").all()
+    serializer_class = StoreItemSerializer  # You might want to create a dedicated serializer for items
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        store_id = self.kwargs.get("store_id")
+        get_object_or_404(StoreProfile, id=store_id)
+        # Order by category display order, then category name, then item name for consistent listing
+        return super().get_queryset().filter(store_id=store_id).order_by("category__display_order", "category__name", "name")
 
 
 # Django views for merchants app

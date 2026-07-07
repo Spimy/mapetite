@@ -58,7 +58,7 @@ class StoreOperatingHourSerializer(serializers.ModelSerializer):
 
 
 class StoreItemSerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source="category.name", read_only=True)
+    category = serializers.CharField(source="category.name", read_only=True)
 
     class Meta:
         model = StoreItem
@@ -68,7 +68,7 @@ class StoreItemSerializer(serializers.ModelSerializer):
             "description",
             "price",
             "calories",
-            "category_name",
+            "category",
             "stock_status",
             "vegetarian",
             "organic",
