@@ -129,7 +129,7 @@ class StoreOperatingHoursAPIView(ListAPIView):
 class StoreItemsAPIView(ListAPIView):
     """Fetches all items for a specific store"""
 
-    queryset = StoreItem.objects.select_related("category").all()
+    queryset = StoreItem.objects.select_related("category").filter(is_active=True).all()
     serializer_class = StoreItemSerializer  # You might want to create a dedicated serializer for items
     permission_classes = [IsAuthenticated]
 
