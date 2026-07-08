@@ -1,7 +1,7 @@
 # apps/merchants/serializers.py
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import StoreProfile, StoreOperatingHour, StoreItem, ItemCategory
+from .models import StoreProfile, StoreOperatingHour, StoreItem
 
 
 class PaddedOperatingHoursListSerializer(serializers.ListSerializer):
@@ -58,7 +58,7 @@ class StoreOperatingHourSerializer(serializers.ModelSerializer):
 
 
 class StoreItemSerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source="category.name", read_only=True)
+    category = serializers.CharField(source="category.name", read_only=True)
 
     class Meta:
         model = StoreItem
@@ -68,7 +68,7 @@ class StoreItemSerializer(serializers.ModelSerializer):
             "description",
             "price",
             "calories",
-            "category_name",
+            "category",
             "stock_status",
             "vegetarian",
             "organic",
@@ -107,3 +107,29 @@ class StoreProfileSerializer(serializers.ModelSerializer):
         if obj.image and request:
             return request.build_absolute_uri(obj.image.url)
         return None
+
+
+class NearbyStoreSerializer(StoreProfileSerializer):
+    distance_km = serializers.SerializerMethodField()
+
+    class Meta(StoreProfileSerializer.Meta):
+        fields = StoreProfileSerializer.Meta.fields + ["distance_km"]
+
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_distance_km(self, obj):
+        store_distance = getattr(obj, 'distance', None)
+        if store_distance:
+            return round(store_distance.km, 2)
+        return None
+
+
+class SearchPointSerializer(serializers.Serializer):
+    lat = serializers.FloatField()
+    lng = serializers.FloatField()
+
+
+class NearbyStoresResponseSerializer(serializers.Serializer):
+    search_point = SearchPointSerializer()
+    radius_km = serializers.FloatField()
+    count = serializers.IntegerField()
+    results = NearbyStoreSerializer(many=True)

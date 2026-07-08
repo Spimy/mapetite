@@ -206,3 +206,8 @@ EMAIL_PORT = env("EMAIL_PORT")
 EMAIL_USE_TLS = env("EMAIL_USE_TLS")
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+
+
+# Custom settings for the application
+WGS84_SRID = 4326 # Standard GPS coordinates (latitude/longitude) use the WGS 84 coordinate system
+DEFAULT_RADIUS_KM = 5 # Default search radius for nearby stores in kilometers
