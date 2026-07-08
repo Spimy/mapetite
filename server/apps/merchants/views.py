@@ -177,6 +177,47 @@ class StorePromotionsAPIView(ListAPIView):
         return super().get_queryset().filter(store_id=store_id).order_by("-created_at")
 
 
+@extend_schema(
+    responses={
+        200: PolymorphicProxySerializer(
+            component_name='Promotion',
+            resource_type_field_name='promotion_type',
+            serializers={
+                Promotion.PromotionType.PERCENTAGE: DiscountPromotionSerializer,
+                Promotion.PromotionType.FLAT_AMOUNT: DiscountPromotionSerializer,
+                Promotion.PromotionType.FREE_ITEM: FreeItemPromotionSerializer,
+                Promotion.PromotionType.BUNDLE: BundlePromotionSerializer,
+            },
+            many=True 
+        )
+    }
+)
+class ItemPromotionsAPIView(ListAPIView):
+    """
+    Fetches all active, unexpired promotions that include a specific item.
+    Returns promotions that this item is involved in.
+    Empty eligible items means the promotion applies to all items in the store.
+    Only returns active (not paused), has started and not expired promotions.
+    """
+
+    queryset = Promotion.objects.filter(
+        is_active=True,
+        start_date__lte=timezone.now().date(),
+        end_date__gte=timezone.now().date()
+    ).all()
+    serializer_class = StorePromotionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        item_id = self.kwargs.get("item_id")
+        get_object_or_404(StoreItem, id=item_id)
+        
+        return super().get_queryset().filter(
+            Q(eligible_items__id=item_id) | 
+            Q(reward_item_id=item_id) | 
+            Q(bundle_items__id=item_id),           
+        ).distinct().order_by("-created_at")
+
 # Django views for merchants app
 class DashboardRedirectView(MerchantRequiredMixin, RedirectView):
     """Redirects the base /dashboard/ URL to /dashboard/0/"""

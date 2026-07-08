@@ -15,6 +15,7 @@ urlpatterns = [
     path("api/stores/<int:store_id>/items/", view=views.StoreItemsAPIView.as_view(), name="store_items"),
     path("api/stores/<int:store_id>/promotions/", view=views.StorePromotionsAPIView.as_view(), name="store_promotions"),
     path('api/stores/nearby/', views.NearbyStoresListAPIView.as_view(), name='nearby_stores'),
+    path('api/items/<int:item_id>/promotions/', view=views.ItemPromotionsAPIView.as_view(), name='item_promotions'),
     # --- Dashboard URLs ---
     path("dashboard/", view=views.DashboardRedirectView.as_view(), name="dashboard"),
     path(
