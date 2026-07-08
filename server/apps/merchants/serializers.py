@@ -1,7 +1,8 @@
 # apps/merchants/serializers.py
+from typing import Any, Dict, cast
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import StoreProfile, StoreOperatingHour, StoreItem
+from .models import Promotion, StoreProfile, StoreOperatingHour, StoreItem
 
 
 class PaddedOperatingHoursListSerializer(serializers.ListSerializer):
@@ -133,3 +134,58 @@ class NearbyStoresResponseSerializer(serializers.Serializer):
     radius_km = serializers.FloatField()
     count = serializers.IntegerField()
     results = NearbyStoreSerializer(many=True)
+
+
+class MinimalStoreItemSerializer(serializers.ModelSerializer):
+    """
+    Serializer for minimal representation of StoreItem, used in promotions.
+    To avoid returning full item details when not necessary and to avoid the promotion serializer from returning only the item ID.
+    """
+    
+    class Meta:
+        model = StoreItem
+        fields = ['id', 'name', 'price']
+        
+        
+class BasePromotionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Promotion
+        fields = ['id', 'title', 'description', 'promotion_type', 'start_date', 'end_date']
+
+
+class DiscountPromotionSerializer(BasePromotionSerializer):
+    promotion_type = serializers.ChoiceField(
+        choices=[Promotion.PromotionType.PERCENTAGE, Promotion.PromotionType.FLAT_AMOUNT]
+    )
+    eligible_items = MinimalStoreItemSerializer(many=True, read_only=True)
+    class Meta(BasePromotionSerializer.Meta):
+        fields = BasePromotionSerializer.Meta.fields + ['promotion_amount', 'minimum_purchase_amount', 'eligible_items']
+
+
+class FreeItemPromotionSerializer(BasePromotionSerializer):
+    promotion_type = serializers.ChoiceField(choices=[Promotion.PromotionType.FREE_ITEM])
+    reward_item = MinimalStoreItemSerializer(read_only=True)
+    eligible_items = MinimalStoreItemSerializer(many=True, read_only=True)
+    class Meta(BasePromotionSerializer.Meta):
+        fields = BasePromotionSerializer.Meta.fields + ['reward_item', 'minimum_purchase_amount', 'eligible_items']
+
+
+class BundlePromotionSerializer(BasePromotionSerializer):
+    promotion_type = serializers.ChoiceField(choices=[Promotion.PromotionType.BUNDLE])
+    bundle_items = MinimalStoreItemSerializer(many=True, read_only=True)
+    class Meta(BasePromotionSerializer.Meta):
+        fields = BasePromotionSerializer.Meta.fields + ['promotion_amount', 'bundle_items', 'bundle_description']
+
+
+class StorePromotionSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        if instance.promotion_type in [Promotion.PromotionType.PERCENTAGE, Promotion.PromotionType.FLAT_AMOUNT]:
+            serializer = DiscountPromotionSerializer(instance, context=self.context)
+        elif instance.promotion_type == Promotion.PromotionType.FREE_ITEM:
+            serializer = FreeItemPromotionSerializer(instance, context=self.context)
+        elif instance.promotion_type == Promotion.PromotionType.BUNDLE:
+            serializer = BundlePromotionSerializer(instance, context=self.context)
+        else:
+            return super().to_representation(instance)
+            
+        return cast(Dict[str, Any], serializer.data)

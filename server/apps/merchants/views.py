@@ -1,5 +1,6 @@
 import json
 from typing import Any, cast
+from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema
 from apps.merchants.paginator import Template404Paginator
 from apps.users.models import User
 from apps.users.forms import InviteStaffForm, StoreProfileForm, UserInfoForm
@@ -25,7 +26,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from .models import Promotion, StoreInvitation, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
 from .forms import ItemCategoryForm, PromotionForm, StoreItemForm
-from .serializers import StoreItemSerializer, StoreOperatingHourSerializer, StoreProfileSerializer, NearbyStoreSerializer, NearbyStoresResponseSerializer
+from .serializers import BundlePromotionSerializer, DiscountPromotionSerializer, FreeItemPromotionSerializer, StoreItemSerializer, StoreOperatingHourSerializer, StoreProfileSerializer, NearbyStoreSerializer, NearbyStoresResponseSerializer, StorePromotionSerializer
 from .mixins import StoreContextMixin
 
 
@@ -138,6 +139,42 @@ class StoreItemsAPIView(ListAPIView):
         get_object_or_404(StoreProfile, id=store_id)
         # Order by category display order, then category name, then item name for consistent listing
         return super().get_queryset().filter(store_id=store_id).order_by("category__display_order", "category__name", "name")
+    
+    
+@extend_schema(
+    responses={
+        200: PolymorphicProxySerializer(
+            component_name='Promotion',
+            resource_type_field_name='promotion_type',
+            serializers={
+                Promotion.PromotionType.PERCENTAGE: DiscountPromotionSerializer,
+                Promotion.PromotionType.FLAT_AMOUNT: DiscountPromotionSerializer,
+                Promotion.PromotionType.FREE_ITEM: FreeItemPromotionSerializer,
+                Promotion.PromotionType.BUNDLE: BundlePromotionSerializer,
+            },
+            many=True
+        )
+    }
+)
+class StorePromotionsAPIView(ListAPIView):
+    """
+    Fetches all promotions for a specific store.
+    Empty eligible items means the promotion applies to all items in the store.
+    Only returns active (not paused), has started and not expired promotions.
+    """
+
+    queryset = Promotion.objects.filter(
+        is_active=True,
+        start_date__lte=timezone.now().date(),
+        end_date__gte=timezone.now().date()
+    ).all()
+    serializer_class = StorePromotionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        store_id = self.kwargs.get("store_id")
+        get_object_or_404(StoreProfile, id=store_id)
+        return super().get_queryset().filter(store_id=store_id).order_by("-created_at")
 
 
 # Django views for merchants app
