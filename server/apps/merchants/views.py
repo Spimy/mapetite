@@ -237,7 +237,7 @@ class DashboardRedirectView(MerchantRequiredMixin, RedirectView):
         return super().post(request, *args, **kwargs)
 
 
-class DashboardView(MerchantRequiredMixin, TemplateView):
+class DashboardView(MerchantRequiredMixin, StoreContextMixin, TemplateView):
     template_name = "merchants/pages/main-dashboard.html"
 
     def get(self, request, *args, **kwargs):
@@ -252,31 +252,15 @@ class DashboardView(MerchantRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        store_index = self.kwargs.get("store_index", 0)
-        
-        # Pull stores where the user is EITHER the owner OR in the staff list
-        # .distinct() prevents duplicates if a user is accidentally both
-        stores = StoreProfile.objects.filter(
-            Q(owner=self.request.user) | Q(staff=self.request.user)
-        ).distinct().order_by("id")
-        
-        try:
-            active_store = stores[store_index]
-        except IndexError:
-            raise Http404("Invalid merchant access index portfolio scale.")
-
         context.update({
-            "store": active_store,
-            "stores": stores,
-            "current_index": store_index,
-            "total_stores": stores.count(),
-            "has_next": (store_index + 1) < stores.count(),
-            "has_prev": store_index > 0
+            "total_stores": context['stores'].count(),
+            "has_next": (context['current_index'] + 1) < context['stores'].count(),
+            "has_prev": context['current_index'] > 0,
         })
         return context
     
 
-class DashboardItemsView(MerchantRequiredMixin, ListView):
+class DashboardItemsView(MerchantRequiredMixin, StoreContextMixin, ListView):
     template_name = "merchants/pages/items-dashboard.html"
     model = StoreItem
     context_object_name = "items"
@@ -284,15 +268,7 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
     paginate_by = 6
     
     def get_queryset(self):
-        store_index = self.kwargs.get("store_index", 0)
-        stores = StoreProfile.objects.filter(
-            Q(owner=self.request.user) | Q(staff=self.request.user)
-        ).distinct().order_by("id")
-        
-        try:
-            active_store = stores[store_index]
-        except IndexError:
-            raise Http404("Invalid merchant access index portfolio scale.")
+        active_store = self.get_active_store()
         
         queryset = StoreItem.objects.filter(store=active_store).select_related("category").order_by("category__display_order", "category__name", "name")
         
@@ -311,15 +287,7 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        store_index = self.kwargs.get("store_index", 0)
-        stores = StoreProfile.objects.filter(
-            Q(owner=self.request.user) | Q(staff=self.request.user)
-        ).distinct().order_by("id")
-        
-        try:
-            active_store = stores[store_index]
-        except IndexError:
-            raise Http404("Invalid merchant access index portfolio scale.")
+        active_store = context['store']
        
         page_obj = context.get('page_obj')
         paginator = context.get('paginator')
@@ -345,19 +313,16 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
         current_search = self.request.GET.get('search', '') or ''
         
         context.update({
-            "store": active_store,
             "categories": ItemCategory.objects.filter(store=active_store).order_by("display_order", "name"),
-            "stores": stores,
-            "current_index": store_index,
-            "total_stores": stores.count(),
-            "has_next": (store_index + 1) < stores.count(),
-            "has_prev": store_index > 0,
-            "item_form": StoreItemForm(),
+            "total_stores": context['stores'].count(),
+            "has_next": (context['current_index'] + 1) < context['stores'].count(),
+            "has_prev": context['current_index'] > 0,
+            "item_form": StoreItemForm(store=active_store),
             "category_form": ItemCategoryForm(),
             "selected_category": category_param,
             "page_range": page_range,
             "current_search": current_search,
-            "edit_item_form": StoreItemForm(auto_id="edit_%s"),
+            "edit_item_form": StoreItemForm(store=active_store, auto_id="edit_%s"),
         })
         return context
     
@@ -365,6 +330,8 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
         # A POST request on a ListView requires the object_list to be populated 
         # before rendering a response with form errors.
         self.object_list = self.get_queryset()
+        active_store = self.get_active_store()
+        store_index = kwargs.get("store_index", 0)
 
         # User submitted the Category Form
         if 'submit_category' in request.POST:
@@ -372,21 +339,17 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
             if category_form.is_valid():
                 # Save the category (ensure you link it to the store instance here if needed)
                 category = category_form.save(commit=False)
-                category.store = get_object_or_404(
-                    StoreProfile,
-                    id=request.POST.get("current_store"),
-                )
+                category.store = active_store
                 category.save()
                 
                 # Always redirect after a successful POST
-                return redirect('merchants:dashboard_items', store_index=kwargs.get("store_index", 0)) 
+                return redirect('merchants:dashboard_items', store_index=store_index) 
             else:
                 # Form failed validation. Render the page with the errors in category_form.
                 return self.render_to_response(self.get_context_data(category_form=category_form))
             
         # User submitted the Manage Categories Form (bulk update/delete)
         elif 'submit_manage_categories' in request.POST:
-            active_store = get_object_or_404(StoreProfile, id=request.POST.get("current_store"))
             store_categories = ItemCategory.objects.filter(store=active_store)
             
             categories_to_update = []
@@ -423,53 +386,40 @@ class DashboardItemsView(MerchantRequiredMixin, ListView):
             if categories_to_update:
                 ItemCategory.objects.bulk_update(categories_to_update, ['name', 'display_order'])
 
-            return redirect('merchants:dashboard_items', store_index=kwargs.get("store_index", 0))
+            return redirect('merchants:dashboard_items', store_index=store_index)
 
         # User submitted the Item Form
         elif 'submit_item' in request.POST:
             item_form = StoreItemForm(request.POST, request.FILES)
             if item_form.is_valid():
                 item = item_form.save(commit=False)
-                item.store = get_object_or_404(
-                    StoreProfile,
-                    id=request.POST.get("current_store"),
-                )
+                item.store = active_store
                 item.save()
                 
-                return redirect('merchants:dashboard_items', store_index=kwargs.get("store_index", 0))
+                return redirect('merchants:dashboard_items', store_index=store_index)
             else:
                 return self.render_to_response(self.get_context_data(item_form=item_form))
             
         elif 'toggle_item' in request.POST:
-            active_store = get_object_or_404(StoreProfile, id=request.POST.get("current_store", kwargs.get("store_index", 0)))
             item_id = request.POST.get('toggle_item')
             
             item = get_object_or_404(StoreItem, id=item_id, store=active_store)
             item.is_active = not item.is_active
             item.save(update_fields=['is_active'])
             
-            return redirect('merchants:dashboard_items', store_index=kwargs.get("store_index", 0))
+            return redirect('merchants:dashboard_items', store_index=store_index)
 
         # Fallback if neither button was detected
         return self.get(request, *args, **kwargs)
 
 
-class DashboardItemUpdateView(MerchantRequiredMixin, UpdateView):
+class DashboardItemUpdateView(MerchantRequiredMixin, StoreContextMixin, UpdateView):
     model = StoreItem
     form_class = StoreItemForm
     template_name = "merchants/pages/items-edit-dashboard.html"
 
     def get_queryset(self):
-        store_index = self.kwargs.get("store_index", 0)
-        stores = StoreProfile.objects.filter(
-            Q(owner=self.request.user) | Q(staff=self.request.user)
-        ).distinct().order_by("id")
-        
-        try:
-            active_store = stores[store_index]
-        except IndexError:
-            raise Http404("Invalid merchant access index.")
-            
+        active_store = self.get_active_store()
         return super().get_queryset().filter(store=active_store)
     
     def get(self, request, *args, **kwargs):
@@ -493,18 +443,10 @@ class DashboardItemUpdateView(MerchantRequiredMixin, UpdateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        store_index = self.kwargs.get("store_index", 0)
-        stores = StoreProfile.objects.filter(
-            Q(owner=self.request.user) | Q(staff=self.request.user)
-        ).distinct().order_by("id")
-
         context.update({
-            "store": stores[store_index],
-            "stores": stores,
-            "current_index": store_index,
-            "total_stores": stores.count(),
-            "has_next": (store_index + 1) < stores.count(),
-            "has_prev": store_index > 0,
+            "total_stores": context['stores'].count(),
+            "has_next": (context['current_index'] + 1) < context['stores'].count(),
+            "has_prev": context['current_index'] > 0,
         })
         
         return context
@@ -668,6 +610,7 @@ class DashboardLocationsAndHoursView(MerchantRequiredMixin, StoreContextMixin, T
             return redirect('merchants:dashboard_locations_and_hours', store_index=kwargs.get('store_index'))
 
         return self.render_to_response(self.get_context_data())
+
 
 class DashboardStaffView(MerchantRequiredMixin, StoreContextMixin, ListView):
     template_name = "merchants/pages/staff-dashboard.html"

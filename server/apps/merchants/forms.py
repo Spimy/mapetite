@@ -46,10 +46,14 @@ class StoreItemForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        store = kwargs.pop('store', None)
         super().__init__(*args, **kwargs)
 
         category_field = cast(forms.ModelChoiceField, self.fields["category"])
         category_field.empty_label = None
+
+        if store:
+            category_field.queryset = ItemCategory.objects.filter(store=store).distinct()
 
         if not self.is_bound and category_field.queryset is not None:
             first_category = category_field.queryset.first()
