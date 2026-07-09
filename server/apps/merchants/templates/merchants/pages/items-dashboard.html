@@ -58,7 +58,7 @@
 
     {% for category in categories %}
       <a class="items-tabs__tab"
-         href="?category={{ category.name }}"
+         href="?category={{ category.name|urlencode }}"
          {% if selected_category == category.name %}aria-current="page"{% endif %}>{{ category.name }}</a>
     {% endfor %}
 
