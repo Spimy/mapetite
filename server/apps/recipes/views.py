@@ -1,13 +1,13 @@
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
 from django.contrib.postgres.search import TrigramSimilarity
 from .models import Recipe
-from .serializers import RecipeListSerializer
+from .serializers import RecipeCreateSerializer, RecipeListSerializer
 from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here.
-class RecipeListAPIView(ListAPIView):
+class RecipeCreateListAPIView(ListCreateAPIView):
     """
     API view to list all recipes with their respective authors and the count of users who have saved them.
     Users can also search for recipes by title using a query parameter `q`. The search is case-insensitive and uses trigram similarity for fuzzy matching.
