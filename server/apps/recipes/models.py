@@ -8,6 +8,9 @@ class Recipe(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="recipes"
     )
     title = models.CharField(max_length=255)
+    thumbnail = models.ImageField(
+        upload_to="recipes/thumbnails/", null=True, blank=True
+    )
     prep_time = models.PositiveIntegerField(help_text="Prep time in minutes")
     servings = models.PositiveIntegerField()
     calories = models.PositiveIntegerField(null=True, blank=True)
