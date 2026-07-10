@@ -1,9 +1,14 @@
+import json
+
 from rest_framework.generics import ListCreateAPIView
 from django.db.models import Count
 from django.contrib.postgres.search import TrigramSimilarity
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .models import Recipe
 from .serializers import RecipeCreateSerializer, RecipeListSerializer
-from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here.
@@ -14,8 +19,13 @@ class RecipeCreateListAPIView(ListCreateAPIView):
     """
 
     queryset = Recipe.objects.all()
-    serializer_class = RecipeListSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_serializer_class(self):  # type: ignore
+        if self.request.method == "POST":
+            return RecipeCreateSerializer
+        return RecipeListSerializer
 
     def get_queryset(self):
         queryset = (
@@ -43,3 +53,25 @@ class RecipeCreateListAPIView(ListCreateAPIView):
             queryset = queryset.order_by("-created_at")
 
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        data = {key: value for key, value in request.data.items()}
+
+        for field in ["ingredients", "steps"]:
+            if field in data and isinstance(data[field], str):
+                try:
+                    data[field] = json.loads(data[field])
+                except json.JSONDecodeError:
+                    pass  # serializer should catch the error and return a 400 Bad Request
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
