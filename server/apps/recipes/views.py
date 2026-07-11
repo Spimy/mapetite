@@ -1,4 +1,7 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from django.db.models import Count, Value, Q
 from django.contrib.postgres.search import TrigramSimilarity
 from rest_framework import status
@@ -107,8 +110,12 @@ class RecipeCreateListAPIView(ListCreateAPIView):
         summary="Partially update a recipe",
         description="Update specific fields of a recipe. If ingredients or steps are omitted, the existing ones are preserved.",
     ),
+    delete=extend_schema(
+        summary="Delete a recipe",
+        description="Permanently delete a recipe. Automatically removes all associated ingredients and steps due to cascading delete.",
+    ),
 )
-class RecipeDetailUpdateAPIView(RetrieveUpdateAPIView):
+class RecipeDetailUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthorOrReadOnly]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
