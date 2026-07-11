@@ -1,7 +1,7 @@
 import json
 
 from rest_framework.generics import ListCreateAPIView
-from django.db.models import Count
+from django.db.models import Count, Value, Q
 from django.contrib.postgres.search import TrigramSimilarity
 from rest_framework import status
 from rest_framework.response import Response
@@ -42,10 +42,11 @@ class RecipeCreateListAPIView(ListCreateAPIView):
 
         if query:
             queryset = (
-                queryset.annotate(similarity=TrigramSimilarity("title", query))
+                queryset.annotate(similarity=TrigramSimilarity("title", Value(query)))
                 .filter(
                     # Similarity threshold because PostgreSQL is goated like that providing easy way to do fuzzy search without any extra effort.
-                    similarity__gt=0.25
+                    Q(title__icontains=query)
+                    | Q(similarity__gt=0.15)
                 )
                 .order_by("-similarity")
             )
