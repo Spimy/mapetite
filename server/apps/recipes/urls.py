@@ -18,4 +18,9 @@ urlpatterns = [
         view=views.SaveRecipeAPIView.as_view(),
         name="recipe_toggle-save",
     ),
+    path(
+        "api/ingredients/search-nearby-stores/",
+        view=views.SmartIngredientMatchAPIView.as_view(),
+        name="ingredient_match",
+    ),
 ]

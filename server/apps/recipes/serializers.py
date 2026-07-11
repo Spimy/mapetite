@@ -160,3 +160,30 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
             "saves_count",
             "steps",
         ]
+
+
+class IngredientMatchRequestSerializer(serializers.Serializer):
+    ingredients = serializers.ListField(
+        child=serializers.CharField(max_length=100),
+        help_text="List of ingredient names (e.g., ['Milk', 'Eggs', 'Chicken'])",
+    )
+    latitude = serializers.FloatField(required=True)
+    longitude = serializers.FloatField(required=True)
+    radius_km = serializers.FloatField(default=5.0)
+
+
+class MatchedStoreSerializer(serializers.Serializer):
+    store_id = serializers.IntegerField()
+    business_name = serializers.CharField()
+    image = serializers.URLField()
+    distance_km = serializers.FloatField()
+    matched_ingredients = serializers.ListField(child=serializers.CharField())
+    missing_ingredients = serializers.ListField(child=serializers.CharField())
+    match_score = serializers.IntegerField(help_text="Number of ingredients found")
+
+
+class MatchResponseSerializer(serializers.Serializer):
+    ai_recommendation = serializers.CharField(
+        help_text="Gemini's natural language recommendation."
+    )
+    stores = MatchedStoreSerializer(many=True)

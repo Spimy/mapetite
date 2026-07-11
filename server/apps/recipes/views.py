@@ -1,3 +1,5 @@
+from google.genai import types
+from pgvector.django import CosineDistance
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
@@ -6,15 +8,23 @@ from rest_framework.generics import (
 from rest_framework.views import APIView
 from django.db.models import Count, Value, Q
 from django.contrib.postgres.search import TrigramSimilarity
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from apps.core.services import GeminiService
+from apps.merchants.models import StoreItem, StoreProfile
 from apps.recipes.utils import extract_recipe_data
 from apps.users.permissions import IsAuthorOrReadOnly
+from config.settings import DEFAULT_RADIUS_KM
 from .models import Recipe, SavedRecipe
 from .serializers import (
+    IngredientMatchRequestSerializer,
+    MatchResponseSerializer,
+    MatchResponseSerializer,
     RecipeCreateUpdateSerializer,
     RecipeDetailSerializer,
     RecipeListSerializer,
@@ -198,3 +208,128 @@ class SaveRecipeAPIView(APIView):
         recipe.saves_count = recipe.saved_by_users.count()  # type: ignore
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class SmartIngredientMatchAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    client = GeminiService.get_client()
+
+    @extend_schema(
+        summary="Smart Merchant Ingredient Matcher",
+        description="Finds nearby grocery stores that stock requested recipe ingredients using Vector AI and PostGIS.",
+        request=IngredientMatchRequestSerializer,
+        responses={200: MatchResponseSerializer},
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = IngredientMatchRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user_lat = serializer.validated_data["latitude"]  # type: ignore
+        user_lon = serializer.validated_data["longitude"]  # type: ignore
+        radius_km = serializer.validated_data["radius_km"] or DEFAULT_RADIUS_KM  # type: ignore
+        requested_ingredients = serializer.validated_data["ingredients"]  # type: ignore
+
+        user_location = Point(user_lon, user_lat, srid=4326)
+
+        # Find stores within the radius
+        nearby_stores = StoreProfile.objects.filter(
+            location__distance_lte=(user_location, D(km=radius_km)),
+            merchant_type=StoreProfile.MerchantType.GROCERY,  # Only search grocery stores
+        )
+
+        if not nearby_stores.exists():
+            return Response(
+                {"detail": "No grocery stores found within your area."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Vector Embeddings
+        embedded_ingredients = []
+        for ing_name in requested_ingredients:
+            embedding_response = self.client.models.embed_content(
+                model=GeminiService.get_model("embedding"),
+                contents=ing_name,
+                config=types.EmbedContentConfig(output_dimensionality=768),
+            )
+            assert embedding_response.embeddings is not None
+
+            vector = embedding_response.embeddings[0].values
+            embedded_ingredients.append({"name": ing_name, "vector": vector})
+
+        # Semantic Match to find which stores have these items
+        store_results = {
+            store.pk: {
+                "store_id": store.pk,
+                "business_name": store.business_name,
+                "image": (
+                    request.build_absolute_uri(store.image.url) if store.image else None
+                ),
+                "distance_km": (
+                    round(store.location.distance(user_location) * 100, 2)
+                    if store.location
+                    else 0.0
+                ),
+                "matched_ingredients": [],
+                "missing_ingredients": [],
+                "match_score": 0,
+            }
+            for store in nearby_stores
+        }
+
+        SIMILARITY_THRESHOLD = 0.3
+
+        for target in embedded_ingredients:
+            matches = (
+                StoreItem.objects.filter(
+                    store__in=nearby_stores, stock_status__in=["IN_STOCK", "LOW_STOCK"]
+                )
+                .annotate(distance=CosineDistance("embedding", target["vector"]))
+                .filter(distance__lt=SIMILARITY_THRESHOLD)
+            )
+
+            matched_store_ids = matches.values_list("store_id", flat=True)
+
+            for store_id in store_results.keys():
+                if store_id in matched_store_ids:
+                    store_results[store_id]["matched_ingredients"].append(
+                        target["name"]
+                    )
+                    store_results[store_id]["match_score"] += 1
+                else:
+                    store_results[store_id]["missing_ingredients"].append(
+                        target["name"]
+                    )
+
+        sorted_stores = sorted(
+            store_results.values(), key=lambda x: (-x["match_score"], x["distance_km"])
+        )
+
+        sorted_stores = [s for s in sorted_stores if s["match_score"] > 0]
+
+        # RAG for recommendation reasoning
+        if sorted_stores:
+            top_store = sorted_stores[0]
+            prompt = (
+                f"I am cooking a recipe and need these ingredients: {requested_ingredients}. "
+                f"I searched my database and found that a store named '{top_store['business_name']}' "
+                f"has {top_store['match_score']} out of {len(requested_ingredients)} items in stock. "
+                f"Write a 1-2 sentence friendly, helpful recommendation telling me where to go. "
+                f"Do not use markdown."
+            )
+
+            # Using Gemini 3.1 Flash Lite for faster response time
+            response = self.client.models.generate_content(
+                model=GeminiService.get_model("fast"), contents=prompt
+            )
+            ai_recommendation = (
+                response.text.strip()
+                if response.text
+                else "Something went wrong with AI recommendation reasoning."
+            )
+        else:
+            ai_recommendation = "I couldn't find any nearby stores with those specific ingredients in stock today."
+
+        return Response(
+            {"ai_recommendation": ai_recommendation, "stores": sorted_stores},
+            status=status.HTTP_200_OK,
+        )
