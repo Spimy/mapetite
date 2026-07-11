@@ -10,7 +10,7 @@ urlpatterns = [
     ),
     path(
         "api/recipes/<int:pk>/",
-        view=views.RecipeDetailAPIView.as_view(),
+        view=views.RecipeDetailUpdateAPIView.as_view(),
         name="recipe_detail",
     ),
 ]

@@ -1,15 +1,18 @@
 import json
 
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
 from django.db.models import Count, Value, Q
 from django.contrib.postgres.search import TrigramSimilarity
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from apps.recipes.utils import extract_recipe_data
+from apps.users.permissions import IsAuthorOrReadOnly
 from .models import Recipe
 from .serializers import (
-    RecipeCreateSerializer,
+    RecipeCreateUpdateSerializer,
     RecipeDetailSerializer,
     RecipeListSerializer,
 )
@@ -28,7 +31,7 @@ class RecipeCreateListAPIView(ListCreateAPIView):
 
     def get_serializer_class(self):  # type: ignore
         if self.request.method == "POST":
-            return RecipeCreateSerializer
+            return RecipeCreateUpdateSerializer
         return RecipeListSerializer
 
     def get_queryset(self):
@@ -60,23 +63,9 @@ class RecipeCreateListAPIView(ListCreateAPIView):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        data = {key: value for key, value in request.data.items()}
-
-        empty_serializer = self.get_serializer()
-        json_parsing_errors = {}
-
-        for field in ["ingredients", "steps"]:
-            if field in data and isinstance(data[field], str):
-                try:
-                    data[field] = json.loads(data[field])
-                except json.JSONDecodeError:
-                    nested_serializer = empty_serializer.fields[field].child
-                    expected_keys = list(nested_serializer.fields.keys())
-                    keys_string = ", ".join(f"'{k}'" for k in expected_keys)
-
-                    json_parsing_errors[field] = [
-                        f"Invalid JSON format. Expected an array of objects containing keys: {keys_string}."
-                    ]
+        data, json_parsing_errors = extract_recipe_data(
+            request, self.get_serializer_class()
+        )
 
         serializer = self.get_serializer(data=data)
 
@@ -102,11 +91,55 @@ class RecipeCreateListAPIView(ListCreateAPIView):
         serializer.save(author=self.request.user)
 
 
-class RecipeDetailAPIView(RetrieveAPIView):
-    """
-    Get detailed information about a specific recipe, including its ingredients, steps, and the count of users who have saved it.
-    """
-
+@extend_schema_view(
+    get=extend_schema(
+        summary="Retrieve a recipe",
+        description="Get detailed information about a specific recipe, including its ingredients, steps, and the count of users who have saved it.",
+    ),
+    put=extend_schema(
+        summary="Replace a recipe",
+        description="Completely replace a recipe, including wiping and recreating all nested ingredients and steps.",
+    ),
+    patch=extend_schema(
+        summary="Partially update a recipe",
+        description="Update specific fields of a recipe. If ingredients or steps are omitted, the existing ones are preserved.",
+    ),
+)
+class RecipeDetailUpdateAPIView(RetrieveUpdateAPIView):
     queryset = Recipe.objects.all()
-    permission_classes = [IsAuthenticated]
-    serializer_class = RecipeDetailSerializer
+    permission_classes = [IsAuthorOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_serializer_class(self):  # type: ignore
+        if self.request.method in ["PUT", "PATCH"]:
+            return RecipeCreateUpdateSerializer
+        return RecipeDetailSerializer
+
+    def update(self, request, *args, **kwargs):
+        data, json_parsing_errors = extract_recipe_data(
+            request, self.get_serializer_class()
+        )
+
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+
+        if not serializer.is_valid(raise_exception=False):
+            final_errors = serializer.errors
+            final_errors.update(json_parsing_errors)
+            return Response(final_errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if json_parsing_errors:
+            return Response(
+                json_parsing_errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        self.perform_update(serializer)
+
+        if getattr(instance, "_prefetched_objects_cache", None):
+            # If 'prefetch_related' has been applied to a queryset,
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)

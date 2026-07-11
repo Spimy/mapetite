@@ -53,7 +53,7 @@ class RecipeStepCreateSerializer(serializers.ModelSerializer):
         fields = ["step_number", "instruction"]
 
 
-class RecipeCreateSerializer(serializers.ModelSerializer):
+class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     thumbnail = serializers.ImageField(
         required=False, allow_null=True, allow_empty_file=False
     )
@@ -64,6 +64,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = [
+            "id",
             "title",
             "thumbnail",
             "prep_time",
@@ -97,6 +98,38 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         RecipeStep.objects.bulk_create(steps_to_create)
 
         return recipe
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        ingredients_data = validated_data.pop("ingredients", None)
+        steps_data = validated_data.pop("steps", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Handle Ingredients
+        # If it's None, it wasn't in the request (e.g., standard PATCH). Leave existing alone.
+        # If it's [], they sent an empty list to delete all ingredients.
+        if ingredients_data is not None:
+            # Wipe existing and recreate
+            instance.ingredients.all().delete()
+            ingredients_to_create = [
+                RecipeIngredient(recipe=instance, **ingredient)
+                for ingredient in ingredients_data
+            ]
+            RecipeIngredient.objects.bulk_create(ingredients_to_create)
+
+        # Handle Steps
+        if steps_data is not None:
+            # Wipe existing and recreate
+            instance.steps.all().delete()
+            steps_to_create = [
+                RecipeStep(recipe=instance, **step) for step in steps_data
+            ]
+            RecipeStep.objects.bulk_create(steps_to_create)
+
+        return instance
 
     def get_fields(self):
         fields = super().get_fields()
