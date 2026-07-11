@@ -1,4 +1,6 @@
 import uuid
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
@@ -190,7 +192,7 @@ class StoreItem(models.Model):
     def __str__(self):
         status_label = self.StockStatus(self.stock_status).label
         return f"{self.name} ({status_label})"
-    
+
 
 class Promotion(models.Model):
     class PromotionType(models.TextChoices):
@@ -343,9 +345,6 @@ class StoreInvitation(models.Model):
     def __str__(self):
         return f"Invite to {self.email} for {self.store.business_name}"
 
-
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 
 @receiver(pre_save, sender=StoreProfile)
 @receiver(pre_save, sender=StoreOperatingHour)
