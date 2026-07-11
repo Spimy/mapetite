@@ -57,15 +57,35 @@ class RecipeCreateListAPIView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         data = {key: value for key, value in request.data.items()}
 
+        empty_serializer = self.get_serializer()
+        json_parsing_errors = {}
+
         for field in ["ingredients", "steps"]:
             if field in data and isinstance(data[field], str):
                 try:
                     data[field] = json.loads(data[field])
                 except json.JSONDecodeError:
-                    pass  # serializer should catch the error and return a 400 Bad Request
+                    nested_serializer = empty_serializer.fields[field].child
+                    expected_keys = list(nested_serializer.fields.keys())
+                    keys_string = ", ".join(f"'{k}'" for k in expected_keys)
+
+                    json_parsing_errors[field] = [
+                        f"Invalid JSON format. Expected an array of objects containing keys: {keys_string}."
+                    ]
 
         serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
+
+        if not serializer.is_valid(raise_exception=False):
+            final_errors = serializer.errors
+            final_errors.update(json_parsing_errors)
+            return Response(final_errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if json_parsing_errors:
+            return Response(
+                json_parsing_errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         self.perform_create(serializer)
 
         headers = self.get_success_headers(serializer.data)
