@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
 
     # Third-party apps
+    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
@@ -118,7 +119,18 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
+
+if DEBUG:
+    # Allow Flutter Web development servers with changing local ports.
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^http://localhost:\d+$",
+        r"^http://127\.0\.0\.1:\d+$",
+    ]
+
+    # Apply CORS handling only to API routes.
+    CORS_URLS_REGEX = r"^/api/.*$"
 
 ROOT_URLCONF = "config.urls"
 

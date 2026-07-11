@@ -1,30 +1,34 @@
-from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
+from django.db.models import Q
 
 
 class EmailOrUsernameBackend(ModelBackend):
     """
-    Allow users to authenticate using case insensitive username
-    or using email which provides a way for users who forgot their
-    username to authenticate themselves
+    Allow active users to authenticate using a case-insensitive username
+    or email address.
     """
 
     def authenticate(self, request, username=None, password=None, **kwargs):
-
         user_model = get_user_model()
 
-        if username is None:
-            username = kwargs.get(user_model.USERNAME_FIELD)
+        identifier = username or kwargs.get(user_model.USERNAME_FIELD)
 
-        case_insensitive_username_field = f"{user_model.USERNAME_FIELD}__iexact"
+        if not identifier or password is None:
+            return None
+
+        username_lookup = f"{user_model.USERNAME_FIELD}__iexact"
 
         try:
             user = user_model.objects.get(
-                Q(**{case_insensitive_username_field: username})
-                | Q(email__iexact=username)
+                Q(**{username_lookup: identifier}) |
+                Q(email__iexact=identifier)
             )
         except user_model.DoesNotExist:
+            user_model().set_password(password)
             return None
-        else:
+
+        if user.check_password(password) and self.user_can_authenticate(user):
             return user
+
+        return None

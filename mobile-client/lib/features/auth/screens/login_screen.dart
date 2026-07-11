@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
+
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
-import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/app_text_field.dart';
+import '../../../shared/widgets/custom_button.dart';
+import '../controllers/auth_controller.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
-  String? _errorMessage;
 
   @override
   void dispose() {
@@ -30,19 +31,32 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _onSignIn() async {
-    setState(() => _errorMessage = null);
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-    // TODO: Replace with real auth service
-    await Future.delayed(const Duration(milliseconds: 1500));
-    if (mounted) {
-      setState(() => _isLoading = false);
+    ref.read(authControllerProvider.notifier).clearMessages();
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final success = await ref.read(authControllerProvider.notifier).login(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (success) {
       context.go('/profile/dietary');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.isLoading;
+    final errorMessage = authState.errorMessage;
+
     return Scaffold(
       backgroundColor: const Color(0xFFECFDF5),
       body: Stack(
@@ -81,38 +95,57 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xxxl),
-                    Text('Welcome back', style: AppTypography.headline1),
+
+                    Text(
+                      'Welcome back',
+                      style: AppTypography.headline1,
+                    ),
+
                     const SizedBox(height: AppSpacing.xs),
-                    Text('Sign in to your account.', style: AppTypography.body2),
+
+                    Text(
+                      'Sign in to your account.',
+                      style: AppTypography.body2,
+                    ),
+
                     const SizedBox(height: AppSpacing.xxxl),
+
                     AppTextField(
                       label: 'Email address',
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      enabled: !_isLoading,
+                      enabled: !isLoading,
                       validator: Validators.email,
                     ),
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        _errorMessage!,
-                        style: AppTypography.body2.copyWith(color: AppColors.error),
-                      ),
-                    ],
+
                     const SizedBox(height: AppSpacing.lg),
+
                     AppTextField(
                       label: 'Password',
                       controller: _passwordController,
                       obscureText: true,
-                      enabled: !_isLoading,
+                      enabled: !isLoading,
                       validator: Validators.loginPassword,
                     ),
+
+                    if (errorMessage != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        errorMessage,
+                        style: AppTypography.body2.copyWith(
+                          color: AppColors.error,
+                        ),
+                      ),
+                    ],
+
                     const SizedBox(height: AppSpacing.sm),
+
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed:
-                            _isLoading ? null : () => context.go('/forgot-password'),
+                        onPressed: isLoading
+                            ? null
+                            : () => context.go('/forgot-password'),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: const Size(
@@ -129,13 +162,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: AppSpacing.xxl),
+
                     AppButton(
                       label: 'Sign In',
-                      onPressed: _onSignIn,
-                      isLoading: _isLoading,
+                      onPressed: isLoading ? null : _onSignIn,
+                      isLoading: isLoading,
                     ),
+
                     const SizedBox(height: AppSpacing.xxl),
+
                     Row(
                       children: [
                         const Expanded(child: Divider()),
@@ -153,21 +190,28 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Expanded(child: Divider()),
                       ],
                     ),
+
                     const SizedBox(height: AppSpacing.lg),
+
                     AppButton(
                       label: 'Continue with Google',
                       variant: AppButtonVariant.outlined,
                       leadingIcon: Icons.g_mobiledata,
-                      // TODO: Replace with google_sign_in
-                      onPressed: _isLoading ? null : () {},
+                      onPressed: isLoading ? null : () {},
                     ),
+
                     const SizedBox(height: AppSpacing.xxxl),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("Don't have an account? ", style: AppTypography.body2),
+                        Text(
+                          "Don't have an account? ",
+                          style: AppTypography.body2,
+                        ),
                         TextButton(
-                          onPressed: () => context.go('/register'),
+                          onPressed:
+                              isLoading ? null : () => context.go('/register'),
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: const Size(0, AppSpacing.touchTarget),
@@ -183,6 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
+
                     const SizedBox(height: AppSpacing.xxxl),
                   ],
                 ),
