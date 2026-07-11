@@ -19,12 +19,17 @@ from .serializers import (
 
 
 # Create your views here.
+@extend_schema_view(
+    get=extend_schema(
+        summary="List all recipes",
+        description="Retrieve a list of all recipes with their respective authors and the count of users who have saved them. Users can also search for recipes by title using a query parameter `q`.",
+    ),
+    post=extend_schema(
+        summary="Create a new recipe",
+        description="Create a new recipe with its ingredients and steps. The request should include the recipe details, ingredients, and steps in JSON format.",
+    ),
+)
 class RecipeCreateListAPIView(ListCreateAPIView):
-    """
-    API view to list all recipes with their respective authors and the count of users who have saved them.
-    Users can also search for recipes by title using a query parameter `q`. The search is case-insensitive and uses trigram similarity for fuzzy matching.
-    """
-
     queryset = Recipe.objects.all()
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
