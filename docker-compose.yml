@@ -1,21 +1,23 @@
 services:
   web:
-      build: 
-        context: ./server
-        dockerfile: Dockerfile
-      container_name: django_web
-      command: python -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000
-      volumes:
-        - ./server:/app
-      ports:
-        - "8000:8000"
-        - "5678:5678"
-      env_file: 
-        - ./server/.env
-      depends_on:
-        - database
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: django_web
+    command: python -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./server:/app
+    ports:
+      - "8000:8000"
+      - "5678:5678"
+    env_file: 
+      - ./server/.env
+    depends_on:
+      - database
   database:
-    image: postgis/postgis:18-3.6
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: database
     env_file: 
       - ./server/.env
