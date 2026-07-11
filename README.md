@@ -34,9 +34,7 @@ The entire backend (Database + Django Server) runs inside Docker. You do not nee
    ```
 
 
-4. Seeding Database
-
-   You should seed your database:
+4. You should seed the database:
 
    ```bash
    docker compose exec web python manage.py loaddata server/fixtures/seed.json
