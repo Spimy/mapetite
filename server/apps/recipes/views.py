@@ -1,5 +1,3 @@
-import json
-
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
 from django.db.models import Count, Value, Q
 from django.contrib.postgres.search import TrigramSimilarity
