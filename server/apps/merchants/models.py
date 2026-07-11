@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import timedelta
+from pgvector.django import VectorField
 
 # Create your models here.
 class StoreProfile(gis_models.Model):
@@ -180,6 +181,8 @@ class StoreItem(models.Model):
     is_active = models.BooleanField(default=True)
     
     thumbnail = models.ImageField(upload_to="merchants/items", blank=True)
+    
+    embedding = VectorField(dimensions=768, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
