@@ -33,6 +33,25 @@ The entire backend (Database + Django Server) runs inside Docker. You do not nee
    docker compose exec web python manage.py createsuperuser
    ```
 
+
+4. Seeding Database
+
+   You should seed your database:
+
+   ```bash
+   docker compose exec web python manage.py loaddata server/fixtures/seed.json
+   # or
+   make seed
+   ```
+
+   After seeding your database, you will need to generate the embeddings for vector searching store items and may take a few minutes to complete:
+
+   ```bash
+   docker compose exec web python manage.py generate_embeddings
+   # or
+   make generate-embeddings
+   ```
+
 **Mobile Emulator Note:** If you are testing the Flutter app on an Android Emulator, your API base URL must be `http://10.0.2.2:8000/api/` (not localhost) to connect to your host machine's Docker network.
 
 ## 👥 Team Guidelines
