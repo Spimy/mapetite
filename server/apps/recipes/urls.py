@@ -13,4 +13,9 @@ urlpatterns = [
         view=views.RecipeDetailUpdateDeleteAPIView.as_view(),
         name="recipe_detail",
     ),
+    path(
+        "api/recipes/<int:pk>/save/",
+        view=views.SaveRecipeAPIView.as_view(),
+        name="recipe_toggle-save",
+    ),
 ]

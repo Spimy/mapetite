@@ -1,7 +1,9 @@
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
+    get_object_or_404,
 )
+from rest_framework.views import APIView
 from django.db.models import Count, Value, Q
 from django.contrib.postgres.search import TrigramSimilarity
 from rest_framework import status
@@ -11,7 +13,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from apps.recipes.utils import extract_recipe_data
 from apps.users.permissions import IsAuthorOrReadOnly
-from .models import Recipe
+from .models import Recipe, SavedRecipe
 from .serializers import (
     RecipeCreateUpdateSerializer,
     RecipeDetailSerializer,
@@ -153,3 +155,43 @@ class RecipeDetailUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+
+class SaveRecipeAPIView(APIView):
+    queryset = SavedRecipe.objects.annotate(saves_count=Count("recipe")).all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = RecipeDetailSerializer
+
+    @extend_schema(
+        summary="Save a recipe",
+        description="Adds the recipe to the user's saved list. This endpoint is idempotent (calling it multiple times safely does nothing). Returns the updated recipe details.",
+        responses={201: RecipeDetailSerializer, 200: RecipeDetailSerializer},
+    )
+    def post(self, request, pk, *args, **kwargs):
+        recipe = get_object_or_404(Recipe, pk=pk)
+
+        _, created = SavedRecipe.objects.get_or_create(user=request.user, recipe=recipe)
+
+        serializer = self.serializer_class(recipe, context={"request": request})
+        recipe.saves_count = recipe.saved_by_users.count()  # type: ignore
+
+        # 201 if successfully created the save, 200 if it was already saved
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(serializer.data, status=status_code)
+
+    @extend_schema(
+        summary="Unsave a recipe",
+        description="Removes the recipe from the user's saved list. This endpoint is idempotent. Returns the updated recipe details.",
+        responses={200: RecipeDetailSerializer},
+    )
+    def delete(self, request, pk, *args, **kwargs):
+        recipe = get_object_or_404(Recipe, pk=pk)
+
+        SavedRecipe.objects.filter(user=request.user, recipe=recipe).delete()
+
+        # Normally DELETE returns 204 No Content. However, returning 200 OK
+        # with the serialized recipe here to instantly get the decremented saves_count
+        serializer = self.serializer_class(recipe, context={"request": request})
+        recipe.saves_count = recipe.saved_by_users.count()  # type: ignore
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
