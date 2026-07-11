@@ -127,6 +127,9 @@ class RecipeDetailUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
             return RecipeCreateUpdateSerializer
         return RecipeDetailSerializer
 
+    def get_queryset(self):
+        return super().get_queryset().annotate(saves_count=Count("saved_by_users"))
+
     def update(self, request, *args, **kwargs):
         data, json_parsing_errors = extract_recipe_data(
             request, self.get_serializer_class()
