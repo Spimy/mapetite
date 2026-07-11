@@ -1,6 +1,6 @@
 import json
 
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from django.db.models import Count, Value, Q
 from django.contrib.postgres.search import TrigramSimilarity
 from rest_framework import status
@@ -8,7 +8,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .models import Recipe
-from .serializers import RecipeCreateSerializer, RecipeListSerializer
+from .serializers import (
+    RecipeCreateSerializer,
+    RecipeDetailSerializer,
+    RecipeListSerializer,
+)
 
 
 # Create your views here.
@@ -96,3 +100,13 @@ class RecipeCreateListAPIView(ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+
+class RecipeDetailAPIView(RetrieveAPIView):
+    """
+    Get detailed information about a specific recipe, including its ingredients, steps, and the count of users who have saved it.
+    """
+
+    queryset = Recipe.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = RecipeDetailSerializer

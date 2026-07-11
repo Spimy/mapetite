@@ -101,3 +101,29 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def get_fields(self):
         fields = super().get_fields()
         return fields
+
+
+class RecipeDetailSerializer(serializers.ModelSerializer):
+    author = RecipeAuthorSerializer(read_only=True)
+    ingredients = RecipeIngredientCreateSerializer(many=True, read_only=True)
+    steps = RecipeStepCreateSerializer(many=True, read_only=True)
+    saves_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Recipe
+        fields = [
+            "id",
+            "title",
+            "thumbnail",
+            "prep_time",
+            "servings",
+            "calories",
+            "is_halal",
+            "is_vegan",
+            "is_vegetarian",
+            "is_gluten_free",
+            "author",
+            "ingredients",
+            "saves_count",
+            "steps",
+        ]
