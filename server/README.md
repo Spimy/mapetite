@@ -44,6 +44,22 @@ python manage.py createsuperuser
 
 ```
 
+### 4. Seeding Database
+
+This step can be ignored if you have already done this by following the [root README](../README.md).
+
+There are fixtures provided for merchants (StoreProfile), menu items/products (StoreItem) and operating hours (StoreOperatingHour). You should seed these into your database:
+
+```bash
+python manage.py loaddata fixtures/seed.json
+```
+
+After seeding your database, you will need to generate the embeddings for vector searching store items. To do that, there is a custom command located at [`apps/merchants/management/commands/generate_embeddings.py`](apps/merchants/management/commands/generate_embeddings.py). You can run this custom command in your terminal and may take a few minutes to complete:
+
+```bash
+python manage.py generate_embeddings
+```
+
 ---
 
 ## 🛰 Development & Debugging
@@ -66,10 +82,12 @@ Because VS Code is running inside the container with your code, debugging works 
 
 All domain logic is located in the `apps/` directory to keep the root clean:
 
-| App                  | Responsibility                                                  |
-| -------------------- | --------------------------------------------------------------- |
-| **`apps.users`**     | Identity and Authentication.                                    |
-| **`apps.merchants`** | Store profiles, spatial location (PostGIS), and business logic. |
+| App                  | Responsibility                                                                     |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| **`apps.core`**      | Services used throughout the system such as GeminiService.                         |
+| **`apps.users`**     | Identity and Authentication.                                                       |
+| **`apps.merchants`** | Store profiles, spatial location (PostGIS), vector embeddings, and business logic. |
+| **`apps.recipes`**   | Recipes, ingredients, recipe instruction steps, and business logic.                |
 
 ---
 

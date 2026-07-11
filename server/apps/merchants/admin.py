@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Promotion, StoreProfile, StoreOperatingHour, ItemCategory, StoreItem, StoreInvitation
+from .models import (
+    Promotion,
+    StoreProfile,
+    StoreOperatingHour,
+    ItemCategory,
+    StoreItem,
+    StoreInvitation,
+)
 
 
 # Register your models here.
@@ -16,7 +23,7 @@ class ItemCategoryAdmin(admin.ModelAdmin):
 
 
 class StoreItemAdmin(admin.ModelAdmin):
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("embedding", "created_at", "updated_at")
 
 
 class PromotionAdmin(admin.ModelAdmin):
