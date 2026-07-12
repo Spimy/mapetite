@@ -27,4 +27,10 @@ class EmailOrUsernameBackend(ModelBackend):
         except user_model.DoesNotExist:
             return None
         else:
-            return user
+            if (
+                password is not None
+                and user.check_password(password)
+                and self.user_can_authenticate(user)
+            ):
+                return user
+            return None
