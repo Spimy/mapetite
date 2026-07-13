@@ -1,37 +1,32 @@
 abstract class ApiEndpoints {
   // Auth
-  static const String login = '/auth/login/';
-  static const String register = '/auth/register/';
-  static const String logout = '/auth/logout/';
-  static const String refreshToken = '/auth/token/refresh/';
+  static const String register = 'auth/register/';
+  static const String googleLogin = 'auth/google/';
+  static const String verifyEmail = 'auth/verify-email/';
+  static const String resendEmail = 'auth/resend-email/';
 
-  // Profile
-  static const String profile = '/profiles/me/';
+  // JWT token auth
+  static const String login = 'token/';
+  static const String refreshToken = 'token/refresh/';
+  static const String verifyToken = 'token/verify/';
 
-  // Discovery
-  static const String discover = '/discovery/';
+  // Current user
+  static const String me = 'me/';
 
-  // Restaurants (maps to server's /api/stores/ endpoints, filtered by type)
-  static const String restaurants = '/api/stores/?type=RESTAURANT';
-  static String restaurant(String id) => '/api/stores/$id/';
+  // Stores
+  static const String restaurants = 'stores/?type=RESTAURANT';
+  static String restaurant(String id) => 'stores/$id/';
 
-  // Groceries (maps to server's /api/stores/ endpoints, filtered by type)
-  static const String groceries = '/api/stores/?type=GROCERY';
-  static String grocery(String id) => '/api/stores/$id/';
+  static const String groceries = 'stores/?type=GROCERY';
+  static String grocery(String id) => 'stores/$id/';
 
-  // Recipes
-  static const String recipes = '/recipes/';
-  static String recipe(String id) => '/recipes/$id/';
-
-  // Grocery list
-  static const String groceryList = '/grocery-list/';
-
-  // Budget
-  static const String budget = '/budget/';
-
-  // Notifications
-  static const String notifications = '/notifications/';
-
-  // Routing
-  static const String routing = '/routing/';
+  // Other feature endpoints
+  static const String profile = 'profiles/me/';
+  static const String discover = 'discovery/';
+  static const String recipes = 'recipes/';
+  static String recipe(String id) => 'recipes/$id/';
+  static const String groceryList = 'grocery-list/';
+  static const String budget = 'budget/';
+  static const String notifications = 'notifications/';
+  static const String routing = 'routing/';
 }
