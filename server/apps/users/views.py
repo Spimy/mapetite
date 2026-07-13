@@ -18,7 +18,6 @@ from dj_rest_auth.registration.views import (
 )
 from allauth.account.models import EmailConfirmationHMAC, EmailConfirmation
 from drf_spectacular.utils import extend_schema_view, extend_schema
-from rest_framework.generics import RetrieveAPIView
 from .forms import SignInForm
 from .mixins import SuccessUrlMixin
 from .serializers import UserDetailSerializer

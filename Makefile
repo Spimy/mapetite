@@ -10,6 +10,12 @@ migrate:
 createsuperuser:
 	docker compose exec web python manage.py createsuperuser
 
+seed:
+	docker compose exec web python manage.py loaddata server/fixtures/seed.json
+
+generate-embeddings:
+	docker compose exec web python manage.py generate_embeddings
+
 # Open a python shell inside the container
 shell:
 	docker compose exec web python manage.py shell

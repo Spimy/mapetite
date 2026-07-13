@@ -35,6 +35,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("apps.users.urls", namespace="users")),
     path("", include("apps.merchants.urls", namespace="merchants")),
+    path("", include("apps.recipes.urls", namespace="recipes")),
     path(
         "api/schema/",
         staff_member_required(

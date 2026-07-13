@@ -1,0 +1,9 @@
+{
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+		"editor.formatOnSave": true,
+  },
+	"black-formatter.importStrategy": "fromEnvironment",
+	"black-formatter.serverTransport": "stdio",
+	"black-formatter.interpreter": ["/usr/local/bin/python"],
+}
