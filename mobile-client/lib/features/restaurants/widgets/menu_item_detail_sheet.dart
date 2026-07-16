@@ -5,10 +5,10 @@ import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/dietary_chip.dart';
 import '../../../shared/widgets/loading_indicator.dart';
-import '../models/restaurant_model.dart';
+import '../../../shared/models/store_item_model.dart';
 
 class MenuItemDetailSheet extends StatefulWidget {
-  final MenuItem item;
+  final StoreItemModel item;
 
   const MenuItemDetailSheet({super.key, required this.item});
 
@@ -19,7 +19,7 @@ class MenuItemDetailSheet extends StatefulWidget {
 class _MenuItemDetailSheetState extends State<MenuItemDetailSheet> {
   bool _restrictionsExpanded = false;
 
-  MenuItem get _item => widget.item;
+  StoreItemModel get _item => widget.item;
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +76,9 @@ class _MenuItemDetailSheetState extends State<MenuItemDetailSheet> {
       child: SizedBox(
         height: AppSpacing.cardImageHeight,
         width: double.infinity,
-        child: _item.imageUrl != null
+        child: _item.thumbnailUrl != null
             ? CachedNetworkImage(
-                imageUrl: _item.imageUrl!,
+                imageUrl: _item.thumbnailUrl!,
                 fit: BoxFit.cover,
                 placeholder: (_, _) => const CardShimmer(),
                 errorWidget: (_, _, _) => _PlaceholderImage(),
