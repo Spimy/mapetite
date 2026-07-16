@@ -10,6 +10,11 @@ import '../errors/app_exception.dart';
 /// server error. The backend returns 403 (not 401) with
 /// `code: "token_not_valid"` for an expired/invalid access token.
 bool shouldAttemptRefresh(DioException err) {
+  // A request is only ever allowed one refresh-and-retry cycle. Without
+  // this, a retried request that still comes back token-invalid (e.g.
+  // clock skew, or a genuinely token-invalid endpoint) would trigger
+  // another refresh, and another, looping indefinitely.
+  if (err.requestOptions.extra['__retried'] == true) return false;
   if (err.requestOptions.path == ApiEndpoints.refreshToken) return false;
 
   final statusCode = err.response?.statusCode;
@@ -99,6 +104,7 @@ class RefreshInterceptor extends Interceptor {
     if (currentAuthHeader != null) {
       err.requestOptions.headers['Authorization'] = currentAuthHeader;
     }
+    err.requestOptions.extra['__retried'] = true;
     try {
       final response = await _dio.fetch(err.requestOptions);
       handler.resolve(response);

@@ -71,6 +71,25 @@ void main() {
       );
       expect(shouldAttemptRefresh(err), isFalse);
     });
+
+    test(
+      'returns false when the request has already been retried once, '
+      'even if it still looks like token_not_valid (prevents infinite '
+      'refresh/retry loop)',
+      () {
+        final requestOptions = RequestOptions(path: 'stores/');
+        requestOptions.extra['__retried'] = true;
+        final err = DioException(
+          requestOptions: requestOptions,
+          response: Response(
+            requestOptions: requestOptions,
+            statusCode: 403,
+            data: {'code': 'token_not_valid'},
+          ),
+        );
+        expect(shouldAttemptRefresh(err), isFalse);
+      },
+    );
   });
 
   group('ApiClient auth refresh (integration — requires local backend running)', () {
