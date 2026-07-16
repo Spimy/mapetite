@@ -98,5 +98,45 @@ void main() {
       );
       expect(store.walkMinutesEstimate, 12);
     });
+
+    test('dietaryTags is empty when neither halal nor vegan', () {
+      const store = StoreModel(
+        id: '1',
+        businessName: 'Test',
+        description: '',
+        merchantType: StoreType.restaurant,
+        halal: false,
+        vegan: false,
+        streetAddress: '',
+      );
+      expect(store.dietaryTags, isEmpty);
+    });
+
+    test('dietaryTags contains Halal and Vegan when both flags are true', () {
+      const store = StoreModel(
+        id: '1',
+        businessName: 'Test',
+        description: '',
+        merchantType: StoreType.restaurant,
+        halal: true,
+        vegan: true,
+        streetAddress: '',
+      );
+      expect(store.dietaryTags, containsAll(['Halal', 'Vegan']));
+      expect(store.dietaryTags, hasLength(2));
+    });
+
+    test('dietaryTags contains only Halal when vegan is false', () {
+      const store = StoreModel(
+        id: '1',
+        businessName: 'Test',
+        description: '',
+        merchantType: StoreType.restaurant,
+        halal: true,
+        vegan: false,
+        streetAddress: '',
+      );
+      expect(store.dietaryTags, ['Halal']);
+    });
   });
 }

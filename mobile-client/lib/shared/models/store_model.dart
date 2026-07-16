@@ -65,6 +65,11 @@ class StoreModel {
   int? get walkMinutesEstimate =>
       distanceKm == null ? null : (distanceKm! * _walkingMinutesPerKm).round();
 
+  List<String> get dietaryTags => [
+        if (halal) 'Halal',
+        if (vegan) 'Vegan',
+      ];
+
   factory StoreModel.fromJson(Map<String, dynamic> json) {
     final hoursJson = (json['operating_hours'] as List<dynamic>?) ?? [];
     return StoreModel(
