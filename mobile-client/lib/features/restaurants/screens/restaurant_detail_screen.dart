@@ -1,61 +1,65 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../routes/app_router.dart';
+import '../../../shared/models/store_item_model.dart';
+import '../../../shared/models/store_model.dart';
+import '../../../shared/providers/store_providers.dart';
+import '../../../shared/utils/pricing_util.dart';
+import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dietary_chip.dart';
 import '../../../shared/widgets/pricing_badge.dart';
-import '../models/mocks/restaurant_mocks.dart';
-import '../models/restaurant_model.dart';
 import '../widgets/menu_item_detail_sheet.dart';
 
-class RestaurantDetailScreen extends StatefulWidget {
+class RestaurantDetailScreen extends ConsumerStatefulWidget {
   final String restaurantId;
 
   const RestaurantDetailScreen({super.key, required this.restaurantId});
 
   @override
-  State<RestaurantDetailScreen> createState() => _RestaurantDetailScreenState();
+  ConsumerState<RestaurantDetailScreen> createState() =>
+      _RestaurantDetailScreenState();
 }
 
-class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
+class _RestaurantDetailScreenState
+    extends ConsumerState<RestaurantDetailScreen> {
   int _activeMenuTab = 0;
-  final List<String> _menuTabs = ['All', 'Mains', 'Sides', 'Beverages'];
 
-  RestaurantModel get _restaurant => RestaurantMocks.nearbyRestaurants
-      .firstWhere(
-        (r) => r.id == widget.restaurantId,
-        orElse: () => RestaurantMocks.nearbyRestaurants.first,
-      );
+  List<String> _menuTabs(List<StoreItemModel> items) => [
+        'All',
+        ...items.map((i) => i.category).toSet().toList()..sort(),
+      ];
 
-  List<MenuItem> get _filteredItems {
-    final tab = _menuTabs[_activeMenuTab];
-    if (tab == 'All') return _restaurant.menuItems;
-    return _restaurant.menuItems.where((i) => i.category == tab).toList();
+  List<StoreItemModel> _filteredItems(
+    List<StoreItemModel> items,
+    List<String> tabs,
+  ) {
+    final tab = tabs[_activeMenuTab];
+    if (tab == 'All') return items;
+    return items.where((i) => i.category == tab).toList();
   }
 
-  bool get _isShowingAll =>
-      _filteredItems.length == _restaurant.menuItems.length;
-
-  void _openShareSheet() {
+  void _openShareSheet(StoreModel store) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => _RestaurantShareSheet(restaurant: _restaurant),
+      builder: (_) => _RestaurantShareSheet(restaurant: store),
     );
   }
 
-  void _openDirections() {
+  void _openDirections(StoreModel store) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
             Expanded(
               child: Text(
-                'Opening Google Maps to ${_restaurant.name}',
+                'Opening Google Maps to ${store.businessName}',
                 style: AppTypography.body1.copyWith(color: AppColors.white),
               ),
             ),
@@ -82,29 +86,54 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final r = _restaurant;
+    final storeAsync = ref.watch(storeDetailProvider(widget.restaurantId));
+    final itemsAsync = ref.watch(storeItemsProvider(widget.restaurantId));
+
     return Scaffold(
       backgroundColor: AppColors.white,
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHero(context, r),
-                  _buildBodyCard(r),
-                ],
-              ),
-            ),
+      body: storeAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, _) => AppEmptyState(
+          icon: Icons.error_outline,
+          title: 'Something went wrong',
+          description: 'Unable to load this restaurant. Please try again.',
+          ctaLabel: 'Retry',
+          onCta: () {
+            ref.invalidate(storeDetailProvider(widget.restaurantId));
+            ref.invalidate(storeItemsProvider(widget.restaurantId));
+          },
+        ),
+        data: (store) => itemsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => AppEmptyState(
+            icon: Icons.error_outline,
+            title: 'Something went wrong',
+            description: 'Unable to load the menu. Please try again.',
+            ctaLabel: 'Retry',
+            onCta: () => ref.invalidate(storeItemsProvider(widget.restaurantId)),
           ),
-          _buildStickyFooter(),
-        ],
+          data: (items) => Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHero(context, store),
+                      _buildBodyCard(store, items),
+                    ],
+                  ),
+                ),
+              ),
+              _buildStickyFooter(store),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildHero(BuildContext context, RestaurantModel r) {
+  Widget _buildHero(BuildContext context, StoreModel r) {
     final topPadding = MediaQuery.of(context).padding.top;
     return SizedBox(
       height: AppSpacing.heroImageHeight + topPadding,
@@ -153,7 +182,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             right: AppSpacing.lg,
             child: _CircleButton(
               icon: Icons.share_outlined,
-              onTap: _openShareSheet,
+              onTap: () => _openShareSheet(r),
               tooltip: 'Share',
             ),
           ),
@@ -162,7 +191,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildBodyCard(RestaurantModel r) {
+  Widget _buildBodyCard(StoreModel r, List<StoreItemModel> items) {
     return Transform.translate(
       offset: const Offset(0, -AppSpacing.lg),
       child: Container(
@@ -175,10 +204,10 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(r),
+            _buildHeader(r, items),
             _buildInfoRows(r),
             _buildWhyWePickedCard(),
-            _buildMenuSection(r),
+            _buildMenuSection(r, items),
             const SizedBox(height: AppSpacing.xxl),
           ],
         ),
@@ -186,20 +215,21 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildHeader(RestaurantModel r) {
+  Widget _buildHeader(StoreModel r, List<StoreItemModel> items) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            r.name,
+            r.businessName,
             style: AppTypography.headline1,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: AppSpacing.xs),
-          Text(r.cuisineType, style: AppTypography.body2),
+          if (r.category != null)
+            Text(r.category!, style: AppTypography.body2),
           const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
@@ -208,7 +238,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   padding: EdgeInsets.only(right: AppSpacing.sm),
                   child: DietaryChip.halal(),
                 ),
-              PricingBadge(bracket: r.pricingBracket),
+              PricingBadge(bracket: computePricingBracket(items)),
             ],
           ),
         ],
@@ -216,7 +246,44 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildInfoRows(RestaurantModel r) {
+  Widget _buildInfoRows(StoreModel r) {
+    final rows = <Widget>[
+      _InfoRow(
+        icon: Icons.location_on_outlined,
+        child: Text(r.streetAddress, style: AppTypography.body1),
+      ),
+      const SizedBox(height: AppSpacing.md),
+      _InfoRow(
+        icon: Icons.schedule,
+        iconColor: AppColors.success,
+        child: RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: r.openStatus.isOpen ? 'Open' : 'Closed',
+                style: AppTypography.body1.copyWith(
+                  color:
+                      r.openStatus.isOpen ? AppColors.success : AppColors.error,
+                ),
+              ),
+              if (r.openStatus.isOpen)
+                TextSpan(
+                  text: ' · Closes ${r.openStatus.closingTimeLabel}',
+                  style: AppTypography.body1,
+                ),
+            ],
+          ),
+        ),
+      ),
+      if (r.phone != null) ...[
+        const SizedBox(height: AppSpacing.md),
+        _InfoRow(
+          icon: Icons.phone_outlined,
+          child: Text(r.phone!, style: AppTypography.body1),
+        ),
+      ],
+    ];
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -227,41 +294,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           bottom: BorderSide(color: AppColors.border, width: 1),
         ),
       ),
-      child: Column(
-        children: [
-          _InfoRow(
-            icon: Icons.location_on_outlined,
-            child: Text(r.address, style: AppTypography.body1),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _InfoRow(
-            icon: Icons.schedule,
-            iconColor: AppColors.success,
-            child: RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: r.isOpen ? 'Open' : 'Closed',
-                    style: AppTypography.body1.copyWith(
-                      color: r.isOpen ? AppColors.success : AppColors.error,
-                    ),
-                  ),
-                  if (r.isOpen)
-                    TextSpan(
-                      text: ' · Closes ${r.closingTime}',
-                      style: AppTypography.body1,
-                    ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _InfoRow(
-            icon: Icons.phone_outlined,
-            child: Text(r.phone, style: AppTypography.body1),
-          ),
-        ],
-      ),
+      child: Column(children: rows),
     );
   }
 
@@ -304,7 +337,11 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildMenuSection(RestaurantModel r) {
+  Widget _buildMenuSection(StoreModel r, List<StoreItemModel> items) {
+    final tabs = _menuTabs(items);
+    final filtered = _filteredItems(items, tabs);
+    final isShowingAll = filtered.length == items.length;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Column(
@@ -313,20 +350,20 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           Text('Menu', style: AppTypography.headline2),
           const SizedBox(height: AppSpacing.md),
           _MenuTabRow(
-            tabs: _menuTabs,
+            tabs: tabs,
             activeIndex: _activeMenuTab,
             onChanged: (i) => setState(() => _activeMenuTab = i),
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildMenuItems(),
+          _buildMenuItems(filtered),
           // Only show "see all" when a category filter hides some items
-          if (!_isShowingAll) ...[
+          if (!isShowingAll) ...[
             const SizedBox(height: AppSpacing.md),
             Center(
               child: GestureDetector(
                 onTap: () => setState(() => _activeMenuTab = 0),
                 child: Text(
-                  'See all ${r.menuItems.length} items',
+                  'See all ${items.length} items',
                   style: AppTypography.body2.copyWith(
                     color: AppColors.secondary,
                     decoration: TextDecoration.underline,
@@ -341,8 +378,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildMenuItems() {
-    final items = _filteredItems;
+  Widget _buildMenuItems(List<StoreItemModel> items) {
     if (items.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
@@ -371,7 +407,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     );
   }
 
-  Widget _buildStickyFooter() {
+  Widget _buildStickyFooter(StoreModel store) {
     return SafeArea(
       top: false,
       child: Container(
@@ -386,7 +422,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             AppButton(
               label: 'Get Directions',
               leadingIcon: Icons.directions,
-              onPressed: _openDirections,
+              onPressed: () => _openDirections(store),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
@@ -515,7 +551,7 @@ class _ReasonChip extends StatelessWidget {
 // ── Menu Item Row ─────────────────────────────────────────────────────────────
 
 class _MenuItemRow extends StatelessWidget {
-  final MenuItem item;
+  final StoreItemModel item;
   final bool showDivider;
   final VoidCallback onTap;
 
@@ -615,7 +651,7 @@ class _CircleButton extends StatelessWidget {
 // ── Share Sheet ───────────────────────────────────────────────────────────────
 
 class _RestaurantShareSheet extends StatelessWidget {
-  final RestaurantModel restaurant;
+  final StoreModel restaurant;
 
   const _RestaurantShareSheet({required this.restaurant});
 
@@ -652,7 +688,7 @@ class _RestaurantShareSheet extends StatelessWidget {
               Text('Share Restaurant', style: AppTypography.headline2),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                restaurant.name,
+                restaurant.businessName,
                 style: AppTypography.body2.copyWith(color: AppColors.neutral600),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -808,7 +844,7 @@ const _kMockFriends = [
 ];
 
 class _FriendSelectorSheet extends StatefulWidget {
-  final RestaurantModel restaurant;
+  final StoreModel restaurant;
 
   const _FriendSelectorSheet({required this.restaurant});
 
@@ -889,7 +925,7 @@ class _FriendSelectorSheetState extends State<_FriendSelectorSheet> {
                   Text('Send to a Friend', style: AppTypography.headline2),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    widget.restaurant.name,
+                    widget.restaurant.businessName,
                     style:
                         AppTypography.body2.copyWith(color: AppColors.neutral600),
                     maxLines: 1,
