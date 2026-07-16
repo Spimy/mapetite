@@ -7,26 +7,28 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/location_provider.dart';
+import '../../../shared/providers/store_providers.dart';
+import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/location_sheet.dart';
 import '../../../shared/widgets/app_chip.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dietary_chip.dart';
-import '../../../shared/widgets/pricing_badge.dart';
-import '../models/mocks/restaurant_mocks.dart';
-import '../models/restaurant_model.dart';
+import '../../../shared/widgets/loading_indicator.dart';
 
-class RestaurantListingScreen extends StatefulWidget {
+class RestaurantListingScreen extends ConsumerStatefulWidget {
   const RestaurantListingScreen({super.key});
 
   @override
-  State<RestaurantListingScreen> createState() =>
+  ConsumerState<RestaurantListingScreen> createState() =>
       _RestaurantListingScreenState();
 }
 
-enum _DineInQuickFilter { halal, openNow, vegan, bestValue, nearest }
+enum _DineInQuickFilter { halal, openNow, vegan, nearest }
 
-class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
+class _RestaurantListingScreenState
+    extends ConsumerState<RestaurantListingScreen> {
   final Set<_DineInQuickFilter> _quickFilters = {};
   String _searchQuery = '';
   final _searchController = TextEditingController();
@@ -38,46 +40,39 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
     super.dispose();
   }
 
-  List<RestaurantModel> get _restaurants {
-    var list = RestaurantMocks.nearbyRestaurants;
+  List<StoreModel> _filterStores(List<StoreModel> source) {
+    var list = source;
 
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       list = list
-          .where((r) =>
-              r.name.toLowerCase().contains(q) ||
-              r.cuisineType.toLowerCase().contains(q))
+          .where((s) =>
+              s.businessName.toLowerCase().contains(q) ||
+              (s.category?.toLowerCase().contains(q) ?? false))
           .toList();
     }
 
-    // Quick chips
     for (final f in _quickFilters) {
       switch (f) {
         case _DineInQuickFilter.halal:
-          list = list.where((r) => r.dietaryTags.contains('Halal')).toList();
+          list = list.where((s) => s.dietaryTags.contains('Halal')).toList();
         case _DineInQuickFilter.openNow:
-          list = list.where((r) => r.isOpen).toList();
+          list = list.where((s) => s.openStatus.isOpen).toList();
         case _DineInQuickFilter.vegan:
-          list = list.where((r) => r.dietaryTags.contains('Vegan')).toList();
-        case _DineInQuickFilter.bestValue:
-          list = list.where((r) => r.pricingBracket == PricingBracket.budget).toList();
+          list = list.where((s) => s.dietaryTags.contains('Vegan')).toList();
         case _DineInQuickFilter.nearest:
-          list = list.where((r) => r.distanceKm <= 1.0).toList();
+          list = list.where((s) => (s.distanceKm ?? 999) <= 1.0).toList();
       }
     }
 
-    // Full filter sheet filters
     if (_filters.cuisines.isNotEmpty) {
-      list = list.where((r) => _filters.cuisines.contains(r.cuisineType)).toList();
+      list = list.where((s) => _filters.cuisines.contains(s.category)).toList();
     }
     for (final d in _filters.dietary) {
-      list = list.where((r) => r.dietaryTags.contains(d)).toList();
+      list = list.where((s) => s.dietaryTags.contains(d)).toList();
     }
     if (_filters.underThirtyMinWalk) {
-      list = list.where((r) => r.walkMinutes <= 30).toList();
-    }
-    if (_filters.priceRange != null) {
-      list = list.where((r) => r.pricingBracket == _filters.priceRange).toList();
+      list = list.where((s) => (s.walkMinutesEstimate ?? 999) <= 30).toList();
     }
 
     return list;
@@ -109,16 +104,73 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final restaurants = _restaurants;
+    final location = ref.watch(locationProvider).valueOrNull;
+    final query = NearbyStoresQuery(
+      lat: location?.latitude ?? 3.0731,
+      lng: location?.longitude ?? 101.6069,
+      radiusKm: 20,
+      type: StoreType.restaurant,
+    );
+    final storesAsync = ref.watch(nearbyStoresProvider(query));
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: restaurants.isEmpty
-          ? _buildEmptyBody(context)
-          : _buildFeedBody(context, restaurants),
+      body: storesAsync.when(
+        loading: () => _buildLoadingBody(context),
+        error: (_, _) => _buildErrorBody(context, query),
+        data: (stores) {
+          final restaurants = _filterStores(stores);
+          return restaurants.isEmpty
+              ? _buildEmptyBody(context)
+              : _buildFeedBody(context, restaurants);
+        },
+      ),
     );
   }
 
-  Widget _buildFeedBody(BuildContext context, List<RestaurantModel> restaurants) {
+  Widget _buildLoadingBody(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        _buildSliverAppBar(context),
+        SliverToBoxAdapter(child: _buildSearchBar()),
+        SliverToBoxAdapter(child: _buildFilterChips()),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxl,
+          ),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => const Padding(
+                padding: EdgeInsets.only(bottom: AppSpacing.lg),
+                child: CardShimmer(),
+              ),
+              childCount: 3,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorBody(BuildContext context, NearbyStoresQuery query) {
+    return CustomScrollView(
+      slivers: [
+        _buildSliverAppBar(context),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: AppEmptyState(
+            icon: Icons.error_outline,
+            title: 'Something went wrong',
+            description: 'Unable to load restaurants. Please try again.',
+            ctaLabel: 'Retry',
+            onCta: () => ref.invalidate(nearbyStoresProvider(query)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeedBody(BuildContext context, List<StoreModel> restaurants) {
     return CustomScrollView(
       slivers: [
         _buildSliverAppBar(context),
@@ -212,11 +264,10 @@ class _RestaurantListingScreenState extends State<RestaurantListingScreen> {
 
   Widget _buildFilterChips() {
     const chips = [
-      (_DineInQuickFilter.halal,     null,                        'Halal'),
-      (_DineInQuickFilter.openNow,   Icons.access_time_outlined,  'Open Now'),
-      (_DineInQuickFilter.vegan,     Icons.eco,                   'Vegan'),
-      (_DineInQuickFilter.bestValue, Icons.savings_outlined,      'Best Value'),
-      (_DineInQuickFilter.nearest,   Icons.near_me_outlined,      'Nearby < 1km'),
+      (_DineInQuickFilter.halal,   null,                        'Halal'),
+      (_DineInQuickFilter.openNow, Icons.access_time_outlined,  'Open Now'),
+      (_DineInQuickFilter.vegan,   Icons.eco,                   'Vegan'),
+      (_DineInQuickFilter.nearest, Icons.near_me_outlined,      'Nearby < 1km'),
     ];
 
     return SizedBox(
@@ -453,7 +504,7 @@ class _LocationPill extends ConsumerWidget {
 // ── Restaurant Card ───────────────────────────────────────────────────────────
 
 class _RestaurantCard extends StatelessWidget {
-  final RestaurantModel restaurant;
+  final StoreModel restaurant;
   final VoidCallback onTap;
 
   const _RestaurantCard({required this.restaurant, required this.onTap});
@@ -527,11 +578,6 @@ class _RestaurantCard extends StatelessWidget {
               ),
             ),
           Positioned(
-            top: AppSpacing.sm,
-            right: AppSpacing.sm,
-            child: _PricingOverlayBadge(bracket: restaurant.pricingBracket),
-          ),
-          Positioned(
             bottom: AppSpacing.md,
             left: AppSpacing.md,
             right: AppSpacing.md,
@@ -540,7 +586,7 @@ class _RestaurantCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    restaurant.name,
+                    restaurant.businessName,
                     style: AppTypography.headline2
                         .copyWith(color: AppColors.white),
                     maxLines: 1,
@@ -567,7 +613,7 @@ class _RestaurantCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 2),
                       Text(
-                        '${restaurant.distanceKm}km',
+                        '${(restaurant.distanceKm ?? 0).toStringAsFixed(1)}km',
                         style: AppTypography.body2
                             .copyWith(color: AppColors.white),
                       ),
@@ -590,53 +636,30 @@ class _RestaurantCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm + 2,
-                  vertical: AppSpacing.xxs + 2,
+              if (restaurant.category != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm + 2,
+                    vertical: AppSpacing.xxs + 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Text(
+                    restaurant.category!,
+                    style: AppTypography.caption.copyWith(color: AppColors.neutral700),
+                  ),
                 ),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Text(
-                  restaurant.cuisineType,
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.neutral700),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
+              if (restaurant.category != null) const SizedBox(width: AppSpacing.sm),
               const Icon(Icons.schedule, size: 14, color: AppColors.neutral600),
               const SizedBox(width: 2),
               Text(
-                '${restaurant.walkMinutes} min walk',
+                '${restaurant.walkMinutesEstimate ?? '—'} min walk',
                 style: AppTypography.body2,
               ),
             ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              border: Border.all(color: AppColors.primaryLight),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.thumb_up, size: 18, color: AppColors.primary),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Text(
-                    restaurant.recommendationReason,
-                    style: AppTypography.body2
-                        .copyWith(color: AppColors.neutral700),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
@@ -667,14 +690,12 @@ class _RestaurantFilters {
   final Set<String> cuisines;
   final Set<String> dietary;
   final bool underThirtyMinWalk;
-  final PricingBracket? priceRange;
   final Set<String> allergenFree;
 
   const _RestaurantFilters({
     this.cuisines = const {},
     this.dietary = const {},
     this.underThirtyMinWalk = false,
-    this.priceRange,
     this.allergenFree = const {},
   });
 
@@ -682,7 +703,6 @@ class _RestaurantFilters {
       cuisines.length +
       dietary.length +
       (underThirtyMinWalk ? 1 : 0) +
-      (priceRange != null ? 1 : 0) +
       allergenFree.length;
 }
 
@@ -705,7 +725,6 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
   late Set<String> _cuisines;
   late Set<String> _dietary;
   late bool _underThirtyMin;
-  late PricingBracket? _priceRange;
   late Set<String> _allergenFree;
 
   @override
@@ -715,7 +734,6 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
     _cuisines = Set.from(f.cuisines);
     _dietary = Set.from(f.dietary);
     _underThirtyMin = f.underThirtyMinWalk;
-    _priceRange = f.priceRange;
     _allergenFree = Set.from(f.allergenFree);
   }
 
@@ -723,14 +741,12 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
       _cuisines.isNotEmpty ||
       _dietary.isNotEmpty ||
       _underThirtyMin ||
-      _priceRange != null ||
       _allergenFree.isNotEmpty;
 
   void _clearAll() => setState(() {
         _cuisines.clear();
         _dietary.clear();
         _underThirtyMin = false;
-        _priceRange = null;
         _allergenFree.clear();
       });
 
@@ -851,43 +867,6 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                     ),
                     const SizedBox(height: AppSpacing.lg),
 
-                    // Price Range
-                    Text('Price Range', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Budget RM 5–10  ·  Mid RM 10–20  ·  Premium RM 20+',
-                      style: AppTypography.caption,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: [
-                        _IconFilterChip(
-                          label: 'Budget (RM 5–10)',
-                          isActive: _priceRange == PricingBracket.budget,
-                          onToggle: () => setState(() =>
-                              _priceRange = _priceRange == PricingBracket.budget ? null : PricingBracket.budget),
-                          icon: Icons.savings_outlined,
-                        ),
-                        _IconFilterChip(
-                          label: 'Mid (RM 10–20)',
-                          isActive: _priceRange == PricingBracket.mid,
-                          onToggle: () => setState(() =>
-                              _priceRange = _priceRange == PricingBracket.mid ? null : PricingBracket.mid),
-                          icon: Icons.account_balance_wallet_outlined,
-                        ),
-                        _IconFilterChip(
-                          label: 'Premium (RM 20+)',
-                          isActive: _priceRange == PricingBracket.premium,
-                          onToggle: () => setState(() =>
-                              _priceRange = _priceRange == PricingBracket.premium ? null : PricingBracket.premium),
-                          icon: Icons.diamond_outlined,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-
                     // Allergen-free
                     Text('Allergen-free (Free from)', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
@@ -924,7 +903,6 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                       cuisines: Set.from(_cuisines),
                       dietary: Set.from(_dietary),
                       underThirtyMinWalk: _underThirtyMin,
-                      priceRange: _priceRange,
                       allergenFree: Set.from(_allergenFree),
                     ));
                     Navigator.of(context).pop();
@@ -1065,38 +1043,6 @@ class _CuisineIconGrid extends StatelessWidget {
           }).toList(),
         );
       },
-    );
-  }
-}
-
-// ── Pricing Overlay Badge ─────────────────────────────────────────────────────
-
-class _PricingOverlayBadge extends StatelessWidget {
-  final PricingBracket bracket;
-
-  const _PricingOverlayBadge({required this.bracket});
-
-  String get _label => switch (bracket) {
-        PricingBracket.budget => 'RM 5–10',
-        PricingBracket.mid => 'RM 10–20',
-        PricingBracket.premium => 'RM 20+',
-      };
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs + 2,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-      ),
-      child: Text(
-        _label,
-        style: AppTypography.label.copyWith(color: AppColors.neutral),
-      ),
     );
   }
 }
