@@ -104,18 +104,20 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     final location = ref.watch(locationProvider).valueOrNull;
     final lat = location?.latitude ?? 3.0731;
     final lng = location?.longitude ?? 101.6069;
-    final restaurantsAsync = ref.watch(nearbyStoresProvider(NearbyStoresQuery(
+    final restaurantQuery = NearbyStoresQuery(
       lat: lat,
       lng: lng,
       radiusKm: 5,
       type: StoreType.restaurant,
-    )));
-    final groceriesAsync = ref.watch(nearbyStoresProvider(NearbyStoresQuery(
+    );
+    final groceryQuery = NearbyStoresQuery(
       lat: lat,
       lng: lng,
       radiusKm: 5,
       type: StoreType.grocery,
-    )));
+    );
+    final restaurantsAsync = ref.watch(nearbyStoresProvider(restaurantQuery));
+    final groceriesAsync = ref.watch(nearbyStoresProvider(groceryQuery));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -126,17 +128,24 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
       body: SafeArea(
         child: restaurantsAsync.when(
           loading: () => const HomeFeedSkeleton(),
-          error: (_, _) => const AppEmptyState(
+          error: (_, _) => AppEmptyState(
             icon: Icons.error_outline,
             title: 'Something went wrong',
             description: 'Unable to load your feed. Please try again.',
+            ctaLabel: 'Retry',
+            onCta: () {
+              ref.invalidate(nearbyStoresProvider(restaurantQuery));
+              ref.invalidate(nearbyStoresProvider(groceryQuery));
+            },
           ),
           data: (restaurants) => groceriesAsync.when(
             loading: () => const HomeFeedSkeleton(),
-            error: (_, _) => const AppEmptyState(
+            error: (_, _) => AppEmptyState(
               icon: Icons.error_outline,
               title: 'Something went wrong',
               description: 'Unable to load your feed. Please try again.',
+              ctaLabel: 'Retry',
+              onCta: () => ref.invalidate(nearbyStoresProvider(groceryQuery)),
             ),
             data: (groceries) => CustomScrollView(
               slivers: [

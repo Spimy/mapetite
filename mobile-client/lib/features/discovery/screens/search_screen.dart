@@ -142,26 +142,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final location = ref.watch(locationProvider).valueOrNull;
     final lat = location?.latitude ?? 3.0731;
     final lng = location?.longitude ?? 101.6069;
-    final restaurantsAsync = ref.watch(
-      nearbyStoresProvider(
-        NearbyStoresQuery(
-          lat: lat,
-          lng: lng,
-          radiusKm: 20,
-          type: StoreType.restaurant,
-        ),
-      ),
+    final restaurantQuery = NearbyStoresQuery(
+      lat: lat,
+      lng: lng,
+      radiusKm: 20,
+      type: StoreType.restaurant,
     );
-    final groceriesAsync = ref.watch(
-      nearbyStoresProvider(
-        NearbyStoresQuery(
-          lat: lat,
-          lng: lng,
-          radiusKm: 20,
-          type: StoreType.grocery,
-        ),
-      ),
+    final groceryQuery = NearbyStoresQuery(
+      lat: lat,
+      lng: lng,
+      radiusKm: 20,
+      type: StoreType.grocery,
     );
+    final restaurantsAsync = ref.watch(nearbyStoresProvider(restaurantQuery));
+    final groceriesAsync = ref.watch(nearbyStoresProvider(groceryQuery));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -197,10 +191,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             // the restaurant and grocery fetches resolving.
             ...restaurantsAsync.when(
               loading: () => _buildLoadingSlivers(),
-              error: (_, _) => _buildErrorSlivers(),
+              error: (_, _) => _buildErrorSlivers(() {
+                ref.invalidate(nearbyStoresProvider(restaurantQuery));
+                ref.invalidate(nearbyStoresProvider(groceryQuery));
+              }),
               data: (restaurants) => groceriesAsync.when(
                 loading: () => _buildLoadingSlivers(),
-                error: (_, _) => _buildErrorSlivers(),
+                error: (_, _) => _buildErrorSlivers(
+                  () => ref.invalidate(nearbyStoresProvider(groceryQuery)),
+                ),
                 data: (groceries) => _isSearching
                     ? _buildSearchResultsSections(restaurants, groceries)
                     : _buildDiscoverySections(restaurants, groceries),
@@ -223,14 +222,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     ];
   }
 
-  List<Widget> _buildErrorSlivers() {
+  List<Widget> _buildErrorSlivers(VoidCallback onRetry) {
     return [
-      const SliverFillRemaining(
+      SliverFillRemaining(
         hasScrollBody: false,
         child: AppEmptyState(
           icon: Icons.error_outline,
           title: 'Something went wrong',
           description: 'Unable to load nearby stores. Please try again.',
+          ctaLabel: 'Retry',
+          onCta: onRetry,
         ),
       ),
     ];

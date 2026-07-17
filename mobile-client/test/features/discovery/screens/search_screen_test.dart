@@ -169,7 +169,47 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Something went wrong'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
     });
+
+    testWidgets(
+      'tapping Retry on a restaurant fetch error re-fetches both queries',
+      (tester) async {
+        var restaurantCalls = 0;
+        var groceryCalls = 0;
+        var shouldError = true;
+        await tester.pumpWidget(
+          _routerWrap(
+            storesBuilder: (query) async {
+              if (query.type == StoreType.restaurant) {
+                restaurantCalls++;
+                if (shouldError) throw Exception('network error');
+                return _defaultRestaurants;
+              }
+              groceryCalls++;
+              return _defaultGroceries;
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('Something went wrong'), findsOneWidget);
+        expect(restaurantCalls, 1);
+        expect(groceryCalls, 1);
+
+        shouldError = false;
+        await tester.tap(find.text('Retry'));
+        await tester.pumpAndSettle();
+
+        // Both the restaurant and grocery queries are invalidated on retry
+        // from the outer (restaurant) error branch, mirroring how
+        // restaurant_detail_screen.dart invalidates both providers when its
+        // outer dual-gate error fires.
+        expect(restaurantCalls, 2);
+        expect(groceryCalls, 2);
+        expect(find.text('Something went wrong'), findsNothing);
+        expect(find.text('Ocean Bowl'), findsOneWidget);
+      },
+    );
 
     testWidgets('shows an error state when the grocery fetch errors', (
       tester,
@@ -187,7 +227,45 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Something went wrong'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
     });
+
+    testWidgets(
+      'tapping Retry on a grocery fetch error re-fetches groceries',
+      (tester) async {
+        var restaurantCalls = 0;
+        var groceryCalls = 0;
+        var shouldError = true;
+        await tester.pumpWidget(
+          _routerWrap(
+            storesBuilder: (query) async {
+              if (query.type == StoreType.grocery) {
+                groceryCalls++;
+                if (shouldError) throw Exception('network error');
+                return _defaultGroceries;
+              }
+              restaurantCalls++;
+              return _defaultRestaurants;
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('Something went wrong'), findsOneWidget);
+        expect(restaurantCalls, 1);
+        expect(groceryCalls, 1);
+
+        shouldError = false;
+        await tester.tap(find.text('Retry'));
+        await tester.pumpAndSettle();
+
+        // Only the grocery query is invalidated on retry from the inner
+        // (grocery) error branch — the restaurant fetch already succeeded.
+        expect(restaurantCalls, 1);
+        expect(groceryCalls, 2);
+        expect(find.text('Something went wrong'), findsNothing);
+        expect(find.text('Ocean Bowl'), findsOneWidget);
+      },
+    );
   });
 
   group('SearchScreen — search mode', () {
