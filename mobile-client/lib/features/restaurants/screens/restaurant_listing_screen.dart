@@ -12,7 +12,6 @@ import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/store_providers.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/location_sheet.dart';
-import '../../../shared/widgets/app_chip.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dietary_chip.dart';
 import '../../../shared/widgets/loading_indicator.dart';
@@ -690,20 +689,15 @@ class _RestaurantFilters {
   final Set<String> cuisines;
   final Set<String> dietary;
   final bool underThirtyMinWalk;
-  final Set<String> allergenFree;
 
   const _RestaurantFilters({
     this.cuisines = const {},
     this.dietary = const {},
     this.underThirtyMinWalk = false,
-    this.allergenFree = const {},
   });
 
   int get activeCount =>
-      cuisines.length +
-      dietary.length +
-      (underThirtyMinWalk ? 1 : 0) +
-      allergenFree.length;
+      cuisines.length + dietary.length + (underThirtyMinWalk ? 1 : 0);
 }
 
 // ── Restaurant Filter Sheet ───────────────────────────────────────────────────
@@ -725,7 +719,6 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
   late Set<String> _cuisines;
   late Set<String> _dietary;
   late bool _underThirtyMin;
-  late Set<String> _allergenFree;
 
   @override
   void initState() {
@@ -734,20 +727,15 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
     _cuisines = Set.from(f.cuisines);
     _dietary = Set.from(f.dietary);
     _underThirtyMin = f.underThirtyMinWalk;
-    _allergenFree = Set.from(f.allergenFree);
   }
 
   bool get _hasActive =>
-      _cuisines.isNotEmpty ||
-      _dietary.isNotEmpty ||
-      _underThirtyMin ||
-      _allergenFree.isNotEmpty;
+      _cuisines.isNotEmpty || _dietary.isNotEmpty || _underThirtyMin;
 
   void _clearAll() => setState(() {
         _cuisines.clear();
         _dietary.clear();
         _underThirtyMin = false;
-        _allergenFree.clear();
       });
 
   @override
@@ -866,26 +854,6 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                       ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
-
-                    // Allergen-free
-                    Text('Allergen-free (Free from)', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: AppConstants.allergenOptions.map((allergen) {
-                        return _IconFilterChip(
-                          label: allergen,
-                          isActive: _allergenFree.contains(allergen),
-                          onToggle: () => setState(() {
-                            if (_allergenFree.contains(allergen)) { _allergenFree.remove(allergen); }
-                            else { _allergenFree.add(allergen); }
-                          }),
-                          icon: AppChip.allergenIconMap[allergen] ?? Icons.warning_amber,
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
                   ],
                 ),
               ),
@@ -903,7 +871,6 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                       cuisines: Set.from(_cuisines),
                       dietary: Set.from(_dietary),
                       underThirtyMinWalk: _underThirtyMin,
-                      allergenFree: Set.from(_allergenFree),
                     ));
                     Navigator.of(context).pop();
                   },
