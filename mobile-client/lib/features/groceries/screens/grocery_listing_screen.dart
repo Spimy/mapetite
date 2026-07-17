@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
@@ -16,22 +15,21 @@ import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dietary_chip.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 
-class RestaurantListingScreen extends ConsumerStatefulWidget {
-  const RestaurantListingScreen({super.key});
+class GroceryListingScreen extends ConsumerStatefulWidget {
+  const GroceryListingScreen({super.key});
 
   @override
-  ConsumerState<RestaurantListingScreen> createState() =>
-      _RestaurantListingScreenState();
+  ConsumerState<GroceryListingScreen> createState() =>
+      _GroceryListingScreenState();
 }
 
-enum _DineInQuickFilter { halal, openNow, vegan, nearest }
+enum _GroceryQuickFilter { halal, openNow, vegan, nearest }
 
-class _RestaurantListingScreenState
-    extends ConsumerState<RestaurantListingScreen> {
-  final Set<_DineInQuickFilter> _quickFilters = {};
+class _GroceryListingScreenState extends ConsumerState<GroceryListingScreen> {
+  final Set<_GroceryQuickFilter> _quickFilters = {};
   String _searchQuery = '';
   final _searchController = TextEditingController();
-  _RestaurantFilters _filters = const _RestaurantFilters();
+  _GroceryFilters _filters = const _GroceryFilters();
 
   @override
   void dispose() {
@@ -53,20 +51,17 @@ class _RestaurantListingScreenState
 
     for (final f in _quickFilters) {
       switch (f) {
-        case _DineInQuickFilter.halal:
+        case _GroceryQuickFilter.halal:
           list = list.where((s) => s.dietaryTags.contains('Halal')).toList();
-        case _DineInQuickFilter.openNow:
+        case _GroceryQuickFilter.openNow:
           list = list.where((s) => s.openStatus.isOpen).toList();
-        case _DineInQuickFilter.vegan:
+        case _GroceryQuickFilter.vegan:
           list = list.where((s) => s.dietaryTags.contains('Vegan')).toList();
-        case _DineInQuickFilter.nearest:
+        case _GroceryQuickFilter.nearest:
           list = list.where((s) => (s.distanceKm ?? 999) <= 1.0).toList();
       }
     }
 
-    if (_filters.cuisines.isNotEmpty) {
-      list = list.where((s) => _filters.cuisines.contains(s.category)).toList();
-    }
     for (final d in _filters.dietary) {
       list = list.where((s) => s.dietaryTags.contains(d)).toList();
     }
@@ -79,7 +74,7 @@ class _RestaurantListingScreenState
 
   int get _totalActiveFilterCount => _quickFilters.length + _filters.activeCount;
 
-  void _toggleQuickFilter(_DineInQuickFilter f) {
+  void _toggleQuickFilter(_GroceryQuickFilter f) {
     setState(() {
       if (_quickFilters.contains(f)) {
         _quickFilters.remove(f);
@@ -94,7 +89,7 @@ class _RestaurantListingScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _RestaurantFilterSheet(
+      builder: (_) => _GroceryFilterSheet(
         initialFilters: _filters,
         onApply: (f) => setState(() => _filters = f),
       ),
@@ -108,7 +103,7 @@ class _RestaurantListingScreenState
       lat: location?.latitude ?? 3.0731,
       lng: location?.longitude ?? 101.6069,
       radiusKm: 20,
-      type: StoreType.restaurant,
+      type: StoreType.grocery,
     );
     final storesAsync = ref.watch(nearbyStoresProvider(query));
 
@@ -118,10 +113,10 @@ class _RestaurantListingScreenState
         loading: () => _buildLoadingBody(context),
         error: (_, _) => _buildErrorBody(context, query),
         data: (stores) {
-          final restaurants = _filterStores(stores);
-          return restaurants.isEmpty
+          final groceries = _filterStores(stores);
+          return groceries.isEmpty
               ? _buildEmptyBody(context)
-              : _buildFeedBody(context, restaurants);
+              : _buildFeedBody(context, groceries);
         },
       ),
     );
@@ -160,7 +155,7 @@ class _RestaurantListingScreenState
           child: AppEmptyState(
             icon: Icons.error_outline,
             title: 'Something went wrong',
-            description: 'Unable to load restaurants. Please try again.',
+            description: 'Unable to load grocery stores. Please try again.',
             ctaLabel: 'Retry',
             onCta: () => ref.invalidate(nearbyStoresProvider(query)),
           ),
@@ -169,7 +164,7 @@ class _RestaurantListingScreenState
     );
   }
 
-  Widget _buildFeedBody(BuildContext context, List<StoreModel> restaurants) {
+  Widget _buildFeedBody(BuildContext context, List<StoreModel> groceries) {
     return CustomScrollView(
       slivers: [
         _buildSliverAppBar(context),
@@ -184,16 +179,16 @@ class _RestaurantListingScreenState
               (context, index) {
                 return Padding(
                   padding: EdgeInsets.only(
-                    bottom: index < restaurants.length - 1 ? AppSpacing.lg : 0,
+                    bottom: index < groceries.length - 1 ? AppSpacing.lg : 0,
                   ),
-                  child: _RestaurantCard(
-                    restaurant: restaurants[index],
+                  child: _GroceryStoreCard(
+                    store: groceries[index],
                     onTap: () =>
-                        context.push('/restaurants/${restaurants[index].id}'),
+                        context.push('/groceries/${groceries[index].id}'),
                   ),
                 );
               },
-              childCount: restaurants.length,
+              childCount: groceries.length,
             ),
           ),
         ),
@@ -225,7 +220,7 @@ class _RestaurantListingScreenState
         onChanged: (v) => setState(() => _searchQuery = v),
         style: AppTypography.body1,
         decoration: InputDecoration(
-          hintText: 'Search restaurants or cuisine...',
+          hintText: 'Search grocery stores...',
           hintStyle: AppTypography.body1.copyWith(color: AppColors.neutral400),
           prefixIcon: const Icon(Icons.search, color: AppColors.neutral400, size: 20),
           suffixIcon: _searchQuery.isNotEmpty
@@ -263,10 +258,10 @@ class _RestaurantListingScreenState
 
   Widget _buildFilterChips() {
     const chips = [
-      (_DineInQuickFilter.halal,   null,                        'Halal'),
-      (_DineInQuickFilter.openNow, Icons.access_time_outlined,  'Open Now'),
-      (_DineInQuickFilter.vegan,   Icons.eco,                   'Vegan'),
-      (_DineInQuickFilter.nearest, Icons.near_me_outlined,      'Nearby < 1km'),
+      (_GroceryQuickFilter.halal,   null,                        'Halal'),
+      (_GroceryQuickFilter.openNow, Icons.access_time_outlined,  'Open Now'),
+      (_GroceryQuickFilter.vegan,   Icons.eco,                   'Vegan'),
+      (_GroceryQuickFilter.nearest, Icons.near_me_outlined,      'Nearby < 1km'),
     ];
 
     return SizedBox(
@@ -298,7 +293,7 @@ class _RestaurantListingScreenState
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (filter == _DineInQuickFilter.halal)
+                    if (filter == _GroceryQuickFilter.halal)
                       SvgPicture.asset(
                         'assets/icons/dietary/halal-icon.svg',
                         width: 13,
@@ -340,7 +335,7 @@ class _RestaurantListingScreenState
         tooltip: 'Back',
       ),
       title: Text(
-        'Dine-In',
+        'Groceries',
         style: AppTypography.headline1.copyWith(color: AppColors.primary),
       ),
       centerTitle: true,
@@ -372,14 +367,14 @@ class _RestaurantListingScreenState
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.restaurant,
+                Icons.local_grocery_store,
                 size: 32,
                 color: AppColors.primary,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'No restaurants found',
+              'No grocery stores found',
               style: AppTypography.headline2,
               textAlign: TextAlign.center,
             ),
@@ -396,7 +391,7 @@ class _RestaurantListingScreenState
               isFullWidth: false,
               onPressed: () => setState(() {
                 _quickFilters.clear();
-                _filters = const _RestaurantFilters();
+                _filters = const _GroceryFilters();
                 _searchController.clear();
                 _searchQuery = '';
               }),
@@ -500,13 +495,13 @@ class _LocationPill extends ConsumerWidget {
   }
 }
 
-// ── Restaurant Card ───────────────────────────────────────────────────────────
+// ── Grocery Store Card ────────────────────────────────────────────────────────
 
-class _RestaurantCard extends StatelessWidget {
-  final StoreModel restaurant;
+class _GroceryStoreCard extends StatelessWidget {
+  final StoreModel store;
   final VoidCallback onTap;
 
-  const _RestaurantCard({required this.restaurant, required this.onTap});
+  const _GroceryStoreCard({required this.store, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -537,9 +532,9 @@ class _RestaurantCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          restaurant.imageUrl != null
+          store.imageUrl != null
               ? CachedNetworkImage(
-                  imageUrl: restaurant.imageUrl!,
+                  imageUrl: store.imageUrl!,
                   fit: BoxFit.cover,
                   placeholder: (_, _) =>
                       const ColoredBox(color: AppColors.neutral100),
@@ -556,12 +551,12 @@ class _RestaurantCard extends StatelessWidget {
               ),
             ),
           ),
-          if (restaurant.dietaryTags.isNotEmpty)
+          if (store.dietaryTags.isNotEmpty)
             Positioned(
               top: AppSpacing.sm,
               left: AppSpacing.sm,
               child: Row(
-                children: restaurant.dietaryTags
+                children: store.dietaryTags
                     .map(
                       (tag) => Padding(
                         padding: const EdgeInsets.only(right: AppSpacing.xs),
@@ -585,7 +580,7 @@ class _RestaurantCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    restaurant.businessName,
+                    store.businessName,
                     style: AppTypography.headline2
                         .copyWith(color: AppColors.white),
                     maxLines: 1,
@@ -612,7 +607,7 @@ class _RestaurantCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 2),
                       Text(
-                        '${(restaurant.distanceKm ?? 0).toStringAsFixed(1)}km',
+                        '${(store.distanceKm ?? 0).toStringAsFixed(1)}km',
                         style: AppTypography.body2
                             .copyWith(color: AppColors.white),
                       ),
@@ -630,35 +625,30 @@ class _RestaurantCard extends StatelessWidget {
   Widget _buildCardBody() {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              if (restaurant.category != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm + 2,
-                    vertical: AppSpacing.xxs + 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Text(
-                    restaurant.category!,
-                    style: AppTypography.caption.copyWith(color: AppColors.neutral700),
-                  ),
-                ),
-              if (restaurant.category != null) const SizedBox(width: AppSpacing.sm),
-              const Icon(Icons.schedule, size: 14, color: AppColors.neutral600),
-              const SizedBox(width: 2),
-              Text(
-                '${restaurant.walkMinutesEstimate ?? '—'} min walk',
-                style: AppTypography.body2,
+          if (store.category != null)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm + 2,
+                vertical: AppSpacing.xxs + 2,
               ),
-            ],
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Text(
+                store.category!,
+                style: AppTypography.caption.copyWith(color: AppColors.neutral700),
+              ),
+            ),
+          if (store.category != null) const SizedBox(width: AppSpacing.sm),
+          const Icon(Icons.schedule, size: 14, color: AppColors.neutral600),
+          const SizedBox(width: 2),
+          Text(
+            '${store.walkMinutesEstimate ?? '—'} min walk',
+            style: AppTypography.body2,
           ),
         ],
       ),
@@ -676,47 +666,42 @@ class _ImagePlaceholder extends StatelessWidget {
     return const ColoredBox(
       color: AppColors.neutral100,
       child: Center(
-        child: Icon(Icons.restaurant, size: 40, color: AppColors.neutral400),
+        child: Icon(Icons.local_grocery_store, size: 40, color: AppColors.neutral400),
       ),
     );
   }
 }
 
+// ── Grocery Filter Data ───────────────────────────────────────────────────────
 
-// ── Restaurant Filter Data ────────────────────────────────────────────────────
-
-class _RestaurantFilters {
-  final Set<String> cuisines;
+class _GroceryFilters {
   final Set<String> dietary;
   final bool underThirtyMinWalk;
 
-  const _RestaurantFilters({
-    this.cuisines = const {},
+  const _GroceryFilters({
     this.dietary = const {},
     this.underThirtyMinWalk = false,
   });
 
-  int get activeCount =>
-      cuisines.length + dietary.length + (underThirtyMinWalk ? 1 : 0);
+  int get activeCount => dietary.length + (underThirtyMinWalk ? 1 : 0);
 }
 
-// ── Restaurant Filter Sheet ───────────────────────────────────────────────────
+// ── Grocery Filter Sheet ──────────────────────────────────────────────────────
 
-class _RestaurantFilterSheet extends StatefulWidget {
-  final _RestaurantFilters initialFilters;
-  final ValueChanged<_RestaurantFilters> onApply;
+class _GroceryFilterSheet extends StatefulWidget {
+  final _GroceryFilters initialFilters;
+  final ValueChanged<_GroceryFilters> onApply;
 
-  const _RestaurantFilterSheet({
+  const _GroceryFilterSheet({
     required this.initialFilters,
     required this.onApply,
   });
 
   @override
-  State<_RestaurantFilterSheet> createState() => _RestaurantFilterSheetState();
+  State<_GroceryFilterSheet> createState() => _GroceryFilterSheetState();
 }
 
-class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
-  late Set<String> _cuisines;
+class _GroceryFilterSheetState extends State<_GroceryFilterSheet> {
   late Set<String> _dietary;
   late bool _underThirtyMin;
 
@@ -724,16 +709,13 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
   void initState() {
     super.initState();
     final f = widget.initialFilters;
-    _cuisines = Set.from(f.cuisines);
     _dietary = Set.from(f.dietary);
     _underThirtyMin = f.underThirtyMinWalk;
   }
 
-  bool get _hasActive =>
-      _cuisines.isNotEmpty || _dietary.isNotEmpty || _underThirtyMin;
+  bool get _hasActive => _dietary.isNotEmpty || _underThirtyMin;
 
   void _clearAll() => setState(() {
-        _cuisines.clear();
         _dietary.clear();
         _underThirtyMin = false;
       });
@@ -770,7 +752,7 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Filter Restaurants', style: AppTypography.headline2),
+                      Text('Filter Grocery Stores', style: AppTypography.headline2),
                       if (_hasActive)
                         GestureDetector(
                           onTap: _clearAll,
@@ -788,19 +770,6 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Cuisine
-                    Text('Cuisine', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
-                    const SizedBox(height: AppSpacing.sm),
-                    _CuisineIconGrid(
-                      active: _cuisines,
-                      onToggle: (c) => setState(() {
-                        if (_cuisines.contains(c)) { _cuisines.remove(c); }
-                        else { _cuisines.add(c); }
-                      }),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-
-                    // Dietary
                     Text('Dietary', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
@@ -825,20 +794,10 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                           }),
                           icon: Icons.eco,
                         ),
-                        _IconFilterChip(
-                          label: 'Vegetarian',
-                          isActive: _dietary.contains('Vegetarian'),
-                          onToggle: () => setState(() {
-                            if (_dietary.contains('Vegetarian')) { _dietary.remove('Vegetarian'); }
-                            else { _dietary.add('Vegetarian'); }
-                          }),
-                          icon: Icons.spa,
-                        ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
 
-                    // Distance / Time
                     Text('Distance', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
@@ -867,8 +826,7 @@ class _RestaurantFilterSheetState extends State<_RestaurantFilterSheet> {
                 height: AppSpacing.buttonHeight,
                 child: ElevatedButton(
                   onPressed: () {
-                    widget.onApply(_RestaurantFilters(
-                      cuisines: Set.from(_cuisines),
+                    widget.onApply(_GroceryFilters(
                       dietary: Set.from(_dietary),
                       underThirtyMinWalk: _underThirtyMin,
                     ));
@@ -946,70 +904,6 @@ class _IconFilterChip extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-// ── Cuisine Icon Grid ─────────────────────────────────────────────────────────
-
-class _CuisineIconGrid extends StatelessWidget {
-  final Set<String> active;
-  final ValueChanged<String> onToggle;
-
-  const _CuisineIconGrid({required this.active, required this.onToggle});
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const columns = 4;
-        const totalSpacing = (columns - 1) * AppSpacing.sm;
-        final chipWidth = (constraints.maxWidth - totalSpacing) / columns;
-        return Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          children: AppConstants.cuisineCategories.map((cuisine) {
-            final isActive = active.contains(cuisine);
-            final icon = AppConstants.cuisineIcons[cuisine] ?? Icons.restaurant;
-            return GestureDetector(
-              onTap: () => onToggle(cuisine),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: chipWidth,
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.sm + 2,
-                  horizontal: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: isActive ? AppColors.primaryLight : AppColors.neutral100,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  border: Border.all(
-                    color: isActive ? AppColors.primary : AppColors.border,
-                    width: isActive ? 1.5 : 1,
-                  ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(icon, size: 22,
-                        color: isActive ? AppColors.primary : AppColors.neutral600),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(cuisine,
-                        style: AppTypography.caption.copyWith(
-                          color: isActive ? AppColors.primary : AppColors.neutral600,
-                          fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                          height: 1.2,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        );
-      },
     );
   }
 }

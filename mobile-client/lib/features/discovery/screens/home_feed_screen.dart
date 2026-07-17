@@ -12,12 +12,12 @@ import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/dietary_chip.dart';
 import '../../../shared/widgets/loading_indicator.dart';
-import '../models/home_feed_models.dart';
 import '../models/mocks/home_feed_mocks.dart';
-import '../providers/home_feed_providers.dart';
 import '../../../routes/app_router.dart';
 import '../../../features/notifications/providers/notification_provider.dart';
+import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/location_provider.dart';
+import '../../../shared/providers/store_providers.dart';
 import '../../../shared/widgets/dialogs/location_permission_dialog.dart';
 import '../../../shared/widgets/location_sheet.dart';
 import 'package:geolocator/geolocator.dart';
@@ -30,13 +30,11 @@ class HomeFeedScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _cardAnim1;
   late Animation<Offset> _cardAnim2;
-  late AnimationController _shimmerController;
-  late Animation<double> _shimmerAnim;
 
   @override
   void initState() {
@@ -64,15 +62,6 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
       curve: const Interval(0.15, 0.85, curve: Curves.easeOutCubic),
     ));
 
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    )..repeat(reverse: false);
-
-    _shimmerAnim = Tween<double>(begin: -1.5, end: 2.5).animate(
-      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
-    );
-
     _animController.forward();
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkLocationPermission());
   }
@@ -92,7 +81,6 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
   @override
   void dispose() {
     _animController.dispose();
-    _shimmerController.dispose();
     super.dispose();
   }
 
@@ -113,7 +101,24 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
 
   @override
   Widget build(BuildContext context) {
-    final feed = ref.watch(homeFeedProvider);
+    final location = ref.watch(locationProvider).valueOrNull;
+    final lat = location?.latitude ?? 3.0731;
+    final lng = location?.longitude ?? 101.6069;
+    final restaurantQuery = NearbyStoresQuery(
+      lat: lat,
+      lng: lng,
+      radiusKm: 5,
+      type: StoreType.restaurant,
+    );
+    final groceryQuery = NearbyStoresQuery(
+      lat: lat,
+      lng: lng,
+      radiusKm: 5,
+      type: StoreType.grocery,
+    );
+    final restaurantsAsync = ref.watch(nearbyStoresProvider(restaurantQuery));
+    final groceriesAsync = ref.watch(nearbyStoresProvider(groceryQuery));
+
     return Scaffold(
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(
@@ -121,18 +126,35 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
         savedThisMonth: 47.50,
       ),
       body: SafeArea(
-        child: feed.when(
+        child: restaurantsAsync.when(
           loading: () => const HomeFeedSkeleton(),
-          error: (_, _) => const AppEmptyState(
+          error: (_, _) => AppEmptyState(
             icon: Icons.error_outline,
             title: 'Something went wrong',
             description: 'Unable to load your feed. Please try again.',
+            ctaLabel: 'Retry',
+            onCta: () {
+              ref.invalidate(nearbyStoresProvider(restaurantQuery));
+              ref.invalidate(nearbyStoresProvider(groceryQuery));
+            },
           ),
-          data: (_) => CustomScrollView(
-            slivers: [
-              _buildAppBar(),
-              SliverToBoxAdapter(child: _buildContent()),
-            ],
+          data: (restaurants) => groceriesAsync.when(
+            loading: () => const HomeFeedSkeleton(),
+            error: (_, _) => AppEmptyState(
+              icon: Icons.error_outline,
+              title: 'Something went wrong',
+              description: 'Unable to load your feed. Please try again.',
+              ctaLabel: 'Retry',
+              onCta: () => ref.invalidate(nearbyStoresProvider(groceryQuery)),
+            ),
+            data: (groceries) => CustomScrollView(
+              slivers: [
+                _buildAppBar(),
+                SliverToBoxAdapter(
+                  child: _buildContent(restaurants, groceries),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -185,19 +207,20 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
 
   // ─── Content ─────────────────────────────────────────────────────────────────
 
-  Widget _buildContent() {
+  Widget _buildContent(
+    List<StoreModel> restaurants,
+    List<StoreModel> groceries,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildGreetingSection(),
-        const SizedBox(height: AppSpacing.md),
-        _buildAiNudgePill(),
         const SizedBox(height: AppSpacing.lg),
-        _buildModeCards(),
+        _buildModeCards(restaurants),
         const SizedBox(height: AppSpacing.xxl),
-        _buildTopPickSection(),
+        _buildNearbySection(restaurants),
         const SizedBox(height: AppSpacing.xxl),
-        _buildNearbySection(),
+        _buildGroceriesSection(groceries),
         const SizedBox(height: AppSpacing.xxxl),
       ],
     );
@@ -278,150 +301,9 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     );
   }
 
-  // ─── AI nudge card ───────────────────────────────────────────────────────────
-
-  Widget _buildAiNudgePill() {
-    return FadeTransition(
-      opacity: _fadeAnim,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-          child: AnimatedBuilder(
-            animation: _shimmerAnim,
-            builder: (context, child) {
-              return Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF065F46),
-                      Color(0xFF0E7490),
-                      Color(0xFF10B981),
-                    ],
-                    stops: [0.0, 0.55, 1.0],
-                  ),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.35),
-                      blurRadius: 20,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    // Shimmer sweep overlay
-                    Positioned.fill(
-                      child: Transform.translate(
-                        offset: Offset(
-                          _shimmerAnim.value *
-                              MediaQuery.of(context).size.width,
-                          0,
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Colors.white.withValues(alpha: 0),
-                                Colors.white.withValues(alpha: 0.12),
-                                Colors.white.withValues(alpha: 0),
-                              ],
-                              stops: const [0.3, 0.5, 0.7],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Content
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.lg,
-                        AppSpacing.md + 2,
-                        AppSpacing.lg,
-                        AppSpacing.md + 2,
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // AI icon — rounded square with glass border
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                width: 1,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.auto_awesome,
-                              color: AppColors.white,
-                              size: 22,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'AI SUGGESTION',
-                                  style: AppTypography.caption.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.75),
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.8,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                RichText(
-                                  text: TextSpan(
-                                    style: AppTypography.body1.copyWith(
-                                      color: AppColors.white,
-                                      height: 1.3,
-                                    ),
-                                    children: [
-                                      const TextSpan(
-                                          text: 'Based on your preferences, '),
-                                      TextSpan(
-                                        text: 'Dine-In',
-                                        style: AppTypography.body1.copyWith(
-                                          color: AppColors.white,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      const TextSpan(
-                                          text: ' is your best bet right now.'),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
   // ─── Mode Cards ──────────────────────────────────────────────────────────────
 
-  Widget _buildModeCards() {
+  Widget _buildModeCards(List<StoreModel> restaurants) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Row(
@@ -432,6 +314,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
               child: SlideTransition(
                 position: _cardAnim1,
                 child: _DineInCard(
+                  nearbyCount: restaurants.length,
                   onTap: () {
                     HapticFeedback.lightImpact();
                     context.push(AppRoutes.dineIn);
@@ -460,59 +343,10 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     );
   }
 
-  // ─── Today's Top Pick ────────────────────────────────────────────────────────
-
-  Widget _buildTopPickSection() {
-    final restaurant = HomeFeedMocks.topPick;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.stars, color: AppColors.warning, size: 22),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                "Today's Top Pick",
-                style:
-                    AppTypography.headline2.copyWith(color: AppColors.neutral),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              border: Border.all(color: AppColors.border),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _TopPickHeroImage(restaurant: restaurant),
-                _TopPickBody(
-                  restaurant: restaurant,
-                  area: ref.watch(locationCityProvider),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   // ─── Nearby Options ──────────────────────────────────────────────────────────
 
-  Widget _buildNearbySection() {
+  Widget _buildNearbySection(List<StoreModel> restaurants) {
+    final nearby = restaurants.take(3).toList();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Column(
@@ -541,13 +375,42 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          ...HomeFeedMocks.nearbyOptions.map(
-            (r) => Padding(
+          ...nearby.map(
+            (store) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: _NearbyRow(
-                restaurant: r,
+                store: store,
                 onTap: () =>
-                    context.push('${AppRoutes.restaurants}/${r.id}'),
+                    context.push('${AppRoutes.restaurants}/${store.id}'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Nearby Groceries ────────────────────────────────────────────────────────
+
+  Widget _buildGroceriesSection(List<StoreModel> groceries) {
+    final nearby = groceries.take(3).toList();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Nearby Groceries',
+            style: AppTypography.headline2.copyWith(color: AppColors.neutral),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ...nearby.map(
+            (store) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: _GroceryRow(
+                store: store,
+                onTap: () =>
+                    context.push('${AppRoutes.groceries}/${store.id}'),
               ),
             ),
           ),
@@ -560,8 +423,9 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
 // ─── Dine-In Card ─────────────────────────────────────────────────────────────
 
 class _DineInCard extends StatelessWidget {
+  final int nearbyCount;
   final VoidCallback onTap;
-  const _DineInCard({required this.onTap});
+  const _DineInCard({required this.nearbyCount, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -667,7 +531,7 @@ class _DineInCard extends StatelessWidget {
                               ),
                               const SizedBox(width: AppSpacing.xs),
                               Text(
-                                '3 nearby',
+                                '$nearbyCount nearby',
                                 style: AppTypography.headline3.copyWith(
                                   color: AppColors.white,
                                 ),
@@ -839,244 +703,13 @@ class _CookInCard extends StatelessWidget {
   }
 }
 
-// ─── Top Pick sub-widgets ─────────────────────────────────────────────────────
-
-class _TopPickHeroImage extends StatelessWidget {
-  final RestaurantSummary restaurant;
-  const _TopPickHeroImage({required this.restaurant});
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(
-        top: Radius.circular(AppSpacing.radiusLg),
-      ),
-      child: SizedBox(
-        height: 192,
-        width: double.infinity,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            restaurant.imageUrl != null
-                ? CachedNetworkImage(
-                    imageUrl: restaurant.imageUrl!,
-                    fit: BoxFit.cover,
-                    placeholder: (_, _) => const CardShimmer(height: 192),
-                    errorWidget: (_, _, _) => Container(
-                      color: AppColors.neutral100,
-                      child: const Center(
-                        child: Icon(
-                          Icons.restaurant,
-                          size: 32,
-                          color: AppColors.neutral400,
-                        ),
-                      ),
-                    ),
-                  )
-                : Container(
-                    color: AppColors.neutral100,
-                    child: const Center(
-                      child: Icon(
-                        Icons.restaurant,
-                        size: 32,
-                        color: AppColors.neutral400,
-                      ),
-                    ),
-                  ),
-            // Top-left: dietary chip + cuisine label chip
-            Positioned(
-              top: 12,
-              left: 12,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (restaurant.isHalal) const DietaryChip.halal(),
-                  if (restaurant.isHalal) const SizedBox(width: AppSpacing.xs),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 120),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs + 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusSm),
-                      ),
-                      child: Text(
-                        restaurant.cuisine,
-                        style: AppTypography.label
-                            .copyWith(color: AppColors.white),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Top-right: match score pill with AI sparkle
-            Positioned(
-              top: 12,
-              right: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.auto_awesome,
-                      size: 11,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      'Match ${restaurant.matchScore.toInt()}%',
-                      style: AppTypography.label.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TopPickBody extends StatelessWidget {
-  final RestaurantSummary restaurant;
-  final String area;
-  const _TopPickBody({required this.restaurant, required this.area});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  restaurant.name,
-                  style: AppTypography.headline2,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.star, size: 14, color: AppColors.warning),
-                      const SizedBox(width: 2),
-                      Text(
-                        restaurant.rating.toStringAsFixed(1),
-                        style: AppTypography.body2.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.neutral,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (restaurant.pricingBracket != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      restaurant.pricingBracket!,
-                      style: AppTypography.label.copyWith(
-                        color: AppColors.neutral600,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
-            children: [
-              Text(
-                '${restaurant.distanceKm.toStringAsFixed(1)} km away · ',
-                style: AppTypography.body2.copyWith(color: AppColors.neutral600),
-              ),
-              Flexible(
-                child: GestureDetector(
-                  onTap: () => showLocationSheet(context),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.location_on_outlined,
-                          size: 14, color: AppColors.primary),
-                      const SizedBox(width: 2),
-                      Flexible(
-                        child: Text(
-                          area,
-                          style: AppTypography.body2.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          SizedBox(
-            width: double.infinity,
-            height: AppSpacing.buttonHeight,
-            child: ElevatedButton.icon(
-              onPressed: () => context.push(
-                '${AppRoutes.restaurants}/${restaurant.id}',
-              ),
-              icon: const Icon(Icons.restaurant, size: 18),
-              label: const Text("Let's Eat!"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // ─── Nearby Row ───────────────────────────────────────────────────────────────
 
 class _NearbyRow extends StatelessWidget {
-  final RestaurantSummary restaurant;
+  final StoreModel store;
   final VoidCallback onTap;
 
-  const _NearbyRow({required this.restaurant, required this.onTap});
+  const _NearbyRow({required this.store, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1103,9 +736,9 @@ class _NearbyRow extends StatelessWidget {
               child: SizedBox(
                 width: 64,
                 height: 64,
-                child: restaurant.imageUrl != null
+                child: store.imageUrl != null
                     ? CachedNetworkImage(
-                        imageUrl: restaurant.imageUrl!,
+                        imageUrl: store.imageUrl!,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Shimmer.fromColors(
                           baseColor: AppColors.neutral100,
@@ -1131,14 +764,16 @@ class _NearbyRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    restaurant.name,
+                    store.businessName,
                     style: AppTypography.headline3,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   Text(
-                    '${restaurant.cuisine} · ${restaurant.distanceKm.toStringAsFixed(1)}km',
+                    store.category != null
+                        ? '${store.category} · ${(store.distanceKm ?? 0).toStringAsFixed(1)}km'
+                        : '${(store.distanceKm ?? 0).toStringAsFixed(1)}km',
                     style: AppTypography.body2.copyWith(
                       color: AppColors.neutral600,
                     ),
@@ -1146,42 +781,138 @@ class _NearbyRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: AppSpacing.xs),
-                  if (restaurant.isHalal)
+                  if (store.dietaryTags.contains('Halal'))
                     const DietaryChip.halal()
-                  else if (restaurant.isVegan)
+                  else if (store.dietaryTags.contains('Vegan'))
                     const DietaryChip.vegan(),
                 ],
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (restaurant.pricingBracket != null)
-                  Text(
-                    restaurant.pricingBracket!,
-                    style: AppTypography.headline3.copyWith(
-                      color: AppColors.neutral,
-                    ),
+                const Icon(
+                  Icons.directions_walk,
+                  size: 12,
+                  color: AppColors.neutral400,
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  '${store.walkMinutesEstimate ?? '—'}m',
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.neutral400,
                   ),
-                const SizedBox(height: AppSpacing.xs),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.directions_walk,
-                      size: 12,
-                      color: AppColors.neutral400,
-                    ),
-                    const SizedBox(width: 2),
-                    Text(
-                      '${restaurant.walkMinutes}m',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.neutral400,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Grocery Row ──────────────────────────────────────────────────────────────
+
+class _GroceryRow extends StatelessWidget {
+  final StoreModel store;
+  final VoidCallback onTap;
+
+  const _GroceryRow({required this.store, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              child: SizedBox(
+                width: 64,
+                height: 64,
+                child: store.imageUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: store.imageUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: AppColors.neutral100,
+                          highlightColor: AppColors.white,
+                          child: Container(color: AppColors.neutral100),
+                        ),
+                        errorWidget: (context, url, err) => Container(
+                          color: AppColors.neutral100,
+                          child: const Icon(Icons.local_grocery_store,
+                              size: 24, color: AppColors.neutral400),
+                        ),
+                      )
+                    : Container(
+                        color: AppColors.neutral100,
+                        child: const Icon(Icons.local_grocery_store,
+                            size: 24, color: AppColors.neutral400),
                       ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    store.businessName,
+                    style: AppTypography.headline3,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    store.category != null
+                        ? '${store.category} · ${(store.distanceKm ?? 0).toStringAsFixed(1)}km'
+                        : '${(store.distanceKm ?? 0).toStringAsFixed(1)}km',
+                    style: AppTypography.body2.copyWith(
+                      color: AppColors.neutral600,
                     ),
-                  ],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  if (store.dietaryTags.contains('Halal'))
+                    const DietaryChip.halal()
+                  else if (store.dietaryTags.contains('Vegan'))
+                    const DietaryChip.vegan(),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.directions_walk,
+                  size: 12,
+                  color: AppColors.neutral400,
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  '${store.walkMinutesEstimate ?? '—'}m',
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.neutral400,
+                  ),
                 ),
               ],
             ),

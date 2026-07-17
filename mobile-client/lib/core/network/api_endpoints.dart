@@ -20,6 +20,12 @@ abstract class ApiEndpoints {
   static const String groceries = 'stores/?type=GROCERY';
   static String grocery(String id) => 'stores/$id/';
 
+  // Stores (unified — used by StoreService, shared across restaurant/grocery features)
+  static const String stores = 'stores/';
+  static const String storesNearby = 'stores/nearby/';
+  static String storeDetail(String id) => 'stores/$id/';
+  static String storeItems(String id) => 'stores/$id/items/';
+
   // Other feature endpoints
   static const String profile = 'profiles/me/';
   static const String discover = 'discovery/';

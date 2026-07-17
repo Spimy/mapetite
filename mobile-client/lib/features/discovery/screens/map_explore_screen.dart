@@ -6,25 +6,9 @@ import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/location_provider.dart';
-
-class _MarkerData {
-  final String id;
-  final String name;
-  final String type;
-  final String distance;
-  final LatLng pos;
-  final bool isGrocery;
-
-  const _MarkerData({
-    required this.id,
-    required this.name,
-    required this.type,
-    required this.distance,
-    required this.pos,
-    this.isGrocery = false,
-  });
-}
+import '../../../shared/providers/store_providers.dart';
 
 class MapExploreScreen extends ConsumerStatefulWidget {
   const MapExploreScreen({super.key});
@@ -42,60 +26,6 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
 
   static const LatLng _defaultCenter = LatLng(3.0731, 101.6069);
 
-  static const List<_MarkerData> _allMarkers = [
-    _MarkerData(
-      id: 'r1',
-      name: 'Restoran Nasi Kandar Ali',
-      type: 'Mamak',
-      distance: '0.4 km',
-      pos: LatLng(3.0738, 101.6055),
-    ),
-    _MarkerData(
-      id: 'r2',
-      name: 'Kopitiam Old Town',
-      type: 'Kopitiam',
-      distance: '0.7 km',
-      pos: LatLng(3.0745, 101.6078),
-    ),
-    _MarkerData(
-      id: 'r3',
-      name: 'Sushi King Sunway',
-      type: 'Japanese',
-      distance: '1.2 km',
-      pos: LatLng(3.0718, 101.6082),
-    ),
-    _MarkerData(
-      id: 'r4',
-      name: 'Mamak Corner',
-      type: 'Mamak',
-      distance: '0.6 km',
-      pos: LatLng(3.0722, 101.6048),
-    ),
-    _MarkerData(
-      id: 'r5',
-      name: 'The Grill House',
-      type: 'Western',
-      distance: '0.9 km',
-      pos: LatLng(3.0752, 101.6092),
-    ),
-    _MarkerData(
-      id: 'g1',
-      name: 'Jaya Grocer',
-      type: 'Grocery',
-      distance: '0.5 km',
-      pos: LatLng(3.0726, 101.6063),
-      isGrocery: true,
-    ),
-    _MarkerData(
-      id: 'g2',
-      name: '99 Speedmart',
-      type: 'Grocery',
-      distance: '0.3 km',
-      pos: LatLng(3.0736, 101.6043),
-      isGrocery: true,
-    ),
-  ];
-
   static const _filterLabels = ['All', 'Restaurants', 'Groceries'];
 
   @override
@@ -112,40 +42,65 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
     super.dispose();
   }
 
-  List<_MarkerData> get _visibleMarkers {
+  List<StoreModel> _visibleMarkers(List<StoreModel> stores) {
     var markers = switch (_activeFilterIndex) {
-      1 => _allMarkers.where((m) => !m.isGrocery).toList(),
-      2 => _allMarkers.where((m) => m.isGrocery).toList(),
-      _ => _allMarkers,
+      1 => stores.where((s) => s.merchantType == StoreType.restaurant).toList(),
+      2 => stores.where((s) => s.merchantType == StoreType.grocery).toList(),
+      _ => stores,
     };
     if (_searchQuery.isNotEmpty) {
       markers = markers
-          .where((m) =>
-              m.name.toLowerCase().contains(_searchQuery) ||
-              m.type.toLowerCase().contains(_searchQuery))
+          .where((s) =>
+              s.businessName.toLowerCase().contains(_searchQuery) ||
+              (s.category?.toLowerCase().contains(_searchQuery) ?? false))
           .toList();
     }
     return markers;
   }
 
-  _MarkerData? get _selectedMarker => _selectedMarkerId != null
-      ? _allMarkers.where((m) => m.id == _selectedMarkerId).firstOrNull
-      : null;
+  StoreModel? _selectedMarker(List<StoreModel> stores) =>
+      _selectedMarkerId != null
+          ? stores.where((s) => s.id == _selectedMarkerId).firstOrNull
+          : null;
 
   @override
   Widget build(BuildContext context) {
+    final loc = ref.watch(locationProvider).valueOrNull;
+    final lat = loc?.latitude ?? _defaultCenter.latitude;
+    final lng = loc?.longitude ?? _defaultCenter.longitude;
+    // `type: null` fetches both restaurants and groceries in one request —
+    // StoreService.getNearbyStores only filters by type when non-null.
+    final query =
+        NearbyStoresQuery(lat: lat, lng: lng, radiusKm: 10, type: null);
+
+    // Surface a fetch error as a non-blocking SnackBar rather than hiding
+    // the map — the map itself doesn't depend on this fetch to be usable.
+    ref.listen(nearbyStoresProvider(query), (previous, next) {
+      if (next.hasError && !next.isLoading) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not load nearby stores.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    });
+
+    final stores = ref.watch(nearbyStoresProvider(query)).when(
+          data: (data) => data,
+          loading: () => const <StoreModel>[],
+          error: (_, _) => const <StoreModel>[],
+        );
+    final visibleMarkers = _visibleMarkers(stores);
+    final selectedMarker = _selectedMarker(stores);
+
     return Scaffold(
       body: Stack(
         children: [
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: ref.watch(locationProvider).maybeWhen(
-                    data: (loc) => loc != null
-                        ? LatLng(loc.latitude, loc.longitude)
-                        : _defaultCenter,
-                    orElse: () => _defaultCenter,
-                  ),
+              initialCenter: LatLng(lat, lng),
               initialZoom: 15.0,
             ),
             children: [
@@ -156,20 +111,20 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
                 userAgentPackageName: 'com.mapetite.app',
               ),
               MarkerLayer(
-                markers: _visibleMarkers
-                    .map((m) => Marker(
-                          point: m.pos,
+                markers: visibleMarkers
+                    .map((s) => Marker(
+                          point: LatLng(s.latitude ?? 0, s.longitude ?? 0),
                           width: 40,
                           height: 40,
                           child: GestureDetector(
                             onTap: () => setState(() =>
                                 _selectedMarkerId =
-                                    _selectedMarkerId == m.id ? null : m.id),
+                                    _selectedMarkerId == s.id ? null : s.id),
                             child: Container(
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: m.isGrocery
+                                color: s.merchantType == StoreType.grocery
                                     ? AppColors.secondary
                                     : AppColors.primary,
                                 shape: BoxShape.circle,
@@ -182,7 +137,7 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
                                 ],
                               ),
                               child: Icon(
-                                m.isGrocery
+                                s.merchantType == StoreType.grocery
                                     ? Icons.eco_outlined
                                     : Icons.restaurant,
                                 color: AppColors.white,
@@ -278,11 +233,11 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: _buildMiniSheet(context),
+            child: _buildMiniSheet(context, stores),
           ),
 
           // Callout card — centered, max 300dp wide
-          if (_selectedMarker != null)
+          if (selectedMarker != null)
             Positioned(
               left: AppSpacing.lg,
               right: AppSpacing.lg,
@@ -290,7 +245,7 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 300),
-                  child: _buildCalloutCard(context, _selectedMarker!),
+                  child: _buildCalloutCard(context, selectedMarker),
                 ),
               ),
             ),
@@ -418,9 +373,11 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
     );
   }
 
-  Widget _buildMiniSheet(BuildContext context) {
-    final restaurants = _allMarkers.where((m) => !m.isGrocery).length;
-    final groceries = _allMarkers.where((m) => m.isGrocery).length;
+  Widget _buildMiniSheet(BuildContext context, List<StoreModel> stores) {
+    final restaurants =
+        stores.where((s) => s.merchantType == StoreType.restaurant).length;
+    final groceries =
+        stores.where((s) => s.merchantType == StoreType.grocery).length;
 
     return Container(
       decoration: const BoxDecoration(
@@ -460,11 +417,11 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _allMarkers
+              children: stores
                   .take(3)
-                  .map((m) => Padding(
+                  .map((s) => Padding(
                         padding: const EdgeInsets.only(right: AppSpacing.md),
-                        child: _buildVenueMiniCard(context, m),
+                        child: _buildVenueMiniCard(context, s),
                       ))
                   .toList(),
             ),
@@ -474,11 +431,13 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
     );
   }
 
-  Widget _buildVenueMiniCard(BuildContext context, _MarkerData m) {
+  Widget _buildVenueMiniCard(BuildContext context, StoreModel s) {
+    final distance = '${(s.distanceKm ?? 0).toStringAsFixed(1)} km';
     return GestureDetector(
       onTap: () {
-        final route =
-            m.isGrocery ? '/groceries/${m.id}' : '/restaurants/${m.id}';
+        final route = s.merchantType == StoreType.grocery
+            ? '/groceries/${s.id}'
+            : '/restaurants/${s.id}';
         context.push(route);
       },
       child: Container(
@@ -492,14 +451,16 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(m.name,
+            Text(s.businessName,
                 style: AppTypography.headline3,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis),
+            if (s.category != null) ...[
+              const SizedBox(height: 2),
+              Text(s.category!, style: AppTypography.body2),
+            ],
             const SizedBox(height: 2),
-            Text(m.type, style: AppTypography.body2),
-            const SizedBox(height: 2),
-            Text(m.distance,
+            Text(distance,
                 style:
                     AppTypography.caption.copyWith(color: AppColors.neutral600)),
           ],
@@ -508,13 +469,15 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
     );
   }
 
-  Widget _buildCalloutCard(BuildContext context, _MarkerData m) {
-    final accentColor = m.isGrocery ? AppColors.secondary : AppColors.primary;
+  Widget _buildCalloutCard(BuildContext context, StoreModel s) {
+    final isGrocery = s.merchantType == StoreType.grocery;
+    final accentColor = isGrocery ? AppColors.secondary : AppColors.primary;
     final accentLight =
-        m.isGrocery ? AppColors.secondaryLight : AppColors.primaryLight;
-    final typeIcon = m.isGrocery ? Icons.eco_outlined : Icons.restaurant;
+        isGrocery ? AppColors.secondaryLight : AppColors.primaryLight;
+    final typeIcon = isGrocery ? Icons.eco_outlined : Icons.restaurant;
     final route =
-        m.isGrocery ? '/groceries/${m.id}' : '/restaurants/${m.id}';
+        isGrocery ? '/groceries/${s.id}' : '/restaurants/${s.id}';
+    final distance = '${(s.distanceKm ?? 0).toStringAsFixed(1)} km';
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
@@ -559,18 +522,19 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          m.name,
+                          s.businessName,
                           style: AppTypography.headline3.copyWith(
                               color: AppColors.white,
                               fontWeight: FontWeight.w700),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          m.type,
-                          style: AppTypography.body2.copyWith(
-                              color: Colors.white.withValues(alpha: 0.8)),
-                        ),
+                        if (s.category != null)
+                          Text(
+                            s.category!,
+                            style: AppTypography.body2.copyWith(
+                                color: Colors.white.withValues(alpha: 0.8)),
+                          ),
                       ],
                     ),
                   ),
@@ -611,7 +575,7 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
                             size: 12, color: accentColor),
                         const SizedBox(width: 4),
                         Text(
-                          m.distance,
+                          distance,
                           style: AppTypography.caption
                               .copyWith(color: accentColor),
                         ),
