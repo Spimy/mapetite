@@ -20,7 +20,7 @@ from allauth.account.models import EmailConfirmationHMAC, EmailConfirmation
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from .forms import SignInForm
 from .mixins import SuccessUrlMixin
-from .serializers import UserDetailSerializer
+from .serializers import UserDetailSerializer, UserProfileUpdateSerializer
 
 
 # Create your views here.
@@ -56,6 +56,23 @@ class UserDetailView(APIView):
     def get(self, request, *args, **kwargs):
         serializer = UserDetailSerializer(request.user)
         return Response(serializer.data)
+
+    @extend_schema(
+        request=UserProfileUpdateSerializer, responses={200: UserDetailSerializer}
+    )
+    def patch(self, request, *args, **kwargs):
+        serializer = UserProfileUpdateSerializer(
+            instance=request.user,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        request.user.refresh_from_db()
+        request.user.user_profile.refresh_from_db()
+
+        return Response(UserDetailSerializer(request.user).data)
 
 
 class PasswordResetView(auth_views.PasswordResetView):

@@ -80,3 +80,58 @@ class UserDetailSerializer(serializers.ModelSerializer):
             {"value": value, "label": label}
             for value, label in UserProfile.ActivityLevelChoices.choices
         ]
+
+
+class UserProfileUpdateSerializer(serializers.Serializer):
+    onboarding_completed = serializers.BooleanField(required=False)
+
+    avatar = serializers.ImageField(required=False, allow_null=True)
+    phone_number = serializers.CharField(required=False, allow_blank=True)
+
+    address = serializers.CharField(required=False, allow_blank=True)
+    city = serializers.CharField(required=False, allow_blank=True)
+    country = serializers.CharField(required=False, allow_blank=True)
+
+    target_calories = serializers.IntegerField(required=False, allow_null=True)
+
+    dine_in_budget = serializers.DecimalField(
+        max_digits=10, decimal_places=2, required=False, allow_null=True
+    )
+    grocery_budget = serializers.DecimalField(
+        max_digits=10, decimal_places=2, required=False, allow_null=True
+    )
+    spending_alert_percent = serializers.IntegerField(
+        required=False, min_value=1, max_value=100
+    )
+
+    health_goal = serializers.ChoiceField(
+        choices=UserProfile.HealthGoalChoices.choices,
+        required=False,
+        allow_blank=True,
+    )
+    activity_level = serializers.ChoiceField(
+        choices=UserProfile.ActivityLevelChoices.choices,
+        required=False,
+        allow_blank=True,
+    )
+    current_weight = serializers.DecimalField(
+        max_digits=6, decimal_places=2, required=False, allow_null=True
+    )
+
+    is_halal = serializers.BooleanField(required=False)
+    is_vegan = serializers.BooleanField(required=False)
+    allergies = serializers.ListField(
+        child=serializers.ChoiceField(choices=UserProfile.AllergyChoices.choices),
+        required=False,
+    )
+
+    def update(self, instance, validated_data):
+        profile = getattr(instance, "user_profile", None)
+        if profile is None:
+            profile = UserProfile.objects.create(user=instance)
+
+        for field_name, value in validated_data.items():
+            setattr(profile, field_name, value)
+
+        profile.save()
+        return instance
