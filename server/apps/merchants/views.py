@@ -54,11 +54,17 @@ class StoreListAPIView(ListAPIView):
                 queryset=queryset, search_field="business_name", query=query
             )
             
-        if halal and (halal.lower() == "true" or halal.lower() == "1"):
-            queryset = queryset.filter(halal=True)
+        if halal:
+            if (halal.lower() == "true" or halal.lower() == "1"):
+                queryset = queryset.filter(halal=True)
+            elif halal.lower() == "false" or halal.lower() == "0":
+                queryset = queryset.filter(halal=False)
         
-        if vegan and (vegan.lower() == "true" or vegan.lower() == "1"):
-            queryset = queryset.filter(vegan=True)
+        if vegan:
+            if (vegan.lower() == "true" or vegan.lower() == "1"):
+                queryset = queryset.filter(vegan=True)
+            elif vegan.lower() == "false" or vegan.lower() == "0":
+                queryset = queryset.filter(vegan=False)
 
         return queryset
 
