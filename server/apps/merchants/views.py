@@ -41,6 +41,9 @@ class StoreListAPIView(ListAPIView):
     def get_queryset(self):
         merchant_type = self.request.GET.get("type")
         query = self.request.GET.get("q")
+        halal = self.request.GET.get("halal")
+        vegan = self.request.GET.get("vegan")
+        
         queryset = super().get_queryset()
         
         if merchant_type:
@@ -50,7 +53,13 @@ class StoreListAPIView(ListAPIView):
             queryset = trigram_fuzzy_search(
                 queryset=queryset, search_field="business_name", query=query
             )
+            
+        if halal and (halal.lower() == "true" or halal.lower() == "1"):
+            queryset = queryset.filter(halal=True)
         
+        if vegan and (vegan.lower() == "true" or vegan.lower() == "1"):
+            queryset = queryset.filter(vegan=True)
+
         return queryset
 
 class NearbyStoresListAPIView(ListAPIView):
