@@ -17,6 +17,7 @@ from dj_rest_auth.registration.views import (
     VerifyEmailView,
 )
 from allauth.account.models import EmailConfirmationHMAC, EmailConfirmation
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from .forms import SignInForm
 from .mixins import SuccessUrlMixin
@@ -51,6 +52,7 @@ class UserDetailView(APIView):
     """API view to get details of the currently authenticated user"""
 
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     @extend_schema(responses={200: UserDetailSerializer})
     def get(self, request, *args, **kwargs):
