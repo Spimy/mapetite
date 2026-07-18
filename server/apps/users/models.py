@@ -70,6 +70,7 @@ class UserProfile(models.Model):
     country = models.CharField(max_length=100, blank=True)
 
     # Module 2: Health & Preferences
+    target_calories = models.PositiveIntegerField(null=True, blank=True)
     dine_in_budget = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
@@ -105,7 +106,7 @@ class UserProfile(models.Model):
         default=list,
         help_text="List of user allergies",
     )
-    
+
     # TODO: Include preferred cuisines once the's a clear list of cuisines to choose from
 
     created_at = models.DateTimeField(auto_now_add=True)
