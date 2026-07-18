@@ -81,6 +81,8 @@ class NearbyStoresListAPIView(ListAPIView):
         radius_km = self.request.GET.get('radius', DEFAULT_RADIUS_KM)
         merchant_type = self.request.GET.get("type")
         query = self.request.GET.get("q")
+        halal = self.request.GET.get("halal")
+        vegan = self.request.GET.get("vegan")
 
         if not lat or not lng:
             raise ValidationError("Please provide 'lat' and 'lng' query parameters.")
@@ -99,6 +101,18 @@ class NearbyStoresListAPIView(ListAPIView):
                 queryset = trigram_fuzzy_search(
                     queryset=queryset, search_field="business_name", query=query
                 )
+                
+            if halal:
+                if (halal.lower() == "true" or halal.lower() == "1"):
+                    queryset = queryset.filter(halal=True)
+                elif halal.lower() == "false" or halal.lower() == "0":
+                    queryset = queryset.filter(halal=False)
+                    
+            if vegan:
+                if (vegan.lower() == "true" or vegan.lower() == "1"):
+                    queryset = queryset.filter(vegan=True)
+                elif vegan.lower() == "false" or vegan.lower() == "0":
+                    queryset = queryset.filter(vegan=False)
 
             return queryset
 
