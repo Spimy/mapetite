@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from apps.core.services import GeminiService
+from apps.core.utils import trigram_fuzzy_search
 from apps.merchants.models import StoreItem, StoreProfile
 from apps.recipes.utils import extract_recipe_data
 from apps.users.permissions import IsAuthorOrReadOnly
@@ -65,14 +66,8 @@ class RecipeCreateListAPIView(ListCreateAPIView):
         query = self.request.GET.get("q", None)
 
         if query:
-            queryset = (
-                queryset.annotate(similarity=TrigramSimilarity("title", Value(query)))
-                .filter(
-                    # Similarity threshold because PostgreSQL is goated like that providing easy way to do fuzzy search without any extra effort.
-                    Q(title__icontains=query)
-                    | Q(similarity__gt=0.15)
-                )
-                .order_by("-similarity")
+            queryset = trigram_fuzzy_search(
+                queryset=queryset, search_field="title", query=query
             )
         else:
             queryset = queryset.order_by("-created_at")
