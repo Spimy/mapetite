@@ -18,8 +18,6 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.contrib.gis.geos import Point
-from django.contrib.gis.db.models.functions import Distance
-from django.contrib.gis.measure import D
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
@@ -66,20 +64,12 @@ class NearbyStoresListAPIView(ListAPIView):
 
         try:
             user_location = Point(float(lng), float(lat), srid=WGS84_SRID)
+            queryset = super().get_queryset().nearby(user_location, float(radius_km))
             
             if merchant_type:
-                return super().get_queryset().filter(
-                    location__distance_lte=(user_location, D(km=float(radius_km))),
-                    merchant_type=merchant_type.upper()
-                ).annotate(
-                    distance=Distance('location', user_location)
-                ).order_by('distance')
+                queryset = queryset.filter(merchant_type=merchant_type.upper())
             
-            return super().get_queryset().filter(
-                location__distance_lte=(user_location, D(km=float(radius_km)))
-            ).annotate(
-                distance=Distance('location', user_location)
-            ).order_by('distance')
+            return queryset
             
         except ValueError:
             raise ValidationError("Invalid coordinates provided.")
