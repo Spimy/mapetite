@@ -40,9 +40,18 @@ class StoreListAPIView(ListAPIView):
 
     def get_queryset(self):
         merchant_type = self.request.GET.get("type")
+        query = self.request.GET.get("q")
+        queryset = super().get_queryset()
+        
         if merchant_type:
-            return super().get_queryset().filter(merchant_type=merchant_type.upper())
-        return super().get_queryset()
+            queryset = queryset.filter(merchant_type=merchant_type.upper())
+
+        if query:
+            queryset = trigram_fuzzy_search(
+                queryset=queryset, search_field="business_name", query=query
+            )
+        
+        return queryset
 
 class NearbyStoresListAPIView(ListAPIView):
     """Fetches stores within a certain radius of a given lat/lng point and filtered by ?type=RESTAURANT or ?type=GROCERY"""
