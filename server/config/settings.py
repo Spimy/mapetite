@@ -131,7 +131,7 @@ if DEBUG:
     ]
 
     # Apply CORS handling only to API routes.
-    CORS_URLS_REGEX = r"^/api/.*$"
+    CORS_URLS_REGEX = r"^/(api|media)/.*$"
 
 ROOT_URLCONF = "config.urls"
 

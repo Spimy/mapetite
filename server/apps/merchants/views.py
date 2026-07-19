@@ -122,8 +122,8 @@ class NearbyStoresListAPIView(ListAPIView):
     def list(self, request, *args, **kwargs):
         # Queryset is already filtered and annotated in get_queryset()
         queryset = self.get_queryset()
-        serializer = NearbyStoreSerializer(queryset, many=True)
-
+        serializer = NearbyStoreSerializer(queryset, context={"request": request}, many=True)
+        
         lat = request.query_params.get('lat')
         lng = request.query_params.get('lng')
         radius_km = request.query_params.get('radius', DEFAULT_RADIUS_KM)
