@@ -9,17 +9,17 @@ from rest_framework.views import APIView
 from django.db.models import Count, Value, Q
 from django.contrib.postgres.search import TrigramSimilarity
 from django.contrib.gis.geos import Point
-from django.contrib.gis.measure import D
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from apps.core.services import GeminiService
+from apps.core.utils import trigram_fuzzy_search
 from apps.merchants.models import StoreItem, StoreProfile
 from apps.recipes.utils import extract_recipe_data
 from apps.users.permissions import IsAuthorOrReadOnly
-from config.settings import DEFAULT_RADIUS_KM
+from config.settings import DEFAULT_RADIUS_KM, WGS84_SRID
 from .models import Recipe, SavedRecipe
 from .serializers import (
     IngredientMatchRequestSerializer,
@@ -66,14 +66,8 @@ class RecipeCreateListAPIView(ListCreateAPIView):
         query = self.request.GET.get("q", None)
 
         if query:
-            queryset = (
-                queryset.annotate(similarity=TrigramSimilarity("title", Value(query)))
-                .filter(
-                    # Similarity threshold because PostgreSQL is goated like that providing easy way to do fuzzy search without any extra effort.
-                    Q(title__icontains=query)
-                    | Q(similarity__gt=0.15)
-                )
-                .order_by("-similarity")
+            queryset = trigram_fuzzy_search(
+                queryset=queryset, search_field="title", query=query
             )
         else:
             queryset = queryset.order_by("-created_at")
@@ -229,12 +223,11 @@ class SmartIngredientMatchAPIView(APIView):
         radius_km = serializer.validated_data["radius_km"] or DEFAULT_RADIUS_KM  # type: ignore
         requested_ingredients = serializer.validated_data["ingredients"]  # type: ignore
 
-        user_location = Point(user_lon, user_lat, srid=4326)
+        user_location = Point(user_lon, user_lat, srid=WGS84_SRID)
 
         # Find stores within the radius
-        nearby_stores = StoreProfile.objects.filter(
-            location__distance_lte=(user_location, D(km=radius_km)),
-            merchant_type=StoreProfile.MerchantType.GROCERY,  # Only search grocery stores
+        nearby_stores = StoreProfile.objects.nearby(user_location, radius_km).filter(
+            merchant_type=StoreProfile.MerchantType.GROCERY
         )
 
         if not nearby_stores.exists():
@@ -265,8 +258,8 @@ class SmartIngredientMatchAPIView(APIView):
                     request.build_absolute_uri(store.image.url) if store.image else None
                 ),
                 "distance_km": (
-                    round(store.location.distance(user_location) * 100, 2)
-                    if store.location
+                    round(getattr(store, "distance").km, 2)
+                    if getattr(store, "distance", None)
                     else 0.0
                 ),
                 "matched_ingredients": [],
