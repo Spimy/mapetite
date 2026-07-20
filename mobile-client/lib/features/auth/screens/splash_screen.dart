@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../routes/app_router.dart';
+import '../controllers/auth_controller.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -22,8 +25,27 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _navigate() async {
     await Future.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-    context.go(AppRoutes.onboarding);
+
+    final hasActiveSession = await ref
+        .read(authControllerProvider.notifier)
+        .loadCurrentUser();
+
+    if (!mounted) {
+      return;
+    }
+
+    if (!hasActiveSession) {
+      context.go(AppRoutes.onboarding);
+      return;
+    }
+
+    final authState = ref.read(authControllerProvider);
+
+    if (authState.onboardingCompleted) {
+      context.go(AppRoutes.home);
+    } else {
+      context.go(AppRoutes.profileDietary);
+    }
   }
 
   @override

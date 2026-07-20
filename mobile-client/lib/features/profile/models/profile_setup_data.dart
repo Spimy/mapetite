@@ -1,5 +1,5 @@
 /// Holds wizard answers in memory during the profile setup flow.
-/// Not persisted until the final step completes (future backend integration).
+/// Persisted to the backend when the final setup step completes.
 class ProfileSetupData {
   // Step 0 — intro
   final String? fullName;
@@ -81,5 +81,29 @@ class ProfileSetupData {
       activityLevel: activityLevel ?? this.activityLevel,
       weightKg: weightKg ?? this.weightKg,
     );
+  }
+
+  Map<String, dynamic> toProfileJson() {
+    return {
+      'onboarding_completed': true,
+      'target_calories': dailyCalorieTarget,
+      'monthly_budget': monthlyBudget,
+      'dine_in_budget': diningBudget,
+      'grocery_budget': groceriesBudget,
+      'delivery_budget': deliveryBudget,
+      'spending_alert_percent': alertThresholdPercent,
+      'health_goal': healthGoal,
+      'activity_level': activityLevel,
+      'current_weight': weightKg,
+      'is_halal': isHalal,
+      'is_vegan': isVegan,
+      'is_vegetarian': isVegetarian,
+      'allergies': allergens
+          .map((allergen) => allergen.toLowerCase().replaceAll(' ', '_'))
+          .toList(),
+      'cuisine_preferences': cuisinePreferences
+          .map((cuisine) => cuisine.toLowerCase().replaceAll(' ', '_'))
+          .toList(),
+    };
   }
 }

@@ -47,7 +47,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
 
     if (success) {
-      context.go('/profile/dietary');
+      final authState = ref.read(authControllerProvider);
+
+      if (authState.onboardingCompleted) {
+        context.go('/home');
+      } else {
+        context.go('/profile/dietary');
+      }
     }
   }
 

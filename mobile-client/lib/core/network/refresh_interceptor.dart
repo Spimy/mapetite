@@ -5,24 +5,44 @@ import '../../features/auth/models/auth_tokens.dart';
 import '../../features/auth/services/auth_token_service.dart';
 import '../errors/app_exception.dart';
 
-/// True if this error represents an expired/invalid JWT that we should
-/// attempt to refresh and retry, rather than a genuine permission or
-/// server error. The backend returns 403 (not 401) with
-/// `code: "token_not_valid"` for an expired/invalid access token.
 bool shouldAttemptRefresh(DioException err) {
-  // A request is only ever allowed one refresh-and-retry cycle. Without
-  // this, a retried request that still comes back token-invalid (e.g.
-  // clock skew, or a genuinely token-invalid endpoint) would trigger
-  // another refresh, and another, looping indefinitely.
-  if (err.requestOptions.extra['__retried'] == true) return false;
-  if (err.requestOptions.path == ApiEndpoints.refreshToken) return false;
+  if (err.requestOptions.extra['__retried'] == true) {
+    return false;
+  }
+
+  if (err.requestOptions.path == ApiEndpoints.refreshToken) {
+    return false;
+  }
+
+  if (_isPublicEndpoint(err.requestOptions.path)) {
+    return false;
+  }
 
   final statusCode = err.response?.statusCode;
-  if (statusCode != 401 && statusCode != 403) return false;
+
+  if (statusCode != 401 && statusCode != 403) {
+    return false;
+  }
 
   final data = err.response?.data;
-  if (data is Map && data['code'] == 'token_not_valid') return true;
+
+  if (data is Map && data['code'] == 'token_not_valid') {
+    return true;
+  }
+
   return statusCode == 401;
+}
+
+bool _isPublicEndpoint(String path) {
+  final cleanPath = path.startsWith('/') ? path.substring(1) : path;
+
+  return cleanPath == ApiEndpoints.login ||
+      cleanPath == ApiEndpoints.refreshToken ||
+      cleanPath == ApiEndpoints.verifyToken ||
+      cleanPath == ApiEndpoints.register ||
+      cleanPath == ApiEndpoints.resendEmail ||
+      cleanPath == ApiEndpoints.googleLogin ||
+      cleanPath == ApiEndpoints.verifyEmail;
 }
 
 class RefreshInterceptor extends Interceptor {
@@ -48,6 +68,7 @@ class RefreshInterceptor extends Interceptor {
     }
 
     _isRefreshing = true;
+
     final refreshToken = AuthTokenService.refreshToken;
 
     if (refreshToken == null || refreshToken.isEmpty) {
@@ -56,18 +77,36 @@ class RefreshInterceptor extends Interceptor {
     }
 
     try {
-      final refreshDio = Dio(BaseOptions(baseUrl: _dio.options.baseUrl));
+      final refreshDio = Dio(
+        BaseOptions(
+          baseUrl: _dio.options.baseUrl,
+          connectTimeout: _dio.options.connectTimeout,
+          receiveTimeout: _dio.options.receiveTimeout,
+          headers: {'Content-Type': 'application/json'},
+        ),
+      );
+
       final response = await refreshDio.post(
         ApiEndpoints.refreshToken,
         data: {'refresh': refreshToken},
       );
-      final tokens = AuthTokens.fromJson(response.data as Map<String, dynamic>);
+
+      final data = response.data as Map<String, dynamic>;
+
+      final tokens = AuthTokens(
+        access: data['access'] as String,
+        refresh: data['refresh'] as String? ?? refreshToken,
+      );
+
       await AuthTokenService.saveTokens(tokens);
 
       _isRefreshing = false;
       _releaseWaiters();
+
       await _retryOrReject(err, handler);
     } on DioException catch (_) {
+      await _failRefresh(err, handler);
+    } catch (_) {
       await _failRefresh(err, handler);
     }
   }
@@ -78,7 +117,9 @@ class RefreshInterceptor extends Interceptor {
   ) async {
     _isRefreshing = false;
     _releaseWaiters();
+
     await AuthTokenService.clearTokens();
+
     handler.next(
       DioException(
         requestOptions: err.requestOptions,
@@ -91,8 +132,11 @@ class RefreshInterceptor extends Interceptor {
 
   void _releaseWaiters() {
     for (final waiter in _waiters) {
-      waiter.complete();
+      if (!waiter.isCompleted) {
+        waiter.complete();
+      }
     }
+
     _waiters.clear();
   }
 
@@ -100,11 +144,16 @@ class RefreshInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    final currentAuthHeader = _dio.options.headers['Authorization'];
-    if (currentAuthHeader != null) {
-      err.requestOptions.headers['Authorization'] = currentAuthHeader;
+    final accessToken = AuthTokenService.accessToken;
+
+    if (accessToken == null || accessToken.isEmpty) {
+      handler.next(err);
+      return;
     }
+
+    err.requestOptions.headers['Authorization'] = 'Bearer $accessToken';
     err.requestOptions.extra['__retried'] = true;
+
     try {
       final response = await _dio.fetch(err.requestOptions);
       handler.resolve(response);
