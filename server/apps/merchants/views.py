@@ -43,6 +43,7 @@ class StoreListAPIView(ListAPIView):
         query = self.request.GET.get("q")
         halal = self.request.GET.get("halal")
         vegan = self.request.GET.get("vegan")
+        vegetarian = self.request.GET.get("vegetarian")
         
         queryset = super().get_queryset()
         
@@ -65,6 +66,12 @@ class StoreListAPIView(ListAPIView):
                 queryset = queryset.filter(vegan=True)
             elif vegan.lower() == "false" or vegan.lower() == "0":
                 queryset = queryset.filter(vegan=False)
+                
+        if vegetarian:
+            if (vegetarian.lower() == "true" or vegetarian.lower() == "1"):
+                queryset = queryset.filter(items__vegetarian=True).distinct()
+            elif vegetarian.lower() == "false" or vegetarian.lower() == "0":
+                queryset = queryset.exclude(items__vegetarian=True).distinct()
 
         return queryset
 
@@ -83,6 +90,7 @@ class NearbyStoresListAPIView(ListAPIView):
         query = self.request.GET.get("q")
         halal = self.request.GET.get("halal")
         vegan = self.request.GET.get("vegan")
+        vegetarian = self.request.GET.get("vegetarian")
 
         if not lat or not lng:
             raise ValidationError("Please provide 'lat' and 'lng' query parameters.")
@@ -113,6 +121,12 @@ class NearbyStoresListAPIView(ListAPIView):
                     queryset = queryset.filter(vegan=True)
                 elif vegan.lower() == "false" or vegan.lower() == "0":
                     queryset = queryset.filter(vegan=False)
+                    
+            if vegetarian:
+                if (vegetarian.lower() == "true" or vegetarian.lower() == "1"):
+                    queryset = queryset.filter(items__vegetarian=True).distinct()
+                elif vegetarian.lower() == "false" or vegetarian.lower() == "0":
+                    queryset = queryset.exclude(items__vegetarian=True).distinct()
 
             return queryset
 
