@@ -97,6 +97,7 @@ class UserProfile(models.Model):
 
     is_halal = models.BooleanField(default=False)
     is_vegan = models.BooleanField(default=False)
+    is_vegetarian = models.BooleanField(default=False)
     allergies = ArrayField(
         models.CharField(
             max_length=20,
