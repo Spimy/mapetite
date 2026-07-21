@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.merchants",
     "apps.recipes",
+    "apps.budgets",
 ]
 
 SITE_ID = 1
