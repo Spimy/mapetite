@@ -28,6 +28,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "current_weight",
             "is_halal",
             "is_vegan",
+            "is_vegetarian",
             "allergies",
         ]
 
@@ -120,6 +121,7 @@ class UserProfileUpdateSerializer(serializers.Serializer):
 
     is_halal = serializers.BooleanField(required=False)
     is_vegan = serializers.BooleanField(required=False)
+    is_vegetarian = serializers.BooleanField(required=False)
     allergies = serializers.ListField(
         child=serializers.ChoiceField(choices=UserProfile.AllergyChoices.choices),
         required=False,
