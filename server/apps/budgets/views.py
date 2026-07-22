@@ -1,11 +1,19 @@
+from typing import cast
 from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from django.db.models import Sum
+from django.utils import timezone
 from decimal import Decimal
 from apps.core.models import Notification
 from .models import SpendingRecord
-from .serializers import SpendingRecordSerializer
+from .serializers import (
+    SpendingRecordSerializer,
+    SpendingSummaryQuerySerializer,
+    SpendingSummaryResponseSerializer,
+)
 
 
 # Create your views here.
@@ -114,3 +122,71 @@ class SpendingRecordDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
         view = SpendingRecordListCreateAPIView()
         view.check_budget_alert(spending_record)
+
+
+class SpendingSummaryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Get monthly spending summary",
+        description="Returns the total spent and budget percentage for both dine-in and grocery categories.",
+        parameters=[SpendingSummaryQuerySerializer],
+        responses={
+            200: SpendingSummaryResponseSerializer
+        },  # Swagger now knows the exact response shape!
+    )
+    def get(self, request):
+        # Validate query parameters
+        query_serializer = SpendingSummaryQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+
+        now = timezone.now()
+
+        validated_data = cast(dict, query_serializer.validated_data)
+
+        current_month = validated_data.get("month", now.month)
+        current_year = validated_data.get("year", now.year)
+
+        user = request.user
+        profile = user.user_profile
+
+        monthly_records = SpendingRecord.objects.filter(
+            user=user, date_spent__year=current_year, date_spent__month=current_month
+        )
+
+        dine_in_total = monthly_records.filter(
+            spending_type=SpendingRecord.SpendingType.DINE_IN
+        ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+
+        grocery_total = monthly_records.filter(
+            spending_type=SpendingRecord.SpendingType.GROCERY
+        ).aggregate(total=Sum("amount"))["total"] or Decimal("0.00")
+
+        # Calculate percentages
+        dine_in_budget = profile.dine_in_budget or Decimal("0.00")
+        grocery_budget = profile.grocery_budget or Decimal("0.00")
+
+        dine_in_percentage = (
+            (dine_in_total / dine_in_budget * 100) if dine_in_budget > 0 else 0
+        )
+        grocery_percentage = (
+            (grocery_total / grocery_budget * 100) if grocery_budget > 0 else 0
+        )
+
+        response_data = {
+            "month": current_month,
+            "year": current_year,
+            "dine_in": {
+                "spent": dine_in_total,
+                "budget": dine_in_budget,
+                "percentage_used": round(dine_in_percentage, 1),
+            },
+            "grocery": {
+                "spent": grocery_total,
+                "budget": grocery_budget,
+                "percentage_used": round(grocery_percentage, 1),
+            },
+        }
+
+        response_serializer = SpendingSummaryResponseSerializer(response_data)
+        return Response(response_serializer.data)

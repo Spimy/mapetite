@@ -16,4 +16,9 @@ urlpatterns = [
         views.SpendingRecordDetailAPIView.as_view(),
         name="spending_record_detail",
     ),
+    path(
+        "api/spending-records/summary/",
+        views.SpendingSummaryAPIView.as_view(),
+        name="spending_record_summary",
+    ),
 ]
