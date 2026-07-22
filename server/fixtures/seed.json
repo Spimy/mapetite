@@ -9,6 +9,7 @@
       "halal": true,
       "vegan": false,
       "street_address": "1, Ground Floor, Jalan PJS 11/22, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+      "phone": "+60312345678",
       "image": "merchants/stores/1.png",
       "location": "POINT ( 101.602404505357 3.0678137315806064)",
       "owner": null
@@ -24,6 +25,7 @@
       "halal": true,
       "vegan": false,
       "street_address": "1, Jalan PJS 11/20, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+      "phone": "+60133213755",
       "image": "merchants/stores/2.png",
       "location": "POINT (101.60161359077749 3.068545536495694)",
       "owner": null
@@ -39,6 +41,7 @@
       "halal": true,
       "vegan": false,
       "street_address": "1-A,Nadayu 28 Dagang, Jalan PJS 11/7, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+60166808159",
       "image": "merchants/stores/3.png",
       "location": "POINT (101.60266366239603 3.0707409749325127)",
       "owner": null
@@ -54,6 +57,7 @@
       "halal": true,
       "vegan": false,
       "street_address": "Sunway Metro, 37G, Jalan PJS 11/28b, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+      "phone": "+60356365532",
       "image": "merchants/stores/4.png",
       "location": "POINT (101.6103201872229 3.0721311467542316)",
       "owner": null
@@ -69,6 +73,7 @@
       "halal": true,
       "vegan": false,
       "street_address": "L1-43 Level, 1, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+      "phone": "+60198028977",
       "image": "merchants/stores/5.png",
       "location": "POINT (101.60580351087 3.0648803362079335)",
       "owner": null
@@ -84,6 +89,7 @@
       "halal": true,
       "vegan": false,
       "street_address": "G1.108 & 1.109 Ground Floor, Sunway Pyramid, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+      "phone": "+60187716363",
       "image": "merchants/stores/6.png",
       "location": "POINT (101.60598099427014 3.071718668110293)",
       "owner": null
@@ -99,6 +105,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "25, Jalan PJS 11/1, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+      "phone": "+601121181218",
       "image": "merchants/stores/7.png",
       "location": "POINT (101.59958276204075 3.0698410109452503)",
       "owner": null
@@ -114,6 +121,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "49, Jalan PJS 11/9, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+60165833231",
       "image": "merchants/stores/8.png",
       "location": "POINT (101.60313250154243 3.066994860171392)",
       "owner": null
@@ -129,6 +137,7 @@
       "halal": true,
       "vegan": false,
       "street_address": "10, Jalan PJS 11/7, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+60374994402",
       "image": "merchants/stores/9.png",
       "location": "POINT (101.60259689277673 3.068498265641239)",
       "owner": null
@@ -144,6 +153,7 @@
       "halal": true,
       "vegan": false,
       "street_address": "L1-33, Sunway Square, Jalan Lagoon Selatan, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+60163930919",
       "image": "merchants/stores/10.png",
       "location": "POINT (101.60369459976714 3.0652467447713363)",
       "owner": null
@@ -159,6 +169,7 @@
       "halal": true,
       "vegan": true,
       "street_address": "Ground Floor, 2 & 4, Jalan PJS 11/5, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+      "phone": "+60169345994",
       "image": "merchants/stores/11.png",
       "location": "POINT (101.60190157955657 3.066649655464427)",
       "owner": null
@@ -174,6 +185,7 @@
       "halal": true,
       "vegan": true,
       "street_address": "73, Jalan PJS 11/7, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+      "phone": "+60108253301",
       "image": "merchants/stores/12.png",
       "location": "POINT (101.60239534846313 3.0659842558315775)",
       "owner": null
@@ -189,6 +201,7 @@
       "halal": true,
       "vegan": false,
       "street_address": "L2-22, Sunway Square Mall, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+      "phone": "+60183530959",
       "image": "merchants/stores/13.png",
       "location": "POINT (101.60462387052881 3.0647348909396155)",
       "owner": null
@@ -204,6 +217,7 @@
       "halal": true,
       "vegan": true,
       "street_address": "LG1-27 (Lower Ground One, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+      "phone": "+60103257551",
       "image": "merchants/stores/14.png",
       "location": "POINT (101.60419368317301 3.065102658611143)",
       "owner": null
@@ -219,6 +233,7 @@
       "halal": true,
       "vegan": true,
       "street_address": "23, Jalan PJS 11/9, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+      "phone": "+60126757396",
       "image": "merchants/stores/15.png",
       "location": "POINT (101.6031624925095 3.067956578489205)",
       "owner": null
@@ -234,6 +249,7 @@
       "halal": true,
       "vegan": true,
       "street_address": "F1. 86A, Oasis Pyramid, Jalan PJS 11/15, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+      "phone": "+60380221228",
       "image": "merchants/stores/16.png",
       "location": "POINT (101.60514783879671 3.07304052169511)",
       "owner": null
@@ -249,6 +265,7 @@
       "halal": true,
       "vegan": true,
       "street_address": "Lot L1-01, Sunway Square, Jalan Lagoon Selatan, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+      "phone": "+601126121561",
       "image": "merchants/stores/17.png",
       "location": "POINT (101.60593777206256 3.065111900720128)",
       "owner": null
@@ -264,6 +281,7 @@
       "halal": true,
       "vegan": true,
       "street_address": "LG2-128A, Blue Atrium, 3, Jalan PJS 11/15, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+60137003141",
       "image": "merchants/stores/18.png",
       "location": "POINT (101.613092 3.070368)",
       "owner": null
@@ -279,6 +297,7 @@
       "halal": true,
       "vegan": false,
       "street_address": "50 @ Rock Cafe, Jalan PJS 11/20, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+      "phone": "+60174171080",
       "image": "merchants/stores/19.png",
       "location": "POINT (101.60237539447746 3.0686410679246463)",
       "owner": null
@@ -294,6 +313,7 @@
       "halal": true,
       "vegan": true,
       "street_address": "66, Jalan PJS 11/7, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+60358860596",
       "image": "merchants/stores/20.png",
       "location": "POINT (101.60258835602089 3.066303775547407)",
       "owner": null
@@ -309,6 +329,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "Level LG 1, Unit No. LG1-05, Sunway Square Mall, Jalan Lagoon Selatan, 47500 Subang Jaya, Selangor",
+      "phone": "+60356505141",
       "image": "merchants/stores/21.png",
       "location": "POINT (101.60533767178103 3.0656925281584844)",
       "owner": null
@@ -324,6 +345,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "D-01-01, Blok D, Sunway Geo Avenue Jalan Lagoon Selatan, South Quay, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+60356119735",
       "image": "merchants/stores/22.png",
       "location": "POINT (101.60892110273518 3.065713955121291)",
       "owner": null
@@ -339,6 +361,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "LG2-130, Lower Ground Floor 2, Sunway Pyramid, 3, Jalan PJS 11/15, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "1300-88-5427",
       "image": "merchants/stores/23.png",
       "location": "POINT (101.60596398470418 3.072431198124951)",
       "owner": null
@@ -354,6 +377,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "No.19, Jalan PJS 11/9, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+60112-6186-308",
       "image": "merchants/stores/24.png",
       "location": "POINT (101.60314139674088 3.0681546161162045)",
       "owner": null
@@ -369,6 +393,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "Ground Floor, Tower A, Sun-u Residence, Jalan PJS 11/26, Bandar Sunway, 47500 Petaling Jaya, Selangor",
+      "phone": "+601123384637",
       "image": "merchants/stores/25.png",
       "location": "POINT (101.60509250318107 3.065997697426775)",
       "owner": null
@@ -384,6 +409,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "Sunway Metro, Parking lot, No: 17, Jalan PJS 11/28b, Bandar Sunway, 46150 Petaling Jaya, Selangor",
+      "phone": "+60333626863",
       "image": "merchants/stores/26.png",
       "location": "POINT (101.60952949805359 3.0722532037008667)",
       "owner": null
@@ -399,6 +425,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "G-01-03, Sunway Geo, Jalan Lagoon Selatan, 47500 Subang Jaya, Selangor",
+      "phone": "+60356113366",
       "image": "merchants/stores/27.png",
       "location": "POINT (101.60869589874949 3.0647342502177524)",
       "owner": null
@@ -414,6 +441,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "No 41, Jalan PJS 11/9, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+6095679888",
       "image": "merchants/stores/28.png",
       "location": "POINT (101.6031370222521 3.067291088828313)",
       "owner": null
@@ -429,6 +457,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "No: 65 (Ground Floor, Jalan PJS 11/9, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+60333626863",
       "image": "merchants/stores/29.png",
       "location": "POINT (101.60313551343388 3.06634745280792)",
       "owner": null
@@ -444,6 +473,7 @@
       "halal": false,
       "vegan": false,
       "street_address": "E-01-09, Sunway Geo Avenue SDF, 1B, Jalan Lagoon Selatan, Bandar Sunway, 47500 Subang Jaya, Selangor",
+      "phone": "+60109356308",
       "image": "merchants/stores/30.png",
       "location": "POINT (101.60855605767038 3.0654263697051496)",
       "owner": null
