@@ -69,6 +69,8 @@ class StoreItemSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "price",
+            "quantity",
+            "unit",
             "unit_size",
             "calories",
             "category",
@@ -85,7 +87,7 @@ class StoreItemSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.CharField(allow_null=True))
     def get_unit_size(self, obj):
-        return obj.unit_size or None
+        return obj.format_unit_size() or None
 
 
 class StoreProfileSerializer(serializers.ModelSerializer):
