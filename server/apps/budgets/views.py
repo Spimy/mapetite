@@ -11,7 +11,7 @@ from apps.core.models import Notification
 from .models import SpendingRecord
 from .serializers import (
     SpendingRecordSerializer,
-    SpendingSummaryQuerySerializer,
+    SpendingQuerySerializer,
     SpendingSummaryResponseSerializer,
 )
 
@@ -130,14 +130,14 @@ class SpendingSummaryAPIView(APIView):
     @extend_schema(
         summary="Get monthly spending summary",
         description="Returns the total spent and budget percentage for both dine-in and grocery categories.",
-        parameters=[SpendingSummaryQuerySerializer],
+        parameters=[SpendingQuerySerializer],
         responses={
             200: SpendingSummaryResponseSerializer
         },  # Swagger now knows the exact response shape!
     )
     def get(self, request):
         # Validate query parameters
-        query_serializer = SpendingSummaryQuerySerializer(data=request.query_params)
+        query_serializer = SpendingQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
         now = timezone.now()

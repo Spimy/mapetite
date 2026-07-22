@@ -13,7 +13,7 @@ class SpendingRecordSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
 
-class SpendingSummaryQuerySerializer(serializers.Serializer):
+class SpendingQuerySerializer(serializers.Serializer):
     month = serializers.IntegerField(
         min_value=1,
         max_value=12,
