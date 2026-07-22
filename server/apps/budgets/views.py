@@ -34,13 +34,22 @@ class SpendingRecordListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Ensure a user can ONLY see their own spending records
-        return (
-            super()
-            .get_queryset()
-            .filter(user=self.request.user)
-            .order_by("-date_spent", "-created_at")
-        )
+        queryset = super().get_queryset().filter(user=self.request.user)
+        query_serializer = SpendingQuerySerializer(data=self.request.query_params)
+
+        query_serializer.is_valid(raise_exception=True)
+        validated_data = cast(dict, query_serializer.validated_data)
+
+        month = validated_data.get("month")
+        year = validated_data.get("year")
+
+        if month:
+            queryset = queryset.filter(date_spent__month=month)
+
+        if year:
+            queryset = queryset.filter(date_spent__year=year)
+
+        return queryset.order_by("-date_spent", "-created_at")
 
     def perform_create(self, serializer):
         spending_record = serializer.save(user=self.request.user)
