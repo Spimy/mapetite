@@ -40,6 +40,27 @@ class StoreProfile(gis_models.Model):
         RESTAURANT = "RESTAURANT", "Restaurant"
         GROCERY = "GROCERY", "Grocery Store"
 
+    # Cuisine type (restaurants) or store sub-type (groceries)
+    class Category(models.TextChoices):
+        # Restaurant cuisines
+        MAMAK = "MAMAK", "Mamak"
+        NASI_KANDAR = "NASI_KANDAR", "Nasi Kandar"
+        MALAYSIAN = "MALAYSIAN", "Malaysian"
+        KOPITIAM = "KOPITIAM", "Kopitiam"
+        CHINESE = "CHINESE", "Chinese"
+        JAPANESE = "JAPANESE", "Japanese"
+        KOREAN = "KOREAN", "Korean"
+        FUSION = "FUSION", "Fusion"
+        INDONESIAN = "INDONESIAN", "Indonesian"
+        MEXICAN = "MEXICAN", "Mexican"
+        MEDITERRANEAN = "MEDITERRANEAN", "Mediterranean"
+        HEALTHY = "HEALTHY", "Healthy"
+        VEGETARIAN = "VEGETARIAN", "Vegetarian"
+        # Grocery sub-types
+        SUPERMARKET = "SUPERMARKET", "Supermarket"
+        CONVENIENCE = "CONVENIENCE", "Convenience Store"
+        SPECIALTY = "SPECIALTY", "Specialty Mart"
+
     objects: StoreProfileManager = StoreProfileManager()  # type: ignore
 
     # Merchant staff and ownership
@@ -56,6 +77,9 @@ class StoreProfile(gis_models.Model):
 
     merchant_type = models.CharField(
         max_length=20, choices=MerchantType.choices, default=MerchantType.RESTAURANT
+    )
+    category = models.CharField(
+        max_length=40, choices=Category.choices, blank=True, default=""
     )
 
     business_name = models.CharField(max_length=255)
@@ -186,6 +210,7 @@ class StoreItem(models.Model):
 
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    unit_size = models.CharField(max_length=32, blank=True)
 
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
