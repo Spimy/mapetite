@@ -1,56 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../shared/models/store_item_model.dart';
+import '../../../shared/models/store_model.dart';
+import '../../../shared/providers/store_providers.dart';
+import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/custom_button.dart';
 
-class GroceryStoreDetailScreen extends StatefulWidget {
+class GroceryStoreDetailScreen extends ConsumerStatefulWidget {
   final String storeId;
 
   const GroceryStoreDetailScreen({super.key, required this.storeId});
 
   @override
-  State<GroceryStoreDetailScreen> createState() =>
+  ConsumerState<GroceryStoreDetailScreen> createState() =>
       _GroceryStoreDetailScreenState();
 }
 
-class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
+class _GroceryStoreDetailScreenState
+    extends ConsumerState<GroceryStoreDetailScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  TabController? _tabController;
   final _searchCtrl = TextEditingController();
-
-  static const _categories = [
-    'All',
-    'Fresh Produce',
-    'Pantry',
-    'Dairy',
-    'Frozen',
-  ];
-
-  static const _items = [
-    _StoreItem(
-      'Fresh Spinach',
-      '200 g',
-      'RM 2.50',
-      _StockLevel.inStock,
-      true,
-    ),
-    _StoreItem('Eggs', '6 pcs', 'RM 4.20', _StockLevel.inStock, true),
-    _StoreItem('Soy Sauce', '150 ml', 'RM 1.80', _StockLevel.lowStock, true),
-    _StoreItem('Jasmine Rice 5kg', '5 kg', 'RM 18.90', _StockLevel.inStock, false),
-    _StoreItem('Oat Milk 1L', '1 L', 'RM 8.50', _StockLevel.outOfStock, false),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: _categories.length, vsync: this);
-  }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -72,11 +50,117 @@ class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
     );
   }
 
+  void _openDirections(StoreModel store) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Opening Google Maps to ${store.businessName}',
+                style: AppTypography.body1.copyWith(color: AppColors.white),
+              ),
+            ),
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check, color: AppColors.white, size: 14),
+            ),
+          ],
+        ),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(AppSpacing.lg),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+      ),
+    );
+  }
+
+  List<String> _categoryTabs(List<StoreItemModel> items) => [
+        'All',
+        ...items.map((i) => i.category).toSet().toList()..sort(),
+      ];
+
+  List<StoreItemModel> _filteredItems(
+    List<StoreItemModel> items,
+    List<String> tabs,
+    int activeIndex,
+  ) {
+    final tab = tabs[activeIndex];
+    if (tab == 'All') return items;
+    return items.where((i) => i.category == tab).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final storeAsync = ref.watch(storeDetailProvider(widget.storeId));
+    final itemsAsync = ref.watch(storeItemsProvider(widget.storeId));
+
+    return storeAsync.when(
+      loading: () => _buildLoadingScaffold(),
+      error: (_, _) => _buildErrorScaffold(
+        description: 'Unable to load this store. Please try again.',
+        onRetry: () {
+          ref.invalidate(storeDetailProvider(widget.storeId));
+          ref.invalidate(storeItemsProvider(widget.storeId));
+        },
+      ),
+      data: (store) => itemsAsync.when(
+        loading: () => _buildLoadingScaffold(),
+        error: (_, _) => _buildErrorScaffold(
+          description: 'Unable to load the products. Please try again.',
+          onRetry: () => ref.invalidate(storeItemsProvider(widget.storeId)),
+        ),
+        data: (items) => _buildDataScaffold(context, store, items),
+      ),
+    );
+  }
+
+  Scaffold _buildLoadingScaffold() {
+    return const Scaffold(
+      backgroundColor: AppColors.background,
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  Scaffold _buildErrorScaffold({
+    required String description,
+    required VoidCallback onRetry,
+  }) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: _buildAppBar(context),
+      body: AppEmptyState(
+        icon: Icons.error_outline,
+        title: 'Something went wrong',
+        description: description,
+        ctaLabel: 'Retry',
+        onCta: onRetry,
+      ),
+    );
+  }
+
+  Scaffold _buildDataScaffold(
+    BuildContext context,
+    StoreModel store,
+    List<StoreItemModel> items,
+  ) {
+    final tabs = _categoryTabs(items);
+    if (_tabController == null || _tabController!.length != tabs.length) {
+      _tabController?.dispose();
+      _tabController = TabController(length: tabs.length, vsync: this);
+    }
+    final activeIndex = _tabController!.index.clamp(0, tabs.length - 1);
+    final filtered = _filteredItems(items, tabs, activeIndex);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: _buildAppBar(context, store),
       body: SafeArea(
         top: false,
         child: Column(
@@ -85,23 +169,23 @@ class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    _buildStoreHeader(),
+                    _buildStoreHeader(store),
                     _buildSearchBar(),
-                    _buildCategoryTabs(),
-                    _buildItemList(context),
+                    _buildCategoryTabs(tabs),
+                    _buildItemList(context, filtered),
                     const SizedBox(height: AppSpacing.xxl),
                   ],
                 ),
               ),
             ),
-            _buildStickyFooter(context),
+            _buildStickyFooter(context, store),
           ],
         ),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(BuildContext context, StoreModel store) {
     return AppBar(
       backgroundColor: AppColors.white,
       surfaceTintColor: AppColors.white,
@@ -118,7 +202,7 @@ class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
         },
       ),
       title: Text(
-        'Jaya Grocer',
+        store.businessName,
         style: AppTypography.headline1.copyWith(color: AppColors.primary),
       ),
       bottom: const PreferredSize(
@@ -128,7 +212,12 @@ class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
     );
   }
 
-  Widget _buildStoreHeader() {
+  Widget _buildStoreHeader(StoreModel store) {
+    final subtitleParts = <String>[
+      if (store.category != null) store.category!,
+      store.openStatus.isOpen ? 'Open' : 'Closed',
+    ];
+
     return Container(
       margin: const EdgeInsets.all(AppSpacing.lg),
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -137,101 +226,33 @@ class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         border: Border.all(color: AppColors.border),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: AppSpacing.avatarMd,
-                height: AppSpacing.avatarMd,
-                decoration: const BoxDecoration(
-                  color: AppColors.secondaryLight,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.eco,
-                  size: 28,
-                  color: AppColors.secondary,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Jaya Grocer',
-                            style: AppTypography.headline1,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusMd),
-                          ),
-                          child: Text(
-                            'Claimed',
-                            style: AppTypography.label.copyWith(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      'Supermarket · 0.8 km · Open',
-                      style: AppTypography.body2,
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      '23 Jalan Telawi 3, Bangsar, Kuala Lumpur',
-                      style: AppTypography.body2.copyWith(
-                        color: AppColors.neutral600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
           Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            width: AppSpacing.avatarMd,
+            height: AppSpacing.avatarMd,
+            decoration: const BoxDecoration(
+              color: AppColors.secondaryLight,
+              shape: BoxShape.circle,
             ),
+            child: const Icon(
+              Icons.eco,
+              size: 28,
+              color: AppColors.secondary,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(store.businessName, style: AppTypography.headline1),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(subtitleParts.join(' · '), style: AppTypography.body2),
+                const SizedBox(height: AppSpacing.xxs),
                 Text(
-                  '5 of 6 recipe ingredients available',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  child: const LinearProgressIndicator(
-                    value: 0.83,
-                    minHeight: 8,
-                    backgroundColor: AppColors.white,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
-                  ),
+                  store.streetAddress,
+                  style: AppTypography.body2.copyWith(color: AppColors.neutral600),
                 ),
               ],
             ),
@@ -272,7 +293,7 @@ class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
     );
   }
 
-  Widget _buildCategoryTabs() {
+  Widget _buildCategoryTabs(List<String> tabs) {
     return Column(
       children: [
         const SizedBox(height: AppSpacing.sm),
@@ -288,13 +309,14 @@ class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
           indicatorWeight: 2,
           dividerColor: AppColors.border,
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          tabs: _categories.map((c) => Tab(text: c)).toList(),
+          onTap: (_) => setState(() {}),
+          tabs: tabs.map((c) => Tab(text: c)).toList(),
         ),
       ],
     );
   }
 
-  Widget _buildItemList(BuildContext context) {
+  Widget _buildItemList(BuildContext context, List<StoreItemModel> items) {
     return Container(
       margin: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
@@ -308,12 +330,12 @@ class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
-        children: _items.asMap().entries.map((entry) {
+        children: items.asMap().entries.map((entry) {
           final i = entry.key;
           final item = entry.value;
           return _IngredientRow(
             item: item,
-            isLast: i == _items.length - 1,
+            isLast: i == items.length - 1,
             onAdd: () => _addToList(context, item.name),
           );
         }).toList(),
@@ -321,7 +343,7 @@ class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
     );
   }
 
-  Widget _buildStickyFooter(BuildContext context) {
+  Widget _buildStickyFooter(BuildContext context, StoreModel store) {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.white,
@@ -336,38 +358,19 @@ class _GroceryStoreDetailScreenState extends State<GroceryStoreDetailScreen>
       child: SafeArea(
         top: false,
         child: AppButton(
-          label: 'Add All Recipe Items to List',
-          onPressed: () => context.push('/list'),
+          label: 'Get Directions',
+          leadingIcon: Icons.directions,
+          onPressed: () => _openDirections(store),
         ),
       ),
     );
   }
 }
 
-// ─── Store Item Model ─────────────────────────────────────────────────────────
-
-enum _StockLevel { inStock, lowStock, outOfStock }
-
-class _StoreItem {
-  final String name;
-  final String unit;
-  final String price;
-  final _StockLevel stock;
-  final bool isFromRecipe;
-
-  const _StoreItem(
-    this.name,
-    this.unit,
-    this.price,
-    this.stock,
-    this.isFromRecipe,
-  );
-}
-
 // ─── Ingredient Row ───────────────────────────────────────────────────────────
 
 class _IngredientRow extends StatelessWidget {
-  final _StoreItem item;
+  final StoreItemModel item;
   final bool isLast;
   final VoidCallback onAdd;
 
@@ -379,12 +382,12 @@ class _IngredientRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOutOfStock = item.stock == _StockLevel.outOfStock;
+    final isOutOfStock = item.stockStatus == 'OUT_OF_STOCK';
 
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        color: item.isFromRecipe ? AppColors.background : AppColors.white,
+        color: AppColors.white,
         border: isLast
             ? null
             : const Border(
@@ -412,20 +415,21 @@ class _IngredientRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                Text(item.unit, style: AppTypography.body2),
+                if (item.unitSize != null)
+                  Text(item.unitSize!, style: AppTypography.body2),
               ],
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Text(
-            item.price,
+            'RM ${item.price.toStringAsFixed(2)}',
             style: AppTypography.body1.copyWith(
               color: AppColors.primary,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
-          _StockBadge(stock: item.stock),
+          _StockBadge(stockStatus: item.stockStatus),
           const SizedBox(width: AppSpacing.sm),
           GestureDetector(
             onTap: isOutOfStock ? null : onAdd,
@@ -452,16 +456,17 @@ class _IngredientRow extends StatelessWidget {
 // ─── Stock Badge ──────────────────────────────────────────────────────────────
 
 class _StockBadge extends StatelessWidget {
-  final _StockLevel stock;
+  final String stockStatus;
 
-  const _StockBadge({required this.stock});
+  const _StockBadge({required this.stockStatus});
 
   @override
   Widget build(BuildContext context) {
-    final (label, bg, fg) = switch (stock) {
-      _StockLevel.inStock => ('In Stock', AppColors.successLight, AppColors.success),
-      _StockLevel.lowStock => ('Low Stock', AppColors.warningLight, AppColors.warning),
-      _StockLevel.outOfStock => ('Out of Stock', AppColors.errorLight, AppColors.error),
+    final (label, bg, fg) = switch (stockStatus) {
+      'IN_STOCK' => ('In Stock', AppColors.successLight, AppColors.success),
+      'LOW_STOCK' => ('Low Stock', AppColors.warningLight, AppColors.warning),
+      'OUT_OF_STOCK' => ('Out of Stock', AppColors.errorLight, AppColors.error),
+      _ => ('In Stock', AppColors.successLight, AppColors.success),
     };
 
     return Container(

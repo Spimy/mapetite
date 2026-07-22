@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mapetite/features/discovery/models/home_feed_models.dart';
-import 'package:mapetite/features/discovery/providers/home_feed_providers.dart';
 import 'package:mapetite/features/discovery/screens/home_feed_screen.dart';
+import 'package:mapetite/shared/models/store_model.dart';
+import 'package:mapetite/shared/providers/store_providers.dart';
 import 'package:mapetite/shared/widgets/app_drawer.dart';
 import 'package:mapetite/shared/widgets/app_empty_state.dart';
 import 'package:mapetite/shared/widgets/dietary_chip.dart';
@@ -76,6 +77,35 @@ const _testRecipeVegan = RecipeSummary(
   authorName: 'Test Chef',
 );
 
+// ─── StoreModel fixtures for HomeFeedScreen's real-data sections ───────────────
+
+const _testRestaurantStore = StoreModel(
+  id: 'r-1',
+  businessName: 'Test Nasi Lemak',
+  description: '',
+  merchantType: StoreType.restaurant,
+  halal: true,
+  vegan: false,
+  streetAddress: 'Jalan Test',
+  category: 'Malaysian',
+  distanceKm: 0.5,
+);
+
+const _testGroceryStore = StoreModel(
+  id: 'g-1',
+  businessName: 'Test Grocer',
+  description: '',
+  merchantType: StoreType.grocery,
+  halal: false,
+  vegan: false,
+  streetAddress: 'Jalan Grocer',
+  category: 'Supermarket',
+  distanceKm: 1.2,
+);
+
+const _defaultRestaurants = [_testRestaurantStore];
+const _defaultGroceries = [_testGroceryStore];
+
 Widget _wrap(Widget child) {
   return ProviderScope(child: MaterialApp(home: child));
 }
@@ -127,6 +157,12 @@ GoRouter _testRouter() => GoRouter(
         GoRoute(
           path: '/groceries',
           builder: (_, _) => const Scaffold(body: Text('Groceries')),
+          routes: [
+            GoRoute(
+              path: ':id',
+              builder: (_, _) => const Scaffold(body: Text('GroceryDetail')),
+            ),
+          ],
         ),
         GoRoute(
           path: '/list',
@@ -151,9 +187,26 @@ GoRouter _testRouter() => GoRouter(
       ],
     );
 
-Widget _routerWrap() => ProviderScope(
+/// Builds the [NearbyStoresQuery] result for a given query. Defaults to
+/// returning [_defaultRestaurants]/[_defaultGroceries] depending on
+/// [NearbyStoresQuery.type], letting most tests just call `_routerWrap()`.
+/// Individual tests override [storesBuilder] to simulate loading/error
+/// states for one or both of the restaurant/grocery fetches independently.
+typedef _StoresBuilder = Future<List<StoreModel>> Function(
+  NearbyStoresQuery query,
+);
+
+Future<List<StoreModel>> _defaultStoresBuilder(NearbyStoresQuery query) async {
+  return query.type == StoreType.grocery
+      ? _defaultGroceries
+      : _defaultRestaurants;
+}
+
+Widget _routerWrap({_StoresBuilder? storesBuilder}) => ProviderScope(
       overrides: [
-        homeFeedProvider.overrideWith((_) async {}),
+        nearbyStoresProvider.overrideWith(
+          (ref, query) => (storesBuilder ?? _defaultStoresBuilder)(query),
+        ),
       ],
       child: MaterialApp.router(routerConfig: _testRouter()),
     );
@@ -353,29 +406,22 @@ void main() {
       expect(find.byType(HomeFeedSkeleton), findsOneWidget);
     });
 
-    testWidgets('HomeFeedScreen shows skeleton when provider is loading',
+    testWidgets(
+        'HomeFeedScreen shows skeleton while the restaurant fetch is loading',
         (tester) async {
-      final completer = Completer<void>();
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            homeFeedProvider.overrideWith((ref) => completer.future),
-          ],
-          child: MaterialApp.router(
-            routerConfig: GoRouter(
-              routes: [
-                GoRoute(
-                  path: '/',
-                  builder: (_, _) => const HomeFeedScreen(),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
+      // Never-completing future: keeps the restaurant query in the
+      // "loading" state for the duration of this test without leaving a
+      // real pending Timer behind (unlike Future.delayed), which would
+      // trip flutter_test's post-test "timer still pending" invariant
+      // check.
+      final completer = Completer<List<StoreModel>>();
+      await tester.pumpWidget(_routerWrap(
+        storesBuilder: (query) => query.type == StoreType.restaurant
+            ? completer.future
+            : Future.value(_defaultGroceries),
+      ));
       await tester.pump();
       expect(find.byType(HomeFeedSkeleton), findsOneWidget);
-      completer.complete();
     });
   });
 
@@ -413,7 +459,7 @@ void main() {
       // Any one of the contextual greeting lines should appear
       final greetingFinder = find.textContaining(
         RegExp(
-          r"(breakfast|brunch|craving|snack|tonight|something|supper)",
+          r'(breakfast|brunch|craving|snack|tonight|something|supper)',
           caseSensitive: false,
         ),
       );
@@ -434,32 +480,28 @@ void main() {
       expect(find.text('Cook-In'), findsOneWidget);
     });
 
-    testWidgets('renders AI nudge pill icon', (tester) async {
+    testWidgets('does not render the AI nudge pill', (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      expect(find.byIcon(Icons.auto_awesome), findsAtLeastNWidgets(1));
+      expect(find.text('AI SUGGESTION'), findsNothing);
+      expect(find.byIcon(Icons.auto_awesome), findsNothing);
     });
 
-    testWidgets("renders Today's Top Pick section header", (tester) async {
+    testWidgets("does not render Today's Top Pick section", (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      expect(find.text("Today's Top Pick"), findsOneWidget);
+      expect(find.text("Today's Top Pick"), findsNothing);
+      expect(find.text("Let's Eat!"), findsNothing);
     });
 
-    testWidgets('renders match score badge on top pick card', (tester) async {
+    testWidgets('renders real restaurant and grocery data', (tester) async {
       await tester.pumpWidget(_routerWrap());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      expect(find.textContaining('Match'), findsOneWidget);
-    });
-
-    testWidgets("renders Let's Eat! button on top pick card", (tester) async {
-      await tester.pumpWidget(_routerWrap());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(find.text("Let's Eat!"), findsOneWidget);
+      expect(find.text('Test Nasi Lemak'), findsOneWidget);
+      expect(find.text('Test Grocer'), findsOneWidget);
     });
 
     testWidgets('renders Nearby Options section header', (tester) async {
@@ -467,6 +509,24 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Nearby Options'), findsOneWidget);
+    });
+
+    testWidgets('renders Nearby Groceries section header', (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('Nearby Groceries'), findsOneWidget);
+    });
+
+    testWidgets('Dine-In card shows the real nearby restaurant count',
+        (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        find.text('${_defaultRestaurants.length} nearby'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('renders View map button', (tester) async {
@@ -481,6 +541,105 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(find.byType(FloatingActionButton), findsNothing);
+    });
+
+    testWidgets('shows an error state when the restaurant fetch errors',
+        (tester) async {
+      await tester.pumpWidget(_routerWrap(
+        storesBuilder: (query) async {
+          if (query.type == StoreType.restaurant) {
+            throw Exception('network error');
+          }
+          return _defaultGroceries;
+        },
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('Something went wrong'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
+    });
+
+    testWidgets(
+        'tapping Retry on a restaurant fetch error re-fetches both queries',
+        (tester) async {
+      var restaurantCalls = 0;
+      var groceryCalls = 0;
+      var shouldError = true;
+      await tester.pumpWidget(_routerWrap(
+        storesBuilder: (query) async {
+          if (query.type == StoreType.restaurant) {
+            restaurantCalls++;
+            if (shouldError) throw Exception('network error');
+            return _defaultRestaurants;
+          }
+          groceryCalls++;
+          return _defaultGroceries;
+        },
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('Something went wrong'), findsOneWidget);
+      expect(restaurantCalls, 1);
+      expect(groceryCalls, 1);
+
+      shouldError = false;
+      await tester.tap(find.text('Retry'));
+      await tester.pumpAndSettle();
+
+      // Both the restaurant and grocery queries are invalidated on retry
+      // from the outer (restaurant) error branch, mirroring how
+      // restaurant_detail_screen.dart invalidates both providers when its
+      // outer dual-gate error fires.
+      expect(restaurantCalls, 2);
+      expect(groceryCalls, 2);
+      expect(find.text('Something went wrong'), findsNothing);
+      expect(find.text('Test Nasi Lemak'), findsOneWidget);
+    });
+
+    testWidgets('shows an error state when the grocery fetch errors',
+        (tester) async {
+      await tester.pumpWidget(_routerWrap(
+        storesBuilder: (query) async {
+          if (query.type == StoreType.grocery) {
+            throw Exception('network error');
+          }
+          return _defaultRestaurants;
+        },
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('Something went wrong'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
+    });
+
+    testWidgets('tapping Retry on a grocery fetch error re-fetches groceries',
+        (tester) async {
+      var restaurantCalls = 0;
+      var groceryCalls = 0;
+      var shouldError = true;
+      await tester.pumpWidget(_routerWrap(
+        storesBuilder: (query) async {
+          if (query.type == StoreType.grocery) {
+            groceryCalls++;
+            if (shouldError) throw Exception('network error');
+            return _defaultGroceries;
+          }
+          restaurantCalls++;
+          return _defaultRestaurants;
+        },
+      ));
+      await tester.pumpAndSettle();
+      expect(find.text('Something went wrong'), findsOneWidget);
+      expect(restaurantCalls, 1);
+      expect(groceryCalls, 1);
+
+      shouldError = false;
+      await tester.tap(find.text('Retry'));
+      await tester.pumpAndSettle();
+
+      // Only the grocery query is invalidated on retry from the inner
+      // (grocery) error branch — the restaurant fetch already succeeded.
+      expect(restaurantCalls, 1);
+      expect(groceryCalls, 2);
+      expect(find.text('Something went wrong'), findsNothing);
+      expect(find.text('Test Grocer'), findsOneWidget);
     });
 
     testWidgets('Dine-In card tap navigates to /dine-in', (tester) async {
@@ -516,6 +675,22 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('Map'), findsOneWidget);
+    });
+
+    testWidgets('tapping a grocery row navigates to /groceries/<id>',
+        (tester) async {
+      await tester.pumpWidget(_routerWrap());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.drag(
+        find.byType(CustomScrollView).first,
+        const Offset(0, -1200),
+      );
+      await tester.pump();
+      await tester.tap(find.text('Test Grocer'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('GroceryDetail'), findsOneWidget);
     });
   });
 

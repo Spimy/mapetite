@@ -5,6 +5,8 @@ from django.dispatch import receiver
 from django.db import models
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
+from django.contrib.gis.db.models.functions import Distance
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.utils import timezone
@@ -14,12 +16,31 @@ from pgvector.django import VectorField
 from apps.core.services import GeminiService
 
 
+class StoreProfileQuerySet(models.QuerySet["StoreProfile"]):
+    def nearby(self, user_location: Point, radius_km: float) -> "StoreProfileQuerySet":
+        return (
+            self.filter(location__distance_lte=(user_location, D(km=radius_km)))
+            .annotate(distance=Distance("location", user_location))
+            .order_by("distance")
+        )
+
+
+class StoreProfileManager(models.Manager["StoreProfile"]):
+    def get_queryset(self) -> StoreProfileQuerySet:
+        return StoreProfileQuerySet(self.model, using=self._db)
+
+    def nearby(self, user_location: Point, radius_km: float) -> StoreProfileQuerySet:
+        return self.get_queryset().nearby(user_location, radius_km)
+
+
 # Create your models here.
 class StoreProfile(gis_models.Model):
     # The choices for the type of business
     class MerchantType(models.TextChoices):
         RESTAURANT = "RESTAURANT", "Restaurant"
         GROCERY = "GROCERY", "Grocery Store"
+
+    objects: StoreProfileManager = StoreProfileManager()  # type: ignore
 
     # Merchant staff and ownership
     owner = models.ForeignKey(

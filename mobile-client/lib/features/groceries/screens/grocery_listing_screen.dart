@@ -1,0 +1,909 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_spacing.dart';
+import '../../../core/constants/app_typography.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../shared/models/store_model.dart';
+import '../../../shared/providers/location_provider.dart';
+import '../../../shared/providers/store_providers.dart';
+import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/location_sheet.dart';
+import '../../../shared/widgets/custom_button.dart';
+import '../../../shared/widgets/dietary_chip.dart';
+import '../../../shared/widgets/loading_indicator.dart';
+
+class GroceryListingScreen extends ConsumerStatefulWidget {
+  const GroceryListingScreen({super.key});
+
+  @override
+  ConsumerState<GroceryListingScreen> createState() =>
+      _GroceryListingScreenState();
+}
+
+enum _GroceryQuickFilter { halal, openNow, vegan, nearest }
+
+class _GroceryListingScreenState extends ConsumerState<GroceryListingScreen> {
+  final Set<_GroceryQuickFilter> _quickFilters = {};
+  String _searchQuery = '';
+  final _searchController = TextEditingController();
+  _GroceryFilters _filters = const _GroceryFilters();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<StoreModel> _filterStores(List<StoreModel> source) {
+    var list = source;
+
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      list = list
+          .where((s) =>
+              s.businessName.toLowerCase().contains(q) ||
+              (s.category?.toLowerCase().contains(q) ?? false))
+          .toList();
+    }
+
+    for (final f in _quickFilters) {
+      switch (f) {
+        case _GroceryQuickFilter.halal:
+          list = list.where((s) => s.dietaryTags.contains('Halal')).toList();
+        case _GroceryQuickFilter.openNow:
+          list = list.where((s) => s.openStatus.isOpen).toList();
+        case _GroceryQuickFilter.vegan:
+          list = list.where((s) => s.dietaryTags.contains('Vegan')).toList();
+        case _GroceryQuickFilter.nearest:
+          list = list.where((s) => (s.distanceKm ?? 999) <= 1.0).toList();
+      }
+    }
+
+    for (final d in _filters.dietary) {
+      list = list.where((s) => s.dietaryTags.contains(d)).toList();
+    }
+    if (_filters.underThirtyMinWalk) {
+      list = list.where((s) => (s.walkMinutesEstimate ?? 999) <= 30).toList();
+    }
+
+    return list;
+  }
+
+  int get _totalActiveFilterCount => _quickFilters.length + _filters.activeCount;
+
+  void _toggleQuickFilter(_GroceryQuickFilter f) {
+    setState(() {
+      if (_quickFilters.contains(f)) {
+        _quickFilters.remove(f);
+      } else {
+        _quickFilters.add(f);
+      }
+    });
+  }
+
+  void _openFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _GroceryFilterSheet(
+        initialFilters: _filters,
+        onApply: (f) => setState(() => _filters = f),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final location = ref.watch(locationProvider).valueOrNull;
+    final query = NearbyStoresQuery(
+      lat: location?.latitude ?? 3.0731,
+      lng: location?.longitude ?? 101.6069,
+      radiusKm: 20,
+      type: StoreType.grocery,
+    );
+    final storesAsync = ref.watch(nearbyStoresProvider(query));
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: storesAsync.when(
+        loading: () => _buildLoadingBody(context),
+        error: (_, _) => _buildErrorBody(context, query),
+        data: (stores) {
+          final groceries = _filterStores(stores);
+          return groceries.isEmpty
+              ? _buildEmptyBody(context)
+              : _buildFeedBody(context, groceries);
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoadingBody(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        _buildSliverAppBar(context),
+        SliverToBoxAdapter(child: _buildSearchBar()),
+        SliverToBoxAdapter(child: _buildFilterChips()),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxl,
+          ),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => const Padding(
+                padding: EdgeInsets.only(bottom: AppSpacing.lg),
+                child: CardShimmer(),
+              ),
+              childCount: 3,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorBody(BuildContext context, NearbyStoresQuery query) {
+    return CustomScrollView(
+      slivers: [
+        _buildSliverAppBar(context),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: AppEmptyState(
+            icon: Icons.error_outline,
+            title: 'Something went wrong',
+            description: 'Unable to load grocery stores. Please try again.',
+            ctaLabel: 'Retry',
+            onCta: () => ref.invalidate(nearbyStoresProvider(query)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeedBody(BuildContext context, List<StoreModel> groceries) {
+    return CustomScrollView(
+      slivers: [
+        _buildSliverAppBar(context),
+        SliverToBoxAdapter(child: _buildSearchBar()),
+        SliverToBoxAdapter(child: _buildFilterChips()),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxl,
+          ),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: index < groceries.length - 1 ? AppSpacing.lg : 0,
+                  ),
+                  child: _GroceryStoreCard(
+                    store: groceries[index],
+                    onTap: () =>
+                        context.push('/groceries/${groceries[index].id}'),
+                  ),
+                );
+              },
+              childCount: groceries.length,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyBody(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        _buildSliverAppBar(context),
+        SliverToBoxAdapter(child: _buildSearchBar()),
+        SliverToBoxAdapter(child: _buildFilterChips()),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _buildEmptyState(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0,
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (v) => setState(() => _searchQuery = v),
+        style: AppTypography.body1,
+        decoration: InputDecoration(
+          hintText: 'Search grocery stores...',
+          hintStyle: AppTypography.body1.copyWith(color: AppColors.neutral400),
+          prefixIcon: const Icon(Icons.search, color: AppColors.neutral400, size: 20),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.close, size: 18, color: AppColors.neutral400),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                )
+              : _FilterIconButton(
+                  count: _totalActiveFilterCount,
+                  onTap: _openFilterSheet,
+                ),
+          contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
+          filled: true,
+          fillColor: AppColors.white,
+          isDense: true,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    const chips = [
+      (_GroceryQuickFilter.halal,   null,                        'Halal'),
+      (_GroceryQuickFilter.openNow, Icons.access_time_outlined,  'Open Now'),
+      (_GroceryQuickFilter.vegan,   Icons.eco,                   'Vegan'),
+      (_GroceryQuickFilter.nearest, Icons.near_me_outlined,      'Nearby < 1km'),
+    ];
+
+    return SizedBox(
+      height: 44,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
+        children: chips.map((def) {
+          final (filter, icon, label) = def;
+          final isActive = _quickFilters.contains(filter);
+          final iconColor = isActive ? AppColors.white : AppColors.neutral600;
+          return Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: GestureDetector(
+              onTap: () => _toggleQuickFilter(filter),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs + 2,
+                ),
+                decoration: BoxDecoration(
+                  color: isActive ? AppColors.primary : AppColors.white,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  border: Border.all(
+                    color: isActive ? AppColors.primary : AppColors.border,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (filter == _GroceryQuickFilter.halal)
+                      SvgPicture.asset(
+                        'assets/icons/dietary/halal-icon.svg',
+                        width: 13,
+                        height: 13,
+                        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+                      )
+                    else if (icon != null)
+                      Icon(icon, size: 13, color: iconColor),
+                    const SizedBox(width: 4),
+                    Text(label,
+                        style: AppTypography.label.copyWith(color: iconColor)),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  SliverAppBar _buildSliverAppBar(BuildContext context) {
+    return SliverAppBar(
+      pinned: true,
+      backgroundColor: AppColors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      toolbarHeight: AppSpacing.appBarHeight,
+      leading: IconButton(
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/home');
+          }
+        },
+        icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+        tooltip: 'Back',
+      ),
+      title: Text(
+        'Groceries',
+        style: AppTypography.headline1.copyWith(color: AppColors.primary),
+      ),
+      centerTitle: true,
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: AppSpacing.md),
+          child: _LocationPill(),
+        ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: AppColors.border),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: AppSpacing.avatarLg,
+              height: AppSpacing.avatarLg,
+              decoration: const BoxDecoration(
+                color: AppColors.primaryLight,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.local_grocery_store,
+                size: 32,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'No grocery stores found',
+              style: AppTypography.headline2,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Try adjusting your search or filters.',
+              style: AppTypography.body1.copyWith(color: AppColors.neutral600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: 'Clear Filters',
+              variant: AppButtonVariant.outlined,
+              isFullWidth: false,
+              onPressed: () => setState(() {
+                _quickFilters.clear();
+                _filters = const _GroceryFilters();
+                _searchController.clear();
+                _searchQuery = '';
+              }),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Filter Icon Button (with badge) ──────────────────────────────────────────
+
+class _FilterIconButton extends StatelessWidget {
+  final int count;
+  final VoidCallback onTap;
+
+  const _FilterIconButton({required this.count, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Icon(
+              Icons.tune_rounded,
+              size: 20,
+              color: count > 0 ? AppColors.primary : AppColors.neutral400,
+            ),
+            if (count > 0)
+              Positioned(
+                top: -4,
+                right: -4,
+                child: Container(
+                  width: 14,
+                  height: 14,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$count',
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Location Pill ─────────────────────────────────────────────────────────────
+
+class _LocationPill extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final city = ref.watch(locationCityProvider);
+    return GestureDetector(
+      onTap: () => showLocationSheet(context),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 140),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs + 2,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.location_on, size: 14, color: AppColors.primary),
+              const SizedBox(width: 2),
+              Flexible(
+                child: Text(
+                  city,
+                  style: AppTypography.body2.copyWith(color: AppColors.primary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Grocery Store Card ────────────────────────────────────────────────────────
+
+class _GroceryStoreCard extends StatelessWidget {
+  final StoreModel store;
+  final VoidCallback onTap;
+
+  const _GroceryStoreCard({required this.store, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          border: Border.all(color: AppColors.border),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeroImage(),
+            _buildCardBody(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroImage() {
+    return SizedBox(
+      height: AppSpacing.cardImageHeight,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          store.imageUrl != null
+              ? CachedNetworkImage(
+                  imageUrl: store.imageUrl!,
+                  fit: BoxFit.cover,
+                  placeholder: (_, _) =>
+                      const ColoredBox(color: AppColors.neutral100),
+                  errorWidget: (_, _, _) => const _ImagePlaceholder(),
+                )
+              : const _ImagePlaceholder(),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.transparent, Color(0xCC1F2937)],
+                stops: [0.4, 1.0],
+              ),
+            ),
+          ),
+          if (store.dietaryTags.isNotEmpty)
+            Positioned(
+              top: AppSpacing.sm,
+              left: AppSpacing.sm,
+              child: Row(
+                children: store.dietaryTags
+                    .map(
+                      (tag) => Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.xs),
+                        child: switch (tag) {
+                          'Halal' => const DietaryChip.halal(),
+                          'Vegan' => const DietaryChip.vegan(),
+                          'Vegetarian' => const DietaryChip.vegetarian(),
+                          _ => DietaryChip.allergen(tag),
+                        },
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          Positioned(
+            bottom: AppSpacing.md,
+            left: AppSpacing.md,
+            right: AppSpacing.md,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Text(
+                    store.businessName,
+                    style: AppTypography.headline2
+                        .copyWith(color: AppColors.white),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xxs + 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.directions_walk,
+                        size: 12,
+                        color: AppColors.white,
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${(store.distanceKm ?? 0).toStringAsFixed(1)}km',
+                        style: AppTypography.body2
+                            .copyWith(color: AppColors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCardBody() {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        children: [
+          if (store.category != null)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm + 2,
+                vertical: AppSpacing.xxs + 2,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Text(
+                store.category!,
+                style: AppTypography.caption.copyWith(color: AppColors.neutral700),
+              ),
+            ),
+          if (store.category != null) const SizedBox(width: AppSpacing.sm),
+          const Icon(Icons.schedule, size: 14, color: AppColors.neutral600),
+          const SizedBox(width: 2),
+          Text(
+            '${store.walkMinutesEstimate ?? '—'} min walk',
+            style: AppTypography.body2,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Supporting Widgets ────────────────────────────────────────────────────────
+
+class _ImagePlaceholder extends StatelessWidget {
+  const _ImagePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: AppColors.neutral100,
+      child: Center(
+        child: Icon(Icons.local_grocery_store, size: 40, color: AppColors.neutral400),
+      ),
+    );
+  }
+}
+
+// ── Grocery Filter Data ───────────────────────────────────────────────────────
+
+class _GroceryFilters {
+  final Set<String> dietary;
+  final bool underThirtyMinWalk;
+
+  const _GroceryFilters({
+    this.dietary = const {},
+    this.underThirtyMinWalk = false,
+  });
+
+  int get activeCount => dietary.length + (underThirtyMinWalk ? 1 : 0);
+}
+
+// ── Grocery Filter Sheet ──────────────────────────────────────────────────────
+
+class _GroceryFilterSheet extends StatefulWidget {
+  final _GroceryFilters initialFilters;
+  final ValueChanged<_GroceryFilters> onApply;
+
+  const _GroceryFilterSheet({
+    required this.initialFilters,
+    required this.onApply,
+  });
+
+  @override
+  State<_GroceryFilterSheet> createState() => _GroceryFilterSheetState();
+}
+
+class _GroceryFilterSheetState extends State<_GroceryFilterSheet> {
+  late Set<String> _dietary;
+  late bool _underThirtyMin;
+
+  @override
+  void initState() {
+    super.initState();
+    final f = widget.initialFilters;
+    _dietary = Set.from(f.dietary);
+    _underThirtyMin = f.underThirtyMinWalk;
+  }
+
+  bool get _hasActive => _dietary.isNotEmpty || _underThirtyMin;
+
+  void _clearAll() => setState(() {
+        _dietary.clear();
+        _underThirtyMin = false;
+      });
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 32,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.neutral200,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Filter Grocery Stores', style: AppTypography.headline2),
+                      if (_hasActive)
+                        GestureDetector(
+                          onTap: _clearAll,
+                          child: Text('Clear all',
+                              style: AppTypography.body2.copyWith(color: AppColors.primary)),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Dietary', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: [
+                        _IconFilterChip(
+                          label: 'Halal',
+                          isActive: _dietary.contains('Halal'),
+                          onToggle: () => setState(() {
+                            if (_dietary.contains('Halal')) { _dietary.remove('Halal'); }
+                            else { _dietary.add('Halal'); }
+                          }),
+                          svgAsset: 'assets/icons/dietary/halal-icon.svg',
+                        ),
+                        _IconFilterChip(
+                          label: 'Vegan',
+                          isActive: _dietary.contains('Vegan'),
+                          onToggle: () => setState(() {
+                            if (_dietary.contains('Vegan')) { _dietary.remove('Vegan'); }
+                            else { _dietary.add('Vegan'); }
+                          }),
+                          icon: Icons.eco,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    Text('Distance', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    const SizedBox(height: AppSpacing.sm),
+                    Wrap(
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: [
+                        _IconFilterChip(
+                          label: 'Under 30 min walk',
+                          isActive: _underThirtyMin,
+                          onToggle: () => setState(() => _underThirtyMin = !_underThirtyMin),
+                          icon: Icons.directions_walk,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: AppSpacing.buttonHeight,
+                child: ElevatedButton(
+                  onPressed: () {
+                    widget.onApply(_GroceryFilters(
+                      dietary: Set.from(_dietary),
+                      underThirtyMinWalk: _underThirtyMin,
+                    ));
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text('Apply Filters', style: AppTypography.button),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Icon Filter Chip ──────────────────────────────────────────────────────────
+
+class _IconFilterChip extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onToggle;
+  final IconData? icon;
+  final String? svgAsset;
+
+  const _IconFilterChip({
+    required this.label,
+    required this.isActive,
+    required this.onToggle,
+    this.icon,
+    this.svgAsset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final contentColor = isActive ? AppColors.primary : AppColors.neutral600;
+    return GestureDetector(
+      onTap: onToggle,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.primaryLight : AppColors.neutral100,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(
+            color: isActive ? AppColors.primary : AppColors.border,
+            width: isActive ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (svgAsset != null)
+              SvgPicture.asset(svgAsset!, width: 13, height: 13,
+                  colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn))
+            else if (icon != null)
+              Icon(icon, size: 13, color: contentColor),
+            const SizedBox(width: 4),
+            Text(label,
+                style: AppTypography.label.copyWith(
+                  color: contentColor,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+}

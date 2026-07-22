@@ -1,19 +1,34 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from allauth.account.models import EmailAddress
 from .models import User, UserProfile
+
+
+class ChoiceOptionSerializer(serializers.Serializer):
+    value = serializers.CharField()
+    label = serializers.CharField()
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = [
+            "onboarding_completed",
             "avatar",
+            "phone_number",
             "address",
             "city",
             "country",
-            "budget_monthly",
+            "target_calories",
+            "dine_in_budget",
+            "grocery_budget",
+            "spending_alert_percent",
+            "health_goal",
+            "activity_level",
+            "current_weight",
             "is_halal",
             "is_vegan",
+            "is_vegetarian",
             "allergies",
         ]
 
@@ -23,6 +38,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
     is_verified = serializers.SerializerMethodField()
     profile = UserProfileSerializer(source="user_profile", read_only=True)
+    allergy_options = serializers.SerializerMethodField()
+    health_goal_options = serializers.SerializerMethodField()
+    activity_level_options = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -34,8 +52,88 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "last_name",
             "is_verified",
             "profile",
+            "allergy_options",
+            "health_goal_options",
+            "activity_level_options",
         ]
 
     def get_is_verified(self, obj):
         # Checks if the user has any verified email addresses
         return EmailAddress.objects.filter(user=obj, verified=True).exists()
+
+    @extend_schema_field(ChoiceOptionSerializer(many=True))
+    def get_allergy_options(self, obj):
+        return [
+            {"value": value, "label": label}
+            for value, label in UserProfile.AllergyChoices.choices
+        ]
+
+    @extend_schema_field(ChoiceOptionSerializer(many=True))
+    def get_health_goal_options(self, obj):
+        return [
+            {"value": value, "label": label}
+            for value, label in UserProfile.HealthGoalChoices.choices
+        ]
+
+    @extend_schema_field(ChoiceOptionSerializer(many=True))
+    def get_activity_level_options(self, obj):
+        return [
+            {"value": value, "label": label}
+            for value, label in UserProfile.ActivityLevelChoices.choices
+        ]
+
+
+class UserProfileUpdateSerializer(serializers.Serializer):
+    onboarding_completed = serializers.BooleanField(required=False)
+
+    avatar = serializers.ImageField(required=False, allow_null=True)
+    phone_number = serializers.CharField(required=False, allow_blank=True)
+
+    address = serializers.CharField(required=False, allow_blank=True)
+    city = serializers.CharField(required=False, allow_blank=True)
+    country = serializers.CharField(required=False, allow_blank=True)
+
+    target_calories = serializers.IntegerField(required=False, allow_null=True)
+
+    dine_in_budget = serializers.DecimalField(
+        max_digits=10, decimal_places=2, required=False, allow_null=True
+    )
+    grocery_budget = serializers.DecimalField(
+        max_digits=10, decimal_places=2, required=False, allow_null=True
+    )
+    spending_alert_percent = serializers.IntegerField(
+        required=False, min_value=1, max_value=100
+    )
+
+    health_goal = serializers.ChoiceField(
+        choices=UserProfile.HealthGoalChoices.choices,
+        required=False,
+        allow_blank=True,
+    )
+    activity_level = serializers.ChoiceField(
+        choices=UserProfile.ActivityLevelChoices.choices,
+        required=False,
+        allow_blank=True,
+    )
+    current_weight = serializers.DecimalField(
+        max_digits=6, decimal_places=2, required=False, allow_null=True
+    )
+
+    is_halal = serializers.BooleanField(required=False)
+    is_vegan = serializers.BooleanField(required=False)
+    is_vegetarian = serializers.BooleanField(required=False)
+    allergies = serializers.ListField(
+        child=serializers.ChoiceField(choices=UserProfile.AllergyChoices.choices),
+        required=False,
+    )
+
+    def update(self, instance, validated_data):
+        profile = getattr(instance, "user_profile", None)
+        if profile is None:
+            profile = UserProfile.objects.create(user=instance)
+
+        for field_name, value in validated_data.items():
+            setattr(profile, field_name, value)
+
+        profile.save()
+        return instance

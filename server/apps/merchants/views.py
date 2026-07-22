@@ -5,6 +5,7 @@ from apps.merchants.paginator import Template404Paginator
 from apps.users.models import User
 from apps.users.forms import InviteStaffForm, StoreProfileForm, UserInfoForm
 from apps.users.mixins import MerchantRequiredMixin
+from apps.core.utils import trigram_fuzzy_search
 from config.settings import WGS84_SRID, DEFAULT_RADIUS_KM
 from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse
@@ -18,8 +19,6 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.contrib.gis.geos import Point
-from django.contrib.gis.db.models.functions import Distance
-from django.contrib.gis.measure import D
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
@@ -41,9 +40,40 @@ class StoreListAPIView(ListAPIView):
 
     def get_queryset(self):
         merchant_type = self.request.GET.get("type")
+        query = self.request.GET.get("q")
+        halal = self.request.GET.get("halal")
+        vegan = self.request.GET.get("vegan")
+        vegetarian = self.request.GET.get("vegetarian")
+        
+        queryset = super().get_queryset()
+        
         if merchant_type:
-            return super().get_queryset().filter(merchant_type=merchant_type.upper())
-        return super().get_queryset()
+            queryset = queryset.filter(merchant_type=merchant_type.upper())
+
+        if query:
+            queryset = trigram_fuzzy_search(
+                queryset=queryset, search_field="business_name", query=query
+            )
+            
+        if halal:
+            if (halal.lower() == "true" or halal.lower() == "1"):
+                queryset = queryset.filter(halal=True)
+            elif halal.lower() == "false" or halal.lower() == "0":
+                queryset = queryset.filter(halal=False)
+        
+        if vegan:
+            if (vegan.lower() == "true" or vegan.lower() == "1"):
+                queryset = queryset.filter(vegan=True)
+            elif vegan.lower() == "false" or vegan.lower() == "0":
+                queryset = queryset.filter(vegan=False)
+                
+        if vegetarian:
+            if (vegetarian.lower() == "true" or vegetarian.lower() == "1"):
+                queryset = queryset.filter(items__vegetarian=True).distinct()
+            elif vegetarian.lower() == "false" or vegetarian.lower() == "0":
+                queryset = queryset.exclude(items__vegetarian=True).distinct()
+
+        return queryset
 
 class NearbyStoresListAPIView(ListAPIView):
     """Fetches stores within a certain radius of a given lat/lng point and filtered by ?type=RESTAURANT or ?type=GROCERY"""
@@ -57,37 +87,56 @@ class NearbyStoresListAPIView(ListAPIView):
         lng = self.request.GET.get('lng')
         radius_km = self.request.GET.get('radius', DEFAULT_RADIUS_KM)
         merchant_type = self.request.GET.get("type")
+        query = self.request.GET.get("q")
+        halal = self.request.GET.get("halal")
+        vegan = self.request.GET.get("vegan")
+        vegetarian = self.request.GET.get("vegetarian")
 
         if not lat or not lng:
             raise ValidationError("Please provide 'lat' and 'lng' query parameters.")
-        
+
         if not radius_km or (radius_km is str and not radius_km.isdigit()):
             raise ValidationError("Please provide a valid 'radius' query parameter in kilometers.")
 
         try:
             user_location = Point(float(lng), float(lat), srid=WGS84_SRID)
-            
+            queryset = super().get_queryset().nearby(user_location, float(radius_km))
+
             if merchant_type:
-                return super().get_queryset().filter(
-                    location__distance_lte=(user_location, D(km=float(radius_km))),
-                    merchant_type=merchant_type.upper()
-                ).annotate(
-                    distance=Distance('location', user_location)
-                ).order_by('distance')
-            
-            return super().get_queryset().filter(
-                location__distance_lte=(user_location, D(km=float(radius_km)))
-            ).annotate(
-                distance=Distance('location', user_location)
-            ).order_by('distance')
-            
+                queryset = queryset.filter(merchant_type=merchant_type.upper())
+
+            if query:
+                queryset = trigram_fuzzy_search(
+                    queryset=queryset, search_field="business_name", query=query
+                )
+                
+            if halal:
+                if (halal.lower() == "true" or halal.lower() == "1"):
+                    queryset = queryset.filter(halal=True)
+                elif halal.lower() == "false" or halal.lower() == "0":
+                    queryset = queryset.filter(halal=False)
+                    
+            if vegan:
+                if (vegan.lower() == "true" or vegan.lower() == "1"):
+                    queryset = queryset.filter(vegan=True)
+                elif vegan.lower() == "false" or vegan.lower() == "0":
+                    queryset = queryset.filter(vegan=False)
+                    
+            if vegetarian:
+                if (vegetarian.lower() == "true" or vegetarian.lower() == "1"):
+                    queryset = queryset.filter(items__vegetarian=True).distinct()
+                elif vegetarian.lower() == "false" or vegetarian.lower() == "0":
+                    queryset = queryset.exclude(items__vegetarian=True).distinct()
+
+            return queryset
+
         except ValueError:
             raise ValidationError("Invalid coordinates provided.")
 
     def list(self, request, *args, **kwargs):
         # Queryset is already filtered and annotated in get_queryset()
         queryset = self.get_queryset()
-        serializer = NearbyStoreSerializer(queryset, many=True)
+        serializer = NearbyStoreSerializer(queryset, context={"request": request}, many=True)
         
         lat = request.query_params.get('lat')
         lng = request.query_params.get('lng')
@@ -125,8 +174,8 @@ class StoreOperatingHoursAPIView(ListAPIView):
         store_id = self.kwargs.get("store_id")
         get_object_or_404(StoreProfile, id=store_id)
         return super().get_queryset().filter(store_id=store_id).order_by("day_of_week")
-    
-    
+
+
 class StoreItemsAPIView(ListAPIView):
     """Fetches all items for a specific store"""
 
@@ -139,8 +188,8 @@ class StoreItemsAPIView(ListAPIView):
         get_object_or_404(StoreProfile, id=store_id)
         # Order by category display order, then category name, then item name for consistent listing
         return super().get_queryset().filter(store_id=store_id).order_by("category__display_order", "category__name", "name")
-    
-    
+
+
 @extend_schema(
     responses={
         200: PolymorphicProxySerializer(
@@ -258,7 +307,7 @@ class DashboardView(MerchantRequiredMixin, StoreContextMixin, TemplateView):
             "has_prev": context['current_index'] > 0,
         })
         return context
-    
+
 
 class DashboardItemsView(MerchantRequiredMixin, StoreContextMixin, ListView):
     template_name = "merchants/pages/items-dashboard.html"
@@ -814,8 +863,8 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
 
 class OnboardingView(MerchantRequiredMixin, TemplateView):
     template_name = "merchants/onboarding.html"
-    
-    
+
+
 class MarkLocationView(MerchantRequiredMixin, View):
     """Handles both rendering the Leaflet placement UI and receiving the coordinates."""
     
