@@ -40,6 +40,27 @@ class StoreProfile(gis_models.Model):
         RESTAURANT = "RESTAURANT", "Restaurant"
         GROCERY = "GROCERY", "Grocery Store"
 
+    # Cuisine type (restaurants) or store sub-type (groceries)
+    class Category(models.TextChoices):
+        # Restaurant cuisines
+        MAMAK = "MAMAK", "Mamak"
+        NASI_KANDAR = "NASI_KANDAR", "Nasi Kandar"
+        MALAYSIAN = "MALAYSIAN", "Malaysian"
+        KOPITIAM = "KOPITIAM", "Kopitiam"
+        CHINESE = "CHINESE", "Chinese"
+        JAPANESE = "JAPANESE", "Japanese"
+        KOREAN = "KOREAN", "Korean"
+        FUSION = "FUSION", "Fusion"
+        INDONESIAN = "INDONESIAN", "Indonesian"
+        MEXICAN = "MEXICAN", "Mexican"
+        MEDITERRANEAN = "MEDITERRANEAN", "Mediterranean"
+        HEALTHY = "HEALTHY", "Healthy"
+        VEGETARIAN = "VEGETARIAN", "Vegetarian"
+        # Grocery sub-types
+        SUPERMARKET = "SUPERMARKET", "Supermarket"
+        CONVENIENCE = "CONVENIENCE", "Convenience Store"
+        SPECIALTY = "SPECIALTY", "Specialty Mart"
+
     objects: StoreProfileManager = StoreProfileManager()  # type: ignore
 
     # Merchant staff and ownership
@@ -57,6 +78,9 @@ class StoreProfile(gis_models.Model):
     merchant_type = models.CharField(
         max_length=20, choices=MerchantType.choices, default=MerchantType.RESTAURANT
     )
+    category = models.CharField(
+        max_length=40, choices=Category.choices, blank=True, default=""
+    )
 
     business_name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -67,7 +91,9 @@ class StoreProfile(gis_models.Model):
     vegan = models.BooleanField(default=False)
 
     street_address = models.CharField(max_length=255, blank=True)
+    phone = models.CharField(max_length=32, blank=True)
     image = models.ImageField(upload_to="merchants/stores/", blank=True)
+
     location = gis_models.PointField(geography=True, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -171,6 +197,16 @@ class StoreItem(models.Model):
         LOW_STOCK = "LOW_STOCK", "Low Stock"
         OUT_OF_STOCK = "OUT_OF_STOCK", "Out of Stock"
 
+    class UnitChoices(models.TextChoices):
+        G = "g", "Grams (g)"
+        KG = "kg", "Kilograms (kg)"
+        ML = "ml", "Milliliters (ml)"
+        L = "L", "Liters (L)"
+        PCS = "pcs", "Pieces (pcs)"
+        TBS = "tbsp", "Tablespoon (tbsp)"
+        TSP = "tsp", "Teaspoon (tsp)"
+        CUP = "cup", "Cup"
+
     store = models.ForeignKey(
         StoreProfile, on_delete=models.CASCADE, related_name="items"
     )
@@ -184,6 +220,10 @@ class StoreItem(models.Model):
 
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    quantity = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True
+    )
+    unit = models.CharField(max_length=10, choices=UnitChoices.choices, blank=True)
 
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
@@ -244,6 +284,12 @@ class StoreItem(models.Model):
                 print(f"Embedding failed: {e}")
 
         super().save(*args, **kwargs)
+
+    def format_unit_size(self) -> str:
+        if self.quantity is None or not self.unit:
+            return ""
+        quantity_str = f"{self.quantity:.2f}".rstrip("0").rstrip(".")
+        return f"{quantity_str} {self.unit}"
 
     def __str__(self):
         status_label = self.StockStatus(self.stock_status).label

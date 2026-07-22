@@ -24,9 +24,9 @@ const int _walkingMinutesPerKm = 12;
 /// restaurants and grocery stores — the backend itself only distinguishes
 /// them via [merchantType], so mobile shouldn't maintain two parallel models.
 ///
-/// [phone] and [category] are nullable because the backend does not
-/// provide them yet (tracked as a pending backend request) — UI must
-/// hide the corresponding chip/row when null rather than assume a value.
+/// [phone] may be empty/absent for some stores; [category] is nullable
+/// because the backend does not provide it yet — UI must hide the
+/// corresponding chip/row when null rather than assume a value.
 class StoreModel {
   final String id;
   final String businessName;

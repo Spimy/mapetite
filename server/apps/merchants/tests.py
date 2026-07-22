@@ -1,8 +1,9 @@
 from datetime import time
+from decimal import Decimal
 from django.db import IntegrityError
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from .models import StoreProfile, StoreOperatingHour
+from .models import StoreProfile, StoreOperatingHour, StoreItem
 
 User = get_user_model()
 
@@ -23,10 +24,15 @@ class StoreProfileModelTests(TestCase):
             owner=self.merchant_user,
             business_name="Test Restaurant",
             merchant_type=StoreProfile.MerchantType.RESTAURANT,
+            category=StoreProfile.Category.MAMAK,
+            phone="+60312345678",
         )
         self.assertEqual(store.business_name, "Test Restaurant")
         self.assertEqual(store.merchant_type, "RESTAURANT")
         self.assertEqual(store.owner, self.merchant_user)
+        self.assertEqual(store.phone, "+60312345678")
+        self.assertEqual(store.category, StoreProfile.Category.MAMAK)
+        self.assertEqual(store.get_category_display(), "Mamak")
 
 
 class StoreOperatingHourModelTests(TestCase):
@@ -83,3 +89,40 @@ class StoreOperatingHourModelTests(TestCase):
         self.assertEqual(
             str(operating_hour), "Test Restaurant - Friday: 10:30:00 to 22:00:00"
         )
+
+
+class StoreItemModelTests(TestCase):
+    def setUp(self):
+        self.merchant_user = User.objects.create_user(
+            username="MerchantUser",
+            email="merchant@example.com",
+            password="password123",
+            is_merchant=True,
+        )
+        self.store = StoreProfile.objects.create(
+            owner=self.merchant_user,
+            business_name="Test Grocery",
+            merchant_type=StoreProfile.MerchantType.GROCERY,
+            category=StoreProfile.Category.SUPERMARKET,
+        )
+
+    def test_store_item_quantity_and_unit(self):
+        """Test StoreItem stores quantity and unit separately."""
+        item = StoreItem.objects.create(
+            store=self.store,
+            name="Fresh Spinach",
+            quantity="100",
+            unit=StoreItem.UnitChoices.G,
+            price="2.90",
+        )
+        self.assertEqual(item.name, "Fresh Spinach")
+        self.assertEqual(item.quantity, Decimal("100"))
+        self.assertEqual(item.unit, "g")
+        self.assertEqual(item.format_unit_size(), "100 g")
+
+        from apps.merchants.serializers import StoreItemSerializer
+
+        data = StoreItemSerializer(item).data
+        self.assertEqual(data["quantity"], "100.00")
+        self.assertEqual(data["unit"], "g")
+        self.assertEqual(data["unit_size"], "100 g")
