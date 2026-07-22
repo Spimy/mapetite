@@ -54,6 +54,12 @@
       {{ store_form.merchant_type }}
     </div>
 
+    <div class="store-form-group">
+      <label class="store-form-group__label"
+             for="{{ store_form.category.id_for_label }}">Category</label>
+      {{ store_form.category }}
+    </div>
+
     <div class="store-form-group store-form-group--toggle">
       <label class="store-form-group__label"
              for="{{ store_form.halal.id_for_label }}">Halal Certified</label>
