@@ -60,6 +60,7 @@ class StoreOperatingHourSerializer(serializers.ModelSerializer):
 
 class StoreItemSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source="category.name", read_only=True)
+    unit_size = serializers.SerializerMethodField()
 
     class Meta:
         model = StoreItem
@@ -68,6 +69,7 @@ class StoreItemSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "price",
+            "unit_size",
             "calories",
             "category",
             "stock_status",
@@ -81,10 +83,15 @@ class StoreItemSerializer(serializers.ModelSerializer):
             "thumbnail",
         ]
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_unit_size(self, obj):
+        return obj.unit_size or None
+
 
 class StoreProfileSerializer(serializers.ModelSerializer):
     operating_hours = StoreOperatingHourSerializer(many=True, read_only=True)
     image_url = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
 
     class Meta:
         model = StoreProfile
@@ -93,6 +100,7 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "business_name",
             "description",
             "merchant_type",
+            "category",
             "halal",
             "vegan",
             "street_address",
@@ -102,6 +110,10 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
         ]
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_category(self, obj):
+        return obj.get_category_display() if obj.category else None
 
     @extend_schema_field(serializers.CharField(allow_null=True))
     def get_image_url(self, obj):
