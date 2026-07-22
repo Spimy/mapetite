@@ -96,6 +96,7 @@ class StoreProfileSerializer(serializers.ModelSerializer):
             "halal",
             "vegan",
             "street_address",
+            "phone",
             "image_url",
             "operating_hours",
             "latitude",

@@ -67,7 +67,9 @@ class StoreProfile(gis_models.Model):
     vegan = models.BooleanField(default=False)
 
     street_address = models.CharField(max_length=255, blank=True)
+    phone = models.CharField(max_length=32, blank=True)
     image = models.ImageField(upload_to="merchants/stores/", blank=True)
+
     location = gis_models.PointField(geography=True, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

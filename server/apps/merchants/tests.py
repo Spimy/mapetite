@@ -23,10 +23,12 @@ class StoreProfileModelTests(TestCase):
             owner=self.merchant_user,
             business_name="Test Restaurant",
             merchant_type=StoreProfile.MerchantType.RESTAURANT,
+            phone="+60312345678",
         )
         self.assertEqual(store.business_name, "Test Restaurant")
         self.assertEqual(store.merchant_type, "RESTAURANT")
         self.assertEqual(store.owner, self.merchant_user)
+        self.assertEqual(store.phone, "+60312345678")
 
 
 class StoreOperatingHourModelTests(TestCase):

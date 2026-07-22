@@ -108,7 +108,7 @@ class StoreProfileForm(forms.ModelForm):
 
     class Meta:
         model = StoreProfile
-        fields = ['business_name', 'merchant_type', 'description', 'street_address', 'halal', 'vegan']
+        fields = ['business_name', 'merchant_type', 'description', 'street_address', 'phone', 'halal', 'vegan']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
