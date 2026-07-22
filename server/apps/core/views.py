@@ -32,7 +32,17 @@ class NotificationListAPIView(generics.ListAPIView):
         )
 
 
-class NotificationDetailAPIView(generics.RetrieveAPIView):
+@extend_schema_view(
+    get=extend_schema(
+        summary="Retrieve a notification",
+        description="Retrieve details of a specific notification for the authenticated user.",
+    ),
+    patch=extend_schema(
+        summary="Update notification read status",
+        description="Partially update a specific notification. Only the `is_read` status can be modified.",
+    ),
+)
+class NotificationDetailAPIView(generics.RetrieveUpdateAPIView):
     """
     API view to retrieve a specific notification for the authenticated user.
     """
@@ -40,6 +50,7 @@ class NotificationDetailAPIView(generics.RetrieveAPIView):
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "patch", "head", "options"]
 
     def get_queryset(self):
         """
