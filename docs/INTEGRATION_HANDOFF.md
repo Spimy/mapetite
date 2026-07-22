@@ -634,7 +634,9 @@ Note: product catalogues are large. Prioritise items that appear in recipe ingre
 | `id` | `string` | Unique product ID within the store |
 | `name` | `string` | Product name as labelled in store |
 | `category` | `string` | `"Fresh Produce"`, `"Pantry"`, `"Dairy"`, `"Frozen"`, `"Bakery"`, `"Beverages"`, `"Household"` |
-| `unitSize` | `string` | e.g. `"200 g"`, `"1 L"`, `"6 pcs"` |
+| `quantity` | `decimal` | Package amount, e.g. `200`, `1`, `6` (optional) |
+| `unit` | `string` | Unit choice: `g`, `kg`, `ml`, `L`, `pcs`, `tbsp`, `tsp`, `cup` (optional) |
+| `unitSize` | `string` | Computed display string from quantity + unit, e.g. `"200 g"`, `"1 L"`, `"6 pcs"` (null if unset) |
 | `price` | `decimal` | Price in RM |
 | `stockStatus` | `string` | `"in_stock"` / `"low_stock"` / `"out_of_stock"` |
 | `imageUrl` | `string` | Product image URL (optional) |

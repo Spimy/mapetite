@@ -1,4 +1,5 @@
 from datetime import time
+from decimal import Decimal
 from django.db import IntegrityError
 from django.test import TestCase
 from django.contrib.auth import get_user_model
@@ -105,13 +106,23 @@ class StoreItemModelTests(TestCase):
             category=StoreProfile.Category.SUPERMARKET,
         )
 
-    def test_store_item_unit_size(self):
-        """Test StoreItem can store a separate unit_size."""
+    def test_store_item_quantity_and_unit(self):
+        """Test StoreItem stores quantity and unit separately."""
         item = StoreItem.objects.create(
             store=self.store,
             name="Fresh Spinach",
-            unit_size="100 g",
+            quantity="100",
+            unit=StoreItem.UnitChoices.G,
             price="2.90",
         )
         self.assertEqual(item.name, "Fresh Spinach")
-        self.assertEqual(item.unit_size, "100 g")
+        self.assertEqual(item.quantity, Decimal("100"))
+        self.assertEqual(item.unit, "g")
+        self.assertEqual(item.format_unit_size(), "100 g")
+
+        from apps.merchants.serializers import StoreItemSerializer
+
+        data = StoreItemSerializer(item).data
+        self.assertEqual(data["quantity"], "100.00")
+        self.assertEqual(data["unit"], "g")
+        self.assertEqual(data["unit_size"], "100 g")
