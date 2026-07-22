@@ -20,7 +20,8 @@ from .serializers import (
 @extend_schema_view(
     get=extend_schema(
         summary="List all spending records",
-        description="Retrieve a list of all spending records for the logged-in user.",
+        description="Retrieve a list of all spending records for the logged-in user. Can be optionally filtered by month and year.",
+        parameters=[SpendingQuerySerializer],
     ),
     post=extend_schema(
         summary="Create a new spending record",
