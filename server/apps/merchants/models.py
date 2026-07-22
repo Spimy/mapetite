@@ -197,6 +197,16 @@ class StoreItem(models.Model):
         LOW_STOCK = "LOW_STOCK", "Low Stock"
         OUT_OF_STOCK = "OUT_OF_STOCK", "Out of Stock"
 
+    class UnitChoices(models.TextChoices):
+        G = "g", "Grams (g)"
+        KG = "kg", "Kilograms (kg)"
+        ML = "ml", "Milliliters (ml)"
+        L = "L", "Liters (L)"
+        PCS = "pcs", "Pieces (pcs)"
+        TBS = "tbsp", "Tablespoon (tbsp)"
+        TSP = "tsp", "Teaspoon (tsp)"
+        CUP = "cup", "Cup"
+
     store = models.ForeignKey(
         StoreProfile, on_delete=models.CASCADE, related_name="items"
     )
@@ -210,7 +220,10 @@ class StoreItem(models.Model):
 
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    unit_size = models.CharField(max_length=32, blank=True)
+    quantity = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True
+    )
+    unit = models.CharField(max_length=10, choices=UnitChoices.choices, blank=True)
 
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
@@ -271,6 +284,12 @@ class StoreItem(models.Model):
                 print(f"Embedding failed: {e}")
 
         super().save(*args, **kwargs)
+
+    def format_unit_size(self) -> str:
+        if self.quantity is None or not self.unit:
+            return ""
+        quantity_str = f"{self.quantity:.2f}".rstrip("0").rstrip(".")
+        return f"{quantity_str} {self.unit}"
 
     def __str__(self):
         status_label = self.StockStatus(self.stock_status).label
