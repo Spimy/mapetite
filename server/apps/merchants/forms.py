@@ -3,7 +3,15 @@ from django import forms
 from .models import ItemCategory, Promotion, StoreItem
 
 
-BASIC_FIELDS = ["name", "description", "unit_size", "price", "category", "stock_status"]
+BASIC_FIELDS = [
+    "name",
+    "description",
+    "quantity",
+    "unit",
+    "price",
+    "category",
+    "stock_status",
+]
 NUTRITION_FIELDS = ["calories"]
 DIETARY_FIELDS = [
     "vegetarian",
@@ -40,7 +48,10 @@ class StoreItemForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": "e.g. Nasi Lemak"}),
             "description": forms.Textarea(attrs={"placeholder": "Brief description..."}),
-            "unit_size": forms.TextInput(attrs={"placeholder": "e.g. 200 g, 1 L"}),
+            "quantity": forms.NumberInput(
+                attrs={"placeholder": "e.g. 200", "step": "0.01"}
+            ),
+            "unit": forms.Select(),
             "price": forms.NumberInput(attrs={"placeholder": "0.00"}),
             "calories": forms.NumberInput(attrs={"placeholder": "kcal"}),
             "thumbnail": forms.FileInput(),
