@@ -1,6 +1,9 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from django.db.models import Sum
+from decimal import Decimal
+from apps.core.models import Notification
 from .models import SpendingRecord
 from .serializers import SpendingRecordSerializer
 
@@ -33,8 +36,48 @@ class SpendingRecordListCreateAPIView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         spending_record = serializer.save(user=self.request.user)
+        self.check_budget_alert(spending_record)
 
-        # TODO: Notification alert system for budget thresholds. This is a placeholder for future implementation.
+    def check_budget_alert(self, current_record):
+        user = current_record.user
+        profile = user.user_profile
+
+        # Determine which budget we are checking
+        if current_record.spending_type == SpendingRecord.SpendingType.DINE_IN:
+            budget_limit = profile.dine_in_budget
+            budget_name = "Dine-In"
+        else:
+            budget_limit = profile.grocery_budget
+            budget_name = "Grocery"
+
+        # If they haven't set a budget, there's nothing to alert them about
+        if not budget_limit:
+            return
+
+        # Calculate total spent this month for this specific category
+        current_month = current_record.date_spent.month
+        current_year = current_record.date_spent.year
+
+        total_spent_data = SpendingRecord.objects.filter(
+            user=user,
+            spending_type=current_record.spending_type,
+            date_spent__year=current_year,
+            date_spent__month=current_month,
+        ).aggregate(total=Sum("amount"))
+
+        total_spent = total_spent_data["total"] or Decimal("0.00")
+
+        # Check against alert percentage
+        # e.g., if total_spent is 85 and budget is 100. (85 / 100) * 100 = 85%
+        current_percentage = (total_spent / budget_limit) * 100
+
+        if current_percentage >= profile.spending_alert_percent:
+            # Create a notification!
+            Notification.objects.create(
+                user=user,
+                title=f"{budget_name} Budget Alert!",
+                message=f"You have used {current_percentage:.1f}% of your {budget_name} budget for this month. You've spent RM{total_spent} out of RM{budget_limit}.",
+            )
 
 
 @extend_schema_view(
@@ -69,4 +112,5 @@ class SpendingRecordDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         spending_record = serializer.save()
 
-        # TODO: Check budget again after updating a spending record to see if the user is still within their budget. This is a placeholder for future implementation.
+        view = SpendingRecordListCreateAPIView()
+        view.check_budget_alert(spending_record)
