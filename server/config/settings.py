@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "dj_rest_auth.registration",
 
     # Local apps
+    "apps.core",
     "apps.users",
     "apps.merchants",
     "apps.recipes",
