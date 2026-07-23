@@ -1,31 +1,52 @@
-import '../models/budget_state.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_endpoints.dart';
+import '../models/budget_summary.dart';
 import '../models/budget_transaction.dart';
-import '../models/mocks/budget_mocks.dart';
 
 class BudgetService {
-  Future<BudgetState> getBudgetOverview() async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    return BudgetState(transactions: BudgetMocks.transactions);
-    // TODO: Replace with real API call to GET /api/v1/budget/overview
+  Future<List<BudgetTransaction>> getTransactions({int? month, int? year}) async {
+    final response = await ApiClient.get(
+      ApiEndpoints.budget,
+      params: {
+        if (month != null) 'month': month,
+        if (year != null) 'year': year,
+      },
+    );
+    final data = response.data as List<dynamic>;
+    return data.cast<Map<String, dynamic>>().map(BudgetTransaction.fromJson).toList();
   }
 
-  Future<List<BudgetTransaction>> getTransactions({
-    String? month,
-    int page = 1,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    return BudgetMocks.transactions;
-    // TODO: Replace with real API call to GET /api/v1/budget/transactions?month=:month&page=:page
+  Future<BudgetTransaction> addTransaction(BudgetTransactionDraft draft) async {
+    final response = await ApiClient.post(
+      ApiEndpoints.budget,
+      data: draft.toRequestJson(),
+    );
+    return BudgetTransaction.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<BudgetTransaction> addTransaction(Map<String, dynamic> data) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    return BudgetMocks.transactions.first;
-    // TODO: Replace with real API call to POST /api/v1/budget/transactions
+  Future<BudgetTransaction> updateTransaction(
+    String id,
+    BudgetTransactionDraft draft,
+  ) async {
+    final response = await ApiClient.put(
+      ApiEndpoints.budgetDetail(id),
+      data: draft.toRequestJson(),
+    );
+    return BudgetTransaction.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<void> updateBudgetLimit(double newLimit) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    // TODO: Replace with real API call to PATCH /api/v1/budget/limit
+  Future<void> deleteTransaction(String id) async {
+    await ApiClient.delete(ApiEndpoints.budgetDetail(id));
+  }
+
+  Future<BudgetSummary> getSummary({int? month, int? year}) async {
+    final response = await ApiClient.get(
+      ApiEndpoints.budgetSummary,
+      params: {
+        if (month != null) 'month': month,
+        if (year != null) 'year': year,
+      },
+    );
+    return BudgetSummary.fromJson(response.data as Map<String, dynamic>);
   }
 }
