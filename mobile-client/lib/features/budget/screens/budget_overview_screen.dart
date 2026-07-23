@@ -144,8 +144,8 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
   // ─── Budget Ring Card ─────────────────────────────────────────────────────
 
   Widget _buildRingCard(BudgetState budget) {
-    final spent = budget.totalSpent as double;
-    final total = budget.monthlyBudget as double;
+    final spent = budget.totalSpent;
+    final total = budget.monthlyBudget;
     final ratio = total > 0 ? (spent / total).clamp(0.0, 1.0) : 0.0;
     final isExceeded = spent > total;
     final isWarning = !isExceeded && ratio >= 0.8;
@@ -365,7 +365,7 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
 
   Widget _buildRecentTransactionsCard(BuildContext context, BudgetState budget) {
     final recent =
-        budget.recentTransactions as List<BudgetTransaction>;
+        budget.recentTransactions;
 
     return _Card(
       padding: EdgeInsets.zero,
