@@ -27,12 +27,13 @@ abstract class ApiEndpoints {
   static String storeItems(String id) => 'stores/$id/items/';
 
   // Other feature endpoints
-  static const String profile = 'profiles/me/';
   static const String discover = 'discovery/';
   static const String recipes = 'recipes/';
   static String recipe(String id) => 'recipes/$id/';
   static const String groceryList = 'grocery-list/';
-  static const String budget = 'budget/';
+  static const String budget = 'spending-records/';
+  static String budgetDetail(String id) => 'spending-records/$id/';
+  static const String budgetSummary = 'spending-records/summary/';
   static const String notifications = 'notifications/';
   static const String routing = 'routing/';
 }
