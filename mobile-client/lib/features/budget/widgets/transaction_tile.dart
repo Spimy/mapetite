@@ -93,13 +93,13 @@ class TransactionTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        transaction.name,
+                        transaction.displayLabel,
                         style: AppTypography.body1
                             .copyWith(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${transaction.category.label} • ${_relativeTime(transaction.dateTime)}',
+                        '${transaction.category.label} • ${_relativeTime(transaction.dateSpent)}',
                         style: AppTypography.body2,
                       ),
                     ],

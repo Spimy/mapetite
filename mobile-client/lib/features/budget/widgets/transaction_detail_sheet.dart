@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -98,13 +99,13 @@ class _TransactionDetailSheet extends ConsumerWidget {
           const SizedBox(height: AppSpacing.lg),
 
           // Name
-          Text(transaction.name,
+          Text(transaction.displayLabel,
               style: AppTypography.headline1, textAlign: TextAlign.center),
           const SizedBox(height: AppSpacing.xs),
 
           // Category + date
           Text(
-            '${transaction.category.label}  •  ${_fullDateTime(transaction.dateTime)}',
+            '${transaction.category.label}  •  ${_fullDateTime(transaction.dateSpent)}',
             style: AppTypography.body2,
             textAlign: TextAlign.center,
           ),
@@ -165,7 +166,7 @@ class _TransactionDetailSheet extends ConsumerWidget {
         icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 28),
         title: Text('Delete expense?', style: AppTypography.headline2),
         content: Text(
-          'Remove "${transaction.name}" from your records?',
+          'Remove "${transaction.displayLabel}" from your records?',
           style: AppTypography.body2.copyWith(color: AppColors.neutral600),
           textAlign: TextAlign.center,
         ),
@@ -214,7 +215,7 @@ class _TransactionDetailSheet extends ConsumerWidget {
     if (confirmed == true && context.mounted) {
       final container = ProviderScope.containerOf(context);
       final deleted = transaction;
-      container.read(budgetProvider.notifier).deleteTransaction(deleted.id);
+      unawaited(container.read(budgetProvider.notifier).deleteTransaction(deleted.id));
       Navigator.of(context).pop(deleted);
     }
   }
