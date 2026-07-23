@@ -46,18 +46,21 @@ void main() {
         'spending_alert_percent': 75,
       });
 
-      final profile = await service.getProfile();
+      try {
+        final profile = await service.getProfile();
 
-      expect(double.parse(profile['dine_in_budget'].toString()), 250.0);
-      expect(double.parse(profile['grocery_budget'].toString()), 350.0);
-      expect(profile['spending_alert_percent'], 75);
-
-      // Reset to baseline so other tests/tasks see a clean profile.
-      await service.updateProfile({
-        'dine_in_budget': null,
-        'grocery_budget': null,
-        'spending_alert_percent': 80,
-      });
+        expect(double.parse(profile['dine_in_budget'].toString()), 250.0);
+        expect(double.parse(profile['grocery_budget'].toString()), 350.0);
+        expect(profile['spending_alert_percent'], 75);
+      } finally {
+        // Reset to baseline so other tests/tasks see a clean profile.
+        // This runs unconditionally, even if assertions above fail.
+        await service.updateProfile({
+          'dine_in_budget': null,
+          'grocery_budget': null,
+          'spending_alert_percent': 80,
+        });
+      }
     });
   });
 }
