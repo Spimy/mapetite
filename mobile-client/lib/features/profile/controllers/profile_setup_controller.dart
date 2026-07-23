@@ -27,17 +27,13 @@ class ProfileSetupController extends StateNotifier<ProfileSetupData> {
   }
 
   void updateBudget({
-    double? monthly,
-    double? dining,
-    double? groceries,
-    double? delivery,
+    double? dineIn,
+    double? grocery,
     int? alertThreshold,
   }) {
     state = state.copyWith(
-      monthlyBudget: monthly ?? state.monthlyBudget,
-      diningBudget: dining ?? state.diningBudget,
-      groceriesBudget: groceries ?? state.groceriesBudget,
-      deliveryBudget: delivery ?? state.deliveryBudget,
+      dineInBudget: dineIn ?? state.dineInBudget,
+      groceryBudget: grocery ?? state.groceryBudget,
       alertThresholdPercent: alertThreshold ?? state.alertThresholdPercent,
     );
   }

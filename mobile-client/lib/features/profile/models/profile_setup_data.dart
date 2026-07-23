@@ -13,11 +13,11 @@ class ProfileSetupData {
   final int dailyCalorieTarget;
   final List<String> cuisinePreferences;
 
-  // Step 2 — budget
-  final double monthlyBudget;
-  final double diningBudget;
-  final double groceriesBudget;
-  final double deliveryBudget;
+  // Step 2 — budget (mirrors UserProfile.dine_in_budget / grocery_budget /
+  // spending_alert_percent on the backend — there is no stored "monthly
+  // total" or "delivery" budget concept).
+  final double dineInBudget;
+  final double groceryBudget;
   final int alertThresholdPercent;
 
   // Step 3 — health goals
@@ -34,15 +34,15 @@ class ProfileSetupData {
     this.allergens = const [],
     this.dailyCalorieTarget = 2000,
     this.cuisinePreferences = const [],
-    this.monthlyBudget = 600.0,
-    this.diningBudget = 300.0,
-    this.groceriesBudget = 200.0,
-    this.deliveryBudget = 100.0,
+    this.dineInBudget = 300.0,
+    this.groceryBudget = 300.0,
     this.alertThresholdPercent = 80,
     this.healthGoal = 'general_health',
     this.activityLevel = 'light',
     this.weightKg,
   });
+
+  double get monthlyBudget => dineInBudget + groceryBudget;
 
   ProfileSetupData copyWith({
     String? fullName,
@@ -53,10 +53,8 @@ class ProfileSetupData {
     List<String>? allergens,
     int? dailyCalorieTarget,
     List<String>? cuisinePreferences,
-    double? monthlyBudget,
-    double? diningBudget,
-    double? groceriesBudget,
-    double? deliveryBudget,
+    double? dineInBudget,
+    double? groceryBudget,
     int? alertThresholdPercent,
     String? healthGoal,
     String? activityLevel,
@@ -71,10 +69,8 @@ class ProfileSetupData {
       allergens: allergens ?? this.allergens,
       dailyCalorieTarget: dailyCalorieTarget ?? this.dailyCalorieTarget,
       cuisinePreferences: cuisinePreferences ?? this.cuisinePreferences,
-      monthlyBudget: monthlyBudget ?? this.monthlyBudget,
-      diningBudget: diningBudget ?? this.diningBudget,
-      groceriesBudget: groceriesBudget ?? this.groceriesBudget,
-      deliveryBudget: deliveryBudget ?? this.deliveryBudget,
+      dineInBudget: dineInBudget ?? this.dineInBudget,
+      groceryBudget: groceryBudget ?? this.groceryBudget,
       alertThresholdPercent:
           alertThresholdPercent ?? this.alertThresholdPercent,
       healthGoal: healthGoal ?? this.healthGoal,
