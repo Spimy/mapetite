@@ -33,9 +33,11 @@ admin.site.index_title = "Welcome to the Mapetite Admin Portal"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", include("apps.core.urls", namespace="core")),
     path("", include("apps.users.urls", namespace="users")),
     path("", include("apps.merchants.urls", namespace="merchants")),
     path("", include("apps.recipes.urls", namespace="recipes")),
+    path("", include("apps.budgets.urls", namespace="budgets")),
     path(
         "api/schema/",
         staff_member_required(
