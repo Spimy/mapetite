@@ -5,7 +5,10 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../../shared/models/store_model.dart';
+import '../../../shared/providers/store_providers.dart';
 import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
 
@@ -34,13 +37,14 @@ class _AddTransactionSheet extends ConsumerStatefulWidget {
       _AddTransactionSheetState();
 }
 
-class _AddTransactionSheetState
-    extends ConsumerState<_AddTransactionSheet> {
+class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
+  final _nameCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   final _amountFocus = FocusNode();
   BudgetCategory _category = BudgetCategory.dining;
   DateTime _selectedDate = DateTime.now();
+  StoreModel? _selectedStore;
   bool _isSaving = false;
 
   bool get _isEditing => widget.existing != null;
@@ -52,14 +56,17 @@ class _AddTransactionSheetState
       final e = widget.existing!;
       _amountCtrl.text = e.amount.toStringAsFixed(2);
       _category = e.category;
-      _selectedDate = e.dateTime;
+      _selectedDate = e.dateSpent;
+      _nameCtrl.text = e.storeName ?? '';
       _notesCtrl.text = e.notes ?? '';
     }
     _amountCtrl.addListener(() => setState(() {}));
+    _nameCtrl.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
+    _nameCtrl.dispose();
     _amountCtrl.dispose();
     _notesCtrl.dispose();
     _amountFocus.dispose();
@@ -67,7 +74,10 @@ class _AddTransactionSheetState
   }
 
   double get _parsedAmount => double.tryParse(_amountCtrl.text) ?? 0.0;
-  bool get _isValid => _parsedAmount > 0;
+  bool get _isValid => _parsedAmount > 0 && _nameCtrl.text.trim().isNotEmpty;
+
+  StoreType get _storeTypeForCategory =>
+      _category == BudgetCategory.dining ? StoreType.restaurant : StoreType.grocery;
 
   String _formatDate(DateTime dt) {
     final now = DateTime.now();
@@ -93,26 +103,35 @@ class _AddTransactionSheetState
     if (picked != null) setState(() => _selectedDate = picked);
   }
 
+  Future<void> _pickStore() async {
+    final stores = await ref.read(storesProvider(_storeTypeForCategory).future);
+    if (!mounted) return;
+    final picked = await showModalBottomSheet<StoreModel?>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _StorePickerSheet(stores: stores),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedStore = picked;
+        _nameCtrl.text = picked.businessName;
+      });
+    }
+  }
+
   Future<void> _save() async {
     if (!_isValid) return;
     HapticFeedback.mediumImpact();
     setState(() => _isSaving = true);
-    await Future.delayed(const Duration(milliseconds: 120));
-    if (!mounted) return;
-
-    final notifier = ref.read(budgetProvider.notifier);
-
-    if (_isEditing) {
-      notifier.deleteTransaction(widget.existing!.id);
-    }
 
     final now = DateTime.now();
-    notifier.addTransaction(BudgetTransaction(
-      id: 'tx_${DateTime.now().millisecondsSinceEpoch}',
+    final draft = BudgetTransactionDraft(
+      storeId: _selectedStore?.id,
+      name: _nameCtrl.text.trim(),
       category: _category,
-      name: _isEditing ? widget.existing!.name : 'Transaction',
       amount: _parsedAmount,
-      dateTime: DateTime(
+      dateSpent: DateTime(
         _selectedDate.year,
         _selectedDate.month,
         _selectedDate.day,
@@ -120,10 +139,14 @@ class _AddTransactionSheetState
         now.minute,
       ),
       notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-    ));
+    );
 
-    setState(() => _isSaving = false);
-    if (mounted) {
+    try {
+      await ref.read(budgetProvider.notifier).addTransaction(
+            draft,
+            draftDisplayName: _selectedStore?.businessName ?? _nameCtrl.text.trim(),
+          );
+      if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -137,6 +160,20 @@ class _AddTransactionSheetState
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
         ),
       );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not save transaction. Please try again.',
+              style: AppTypography.body1.copyWith(color: AppColors.white)),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -147,7 +184,7 @@ class _AddTransactionSheetState
     final screenHeight = mediaQuery.size.height;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: screenHeight * 0.72),
+      constraints: BoxConstraints(maxHeight: screenHeight * 0.85),
       decoration: const BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.vertical(
@@ -230,13 +267,6 @@ class _AddTransactionSheetState
                 ],
               ),
             ),
-            Center(
-              child: Text(
-                'Tap to enter amount',
-                style: AppTypography.caption
-                    .copyWith(color: AppColors.neutral400),
-              ),
-            ),
             const SizedBox(height: AppSpacing.xl),
 
             // ── Category selector ──────────────────────────────────────────
@@ -247,8 +277,10 @@ class _AddTransactionSheetState
                   icon: Icons.restaurant_outlined,
                   label: 'Dining Out',
                   selected: _category == BudgetCategory.dining,
-                  onTap: () =>
-                      setState(() => _category = BudgetCategory.dining),
+                  onTap: () => setState(() {
+                    _category = BudgetCategory.dining;
+                    _selectedStore = null;
+                  }),
                 )),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
@@ -256,34 +288,51 @@ class _AddTransactionSheetState
                   icon: Icons.local_grocery_store_outlined,
                   label: 'Cook-In',
                   selected: _category == BudgetCategory.groceries,
-                  onTap: () =>
-                      setState(() => _category = BudgetCategory.groceries),
+                  onTap: () => setState(() {
+                    _category = BudgetCategory.groceries;
+                    _selectedStore = null;
+                  }),
                 )),
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // ── Location row ───────────────────────────────────────────────
-            Container(
-              height: 44,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              decoration: BoxDecoration(
-                color: AppColors.neutral100,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.location_on_outlined,
-                      size: AppSpacing.iconSm, color: AppColors.neutral400),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text('Sunway, Subang Jaya',
-                        style: AppTypography.body1),
-                  ),
-                  const Icon(Icons.edit_outlined,
-                      size: AppSpacing.iconSm, color: AppColors.neutral400),
-                ],
+            // ── Name / place ──────────────────────────────────────────────
+            AppTextField(
+              label: 'Item / Place',
+              controller: _nameCtrl,
+              hint: 'e.g. Jaya Grocer',
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // ── Store picker (optional — links a registered store) ────────
+            GestureDetector(
+              onTap: _pickStore,
+              child: Container(
+                height: 44,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.neutral100,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.storefront_outlined,
+                        size: AppSpacing.iconSm, color: AppColors.neutral400),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        _selectedStore?.businessName ??
+                            'Link a store (optional)',
+                        style: AppTypography.body1,
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right,
+                        size: AppSpacing.iconSm, color: AppColors.neutral400),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -358,6 +407,63 @@ class _AddTransactionSheetState
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _StorePickerSheet extends StatelessWidget {
+  final List<StoreModel> stores;
+  const _StorePickerSheet({required this.stores});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.6),
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.neutral400,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Text('Select a store', style: AppTypography.headline2),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Flexible(
+            child: stores.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    child: Text('No stores found nearby.',
+                        style: AppTypography.body2),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: stores.length,
+                    itemBuilder: (context, i) {
+                      final store = stores[i];
+                      return ListTile(
+                        title: Text(store.businessName),
+                        onTap: () => Navigator.of(context).pop(store),
+                      );
+                    },
+                  ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ],
       ),
     );
   }
