@@ -7,7 +7,9 @@ import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/transaction_detail_sheet.dart';
-import '../widgets/add_expense_sheet.dart';
+import '../widgets/add_transaction_sheet.dart';
+import '../../../shared/widgets/app_empty_state.dart';
+import '../models/budget_state.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
@@ -55,13 +57,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       // Period filter
       switch (_periodFilter) {
         case 'This Month':
-          if (t.dateTime.year != now.year || t.dateTime.month != now.month) {
+          if (t.dateSpent.year != now.year || t.dateSpent.month != now.month) {
             return false;
           }
         case 'This Week':
           final weekStart = DateTime(now.year, now.month, now.day)
               .subtract(Duration(days: now.weekday - 1));
-          if (t.dateTime.isBefore(weekStart)) return false;
+          if (t.dateSpent.isBefore(weekStart)) return false;
         default:
           break; // All — no date restriction
       }
@@ -75,7 +77,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       // Search
       final q = _searchCtrl.text.trim().toLowerCase();
       if (q.isNotEmpty &&
-          !t.name.toLowerCase().contains(q) &&
+          !t.displayLabel.toLowerCase().contains(q) &&
           !t.category.label.toLowerCase().contains(q)) {
         return false;
       }
@@ -107,7 +109,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       List<BudgetTransaction> sorted) {
     final map = <String, List<BudgetTransaction>>{};
     for (final t in sorted) {
-      map.putIfAbsent(_groupLabel(t.dateTime), () => []).add(t);
+      map.putIfAbsent(_groupLabel(t.dateSpent), () => []).add(t);
     }
     return map;
   }
@@ -124,48 +126,63 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final budget = ref.watch(budgetProvider);
+    final budgetAsync = ref.watch(budgetProvider);
+    final appBar = AppBar(
+      backgroundColor: AppColors.white,
+      foregroundColor: AppColors.primary,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: true,
+      titleTextStyle: AppTypography.headline2.copyWith(color: AppColors.primary),
+      title: const Text('Transactions'),
+    );
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: appBar,
+      body: SafeArea(
+        child: budgetAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => AppEmptyState(
+            icon: Icons.error_outline,
+            title: 'Something went wrong',
+            description: 'Unable to load transactions. Please try again.',
+            ctaLabel: 'Retry',
+            onCta: () => ref.invalidate(budgetProvider),
+          ),
+          data: (budget) => _buildBody(budget),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(BudgetState budget) {
     final sorted = budget.allSortedDesc;
     final filtered = _filtered(sorted);
     final grouped = _grouped(filtered);
     final dateKeys = grouped.keys.toList();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.primary,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        titleTextStyle:
-            AppTypography.headline2.copyWith(color: AppColors.primary),
-        title: const Text('Transactions'),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildFilters(),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.screenHorizontalPadding,
-                  vertical: AppSpacing.lg,
-                ),
-                // +1 for the inline add-transaction card at index 0
-                itemCount: dateKeys.length + 1,
-                itemBuilder: (context, i) {
-                  if (i == 0) return _buildAddButton(context);
-                  final label = dateKeys[i - 1];
-                  final txs = grouped[label]!;
-                  return _buildGroup(label, txs);
-                },
-              ),
+    return Column(
+      children: [
+        _buildFilters(),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenHorizontalPadding,
+              vertical: AppSpacing.lg,
             ),
-          ],
+            // +1 for the inline add-transaction card at index 0
+            itemCount: dateKeys.length + 1,
+            itemBuilder: (context, i) {
+              if (i == 0) return _buildAddButton(context);
+              final label = dateKeys[i - 1];
+              final txs = grouped[label]!;
+              return _buildGroup(label, txs);
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -173,7 +190,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: GestureDetector(
-        onTap: () => showAddExpenseSheet(context),
+        onTap: () => showAddTransactionSheet(context),
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
