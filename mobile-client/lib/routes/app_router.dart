@@ -15,8 +15,8 @@ import '../features/profile/screens/budget_setup_screen.dart';
 import '../features/profile/screens/health_goals_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/budget/screens/budget_overview_screen.dart';
-import '../features/budget/screens/budget_analytics_screen.dart';
-import '../features/budget/screens/transaction_log_screen.dart';
+import '../features/budget/screens/spending_analytics_screen.dart';
+import '../features/budget/screens/transactions_screen.dart';
 import '../features/recipes/screens/recipe_listing_screen.dart';
 import '../features/recipes/screens/recipe_detail_screen.dart';
 import '../features/recipes/screens/create_recipe_screen.dart';
@@ -299,12 +299,12 @@ final GoRouter appRouter = GoRouter(
                 GoRoute(
                   path: 'analytics',
                   builder: (context, state) =>
-                      const BudgetAnalyticsScreen(),
+                      const SpendingAnalyticsScreen(),
                 ),
                 GoRoute(
                   path: 'transactions',
                   builder: (context, state) =>
-                      const TransactionLogScreen(),
+                      const TransactionsScreen(),
                 ),
               ],
             ),
