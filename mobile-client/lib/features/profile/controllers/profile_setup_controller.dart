@@ -1,8 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/profile_setup_data.dart';
+import '../services/profile_setup_service.dart';
 
 class ProfileSetupController extends StateNotifier<ProfileSetupData> {
-  ProfileSetupController() : super(const ProfileSetupData());
+  final ProfileSetupService _profileSetupService;
+
+  ProfileSetupController(this._profileSetupService)
+      : super(const ProfileSetupData());
 
   void updateIntroFields({String? fullName, String? email}) {
     state = state.copyWith(fullName: fullName, email: email);
@@ -56,26 +60,38 @@ class ProfileSetupController extends StateNotifier<ProfileSetupData> {
 
   void toggleAllergen(String allergen) {
     final updated = List<String>.from(state.allergens);
+
     if (updated.contains(allergen)) {
       updated.remove(allergen);
     } else {
       updated.add(allergen);
     }
+
     state = state.copyWith(allergens: List.unmodifiable(updated));
   }
 
   void toggleCuisine(String cuisine) {
     final updated = List<String>.from(state.cuisinePreferences);
+
     if (updated.contains(cuisine)) {
       updated.remove(cuisine);
     } else {
       updated.add(cuisine);
     }
+
     state = state.copyWith(cuisinePreferences: List.unmodifiable(updated));
+  }
+
+  Future<void> submitSetup() async {
+    await _profileSetupService.saveProfileSetup(state);
   }
 }
 
+final profileSetupServiceProvider = Provider<ProfileSetupService>((ref) {
+  return ProfileSetupService();
+});
+
 final profileSetupControllerProvider =
     StateNotifierProvider<ProfileSetupController, ProfileSetupData>(
-  (ref) => ProfileSetupController(),
+  (ref) => ProfileSetupController(ref.read(profileSetupServiceProvider)),
 );

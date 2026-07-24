@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../config/app_config.dart';
 import '../errors/app_exception.dart';
+import 'api_endpoints.dart';
 import 'refresh_interceptor.dart';
 
 class ApiClient {
@@ -17,8 +18,34 @@ class ApiClient {
         headers: {'Content-Type': 'application/json'},
       ),
     );
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          if (_isPublicEndpoint(options.path)) {
+            options.headers.remove('Authorization');
+          }
+
+          handler.next(options);
+        },
+      ),
+    );
+
     dio.interceptors.add(RefreshInterceptor(dio));
+
     return dio;
+  }
+
+  static bool _isPublicEndpoint(String path) {
+    final cleanPath = path.startsWith('/') ? path.substring(1) : path;
+
+    return cleanPath == ApiEndpoints.login ||
+        cleanPath == ApiEndpoints.refreshToken ||
+        cleanPath == ApiEndpoints.verifyToken ||
+        cleanPath == ApiEndpoints.register ||
+        cleanPath == ApiEndpoints.resendEmail ||
+        cleanPath == ApiEndpoints.googleLogin ||
+        cleanPath == ApiEndpoints.verifyEmail;
   }
 
   static Future<Response> get(String path, {Map<String, dynamic>? params}) async {
@@ -45,6 +72,14 @@ class ApiClient {
     }
   }
 
+  static Future<Response> patch(String path, {dynamic data}) async {
+    try {
+      return await _dio.patch(path, data: data);
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
   static Future<Response> delete(String path) async {
     try {
       return await _dio.delete(path);
@@ -54,7 +89,10 @@ class ApiClient {
   }
 
   static AppException _mapError(DioException e) {
-    if (e.error is AppException) return e.error as AppException;
+    if (e.error is AppException) {
+      return e.error as AppException;
+    }
+
     return AppException.fromDio(e);
   }
 
