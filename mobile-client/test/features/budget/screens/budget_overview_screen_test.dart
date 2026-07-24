@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +13,15 @@ class _FixedBudgetNotifier extends BudgetNotifier {
   _FixedBudgetNotifier(this._state);
   @override
   Future<BudgetState> build() async => _state;
+}
+
+/// Never resolves, so the provider stays in the "loading" state for the
+/// duration of the test — avoids relying on precisely-timed manual state
+/// overrides, which race against the framework's own AsyncLoading/AsyncData
+/// transition (see restaurant_listing_screen_test.dart for the same pattern).
+class _PendingBudgetNotifier extends BudgetNotifier {
+  @override
+  Future<BudgetState> build() => Completer<BudgetState>().future;
 }
 
 Widget _wrap(BudgetState state) => ProviderScope(
@@ -27,11 +38,11 @@ void main() {
     // dineInBudget=555 with 111 spent -> ratio 0.2. The old hardcoded bug
     // divided by a fixed 200.0 instead, which would give 0.555 here — a
     // clearly different, wrong value.
-    await tester.pumpWidget(_wrap(BudgetState(
-      transactions: const [],
+    await tester.pumpWidget(_wrap(const BudgetState(
+      transactions: [],
       dineInBudget: 555,
       groceryBudget: 777,
-      summary: const BudgetSummary(
+      summary: BudgetSummary(
         month: 7,
         year: 2026,
         dineIn: BudgetCategorySummary(spent: 111, budget: 555, percentageUsed: 20),
@@ -47,9 +58,7 @@ void main() {
 
   testWidgets('shows a loading indicator while budgetProvider is loading', (tester) async {
     final container = ProviderContainer(overrides: [
-      budgetProvider.overrideWith(() => _FixedBudgetNotifier(
-            const BudgetState(transactions: []),
-          )..state = const AsyncLoading()),
+      budgetProvider.overrideWith(_PendingBudgetNotifier.new),
     ]);
     addTearDown(container.dispose);
 
@@ -57,6 +66,7 @@ void main() {
       container: container,
       child: const MaterialApp(home: BudgetOverviewScreen()),
     ));
+    await tester.pump();
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });

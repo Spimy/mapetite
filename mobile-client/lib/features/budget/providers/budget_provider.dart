@@ -146,9 +146,9 @@ class BudgetNotifier extends AsyncNotifier<BudgetState> {
 
     try {
       await _profileService.updateProfile({
-        if (dineIn != null) 'dine_in_budget': dineIn,
-        if (grocery != null) 'grocery_budget': grocery,
-        if (alertPercent != null) 'spending_alert_percent': alertPercent,
+        'dine_in_budget': ?dineIn,
+        'grocery_budget': ?grocery,
+        'spending_alert_percent': ?alertPercent,
       });
     } catch (e) {
       state = previous;

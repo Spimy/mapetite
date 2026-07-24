@@ -8,8 +8,8 @@ class BudgetService {
     final response = await ApiClient.get(
       ApiEndpoints.budget,
       params: {
-        if (month != null) 'month': month,
-        if (year != null) 'year': year,
+        'month': ?month,
+        'year': ?year,
       },
     );
     final data = response.data as List<dynamic>;
@@ -43,8 +43,8 @@ class BudgetService {
     final response = await ApiClient.get(
       ApiEndpoints.budgetSummary,
       params: {
-        if (month != null) 'month': month,
-        if (year != null) 'year': year,
+        'month': ?month,
+        'year': ?year,
       },
     );
     return BudgetSummary.fromJson(response.data as Map<String, dynamic>);
