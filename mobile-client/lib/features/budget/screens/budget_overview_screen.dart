@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -417,9 +416,26 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
                         context: context,
                         message: 'Expense deleted',
                         onUndo: () {
-                          unawaited(ref
+                          ref
                               .read(budgetProvider.notifier)
-                              .restoreTransaction(deleted));
+                              .restoreTransaction(deleted)
+                              .catchError((_) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Could not restore transaction. Please try again.',
+                                      style: AppTypography.body1
+                                          .copyWith(color: AppColors.white)),
+                                  backgroundColor: AppColors.error,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          AppSpacing.radiusMd)),
+                                ),
+                              );
+                            }
+                          });
                         },
                       );
                     },

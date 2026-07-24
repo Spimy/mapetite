@@ -53,8 +53,12 @@ void main() {
     final future =
         container.read(budgetProvider.notifier).deleteTransaction('a');
 
-    // Immediately after calling (before the network call settles), the
-    // optimistic state should already have removed transaction 'a'.
+    // deleteTransaction now starts with `await future` (so it also works
+    // correctly if called before build() has resolved) — even though
+    // `future` is already complete here, `await` always yields at least one
+    // microtask before resuming, so give the event loop a tick before the
+    // optimistic update has definitely landed in state.
+    await Future<void>.delayed(Duration.zero);
     final optimistic = container.read(budgetProvider).value!;
     expect(optimistic.transactions.any((t) => t.id == 'a'), isFalse);
 

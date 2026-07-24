@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -215,8 +214,23 @@ class _TransactionDetailSheet extends ConsumerWidget {
     if (confirmed == true && context.mounted) {
       final container = ProviderScope.containerOf(context);
       final deleted = transaction;
-      unawaited(container.read(budgetProvider.notifier).deleteTransaction(deleted.id));
-      Navigator.of(context).pop(deleted);
+      try {
+        await container.read(budgetProvider.notifier).deleteTransaction(deleted.id);
+        if (context.mounted) Navigator.of(context).pop(deleted);
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not delete transaction. Please try again.',
+                  style: AppTypography.body1.copyWith(color: AppColors.white)),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
+            ),
+          );
+        }
+      }
     }
   }
 }

@@ -66,9 +66,8 @@ class BudgetNotifier extends AsyncNotifier<BudgetState> {
     BudgetTransactionDraft draft, {
     String? draftDisplayName,
   }) async {
+    final current = await future;
     final previous = state;
-    final current = state.valueOrNull;
-    if (current == null) return;
 
     final optimistic = BudgetTransaction(
       id: 'pending_${DateTime.now().millisecondsSinceEpoch}',
@@ -94,9 +93,8 @@ class BudgetNotifier extends AsyncNotifier<BudgetState> {
   }
 
   Future<void> deleteTransaction(String id) async {
+    final current = await future;
     final previous = state;
-    final current = state.valueOrNull;
-    if (current == null) return;
 
     state = AsyncData(
       current.copyWith(
@@ -134,9 +132,8 @@ class BudgetNotifier extends AsyncNotifier<BudgetState> {
     double? grocery,
     int? alertPercent,
   }) async {
+    final current = await future;
     final previous = state;
-    final current = state.valueOrNull;
-    if (current == null) return;
 
     state = AsyncData(current.copyWith(
       dineInBudget: dineIn,
