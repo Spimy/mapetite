@@ -133,7 +133,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       backgroundColor: Colors.transparent,
       builder: (_) => _StorePickerSheet(stores: stores),
     );
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() {
         _selectedStore = picked;
         _nameCtrl.text = picked.businessName;
