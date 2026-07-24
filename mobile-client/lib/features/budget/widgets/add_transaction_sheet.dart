@@ -46,6 +46,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   DateTime _selectedDate = DateTime.now();
   StoreModel? _selectedStore;
   bool _isSaving = false;
+  bool _isLoadingStores = false;
 
   bool get _isEditing => widget.existing != null;
 
@@ -104,8 +105,28 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   }
 
   Future<void> _pickStore() async {
-    final stores = await ref.read(storesProvider(_storeTypeForCategory).future);
+    if (_isLoadingStores) return;
+    setState(() => _isLoadingStores = true);
+    List<StoreModel> stores;
+    try {
+      stores = await ref.read(storesProvider(_storeTypeForCategory).future);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoadingStores = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not load stores. Please try again.',
+              style: AppTypography.body1.copyWith(color: AppColors.white)),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
+        ),
+      );
+      return;
+    }
     if (!mounted) return;
+    setState(() => _isLoadingStores = false);
     final picked = await showModalBottomSheet<StoreModel?>(
       context: context,
       isScrollControlled: true,
@@ -142,6 +163,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     );
 
     try {
+      if (_isEditing) {
+        await ref.read(budgetProvider.notifier).deleteTransaction(widget.existing!.id);
+      }
       await ref.read(budgetProvider.notifier).addTransaction(
             draft,
             draftDisplayName: _selectedStore?.businessName ?? _nameCtrl.text.trim(),
@@ -308,7 +332,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
 
             // ── Store picker (optional — links a registered store) ────────
             GestureDetector(
-              onTap: _pickStore,
+              onTap: _isLoadingStores ? null : _pickStore,
               child: Container(
                 height: 44,
                 padding:
@@ -329,8 +353,17 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                         style: AppTypography.body1,
                       ),
                     ),
-                    const Icon(Icons.chevron_right,
-                        size: AppSpacing.iconSm, color: AppColors.neutral400),
+                    if (_isLoadingStores)
+                      const SizedBox(
+                        width: AppSpacing.iconSm,
+                        height: AppSpacing.iconSm,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: AppColors.neutral400),
+                      )
+                    else
+                      const Icon(Icons.chevron_right,
+                          size: AppSpacing.iconSm,
+                          color: AppColors.neutral400),
                   ],
                 ),
               ),
