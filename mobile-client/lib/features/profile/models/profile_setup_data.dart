@@ -83,10 +83,8 @@ class ProfileSetupData {
     return {
       'onboarding_completed': true,
       'target_calories': dailyCalorieTarget,
-      'monthly_budget': monthlyBudget,
-      'dine_in_budget': diningBudget,
-      'grocery_budget': groceriesBudget,
-      'delivery_budget': deliveryBudget,
+      'dine_in_budget': dineInBudget,
+      'grocery_budget': groceryBudget,
       'spending_alert_percent': alertThresholdPercent,
       'health_goal': healthGoal,
       'activity_level': activityLevel,
