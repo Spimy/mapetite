@@ -4,8 +4,8 @@ import 'package:mapetite/features/auth/models/auth_state.dart';
 import 'package:mapetite/features/auth/models/register_request.dart';
 import 'package:mapetite/features/auth/models/register_response.dart';
 import 'package:mapetite/features/auth/services/auth_service.dart';
-import 'package:mapetite/shared/services/setup_service.dart';
 import 'package:mapetite/features/auth/services/auth_token_service.dart';
+import 'package:mapetite/shared/services/setup_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
@@ -36,13 +36,18 @@ class AuthController extends StateNotifier<AuthState> {
 
       await AuthTokenService.saveTokens(tokens);
 
-      state = const AuthState(
+      final currentUser = await _authService.getCurrentUser();
+
+      state = AuthState(
         isLoading: false,
         successMessage: 'Signed in successfully.',
+        currentUser: currentUser,
       );
 
       return true;
     } on AppException catch (error) {
+      await AuthTokenService.clearTokens();
+
       state = AuthState(
         isLoading: false,
         errorMessage: error.statusCode == 401
@@ -52,9 +57,57 @@ class AuthController extends StateNotifier<AuthState> {
 
       return false;
     } catch (_) {
+      await AuthTokenService.clearTokens();
+
       state = const AuthState(
         isLoading: false,
         errorMessage: 'Unexpected error occurred. Please try again.',
+      );
+
+      return false;
+    }
+  }
+
+  Future<bool> loadCurrentUser() async {
+    if (!AuthTokenService.hasTokens) {
+      state = state.copyWith(clearUser: true);
+      return false;
+    }
+
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final currentUser = await _authService.getCurrentUser();
+
+      state = AuthState(
+        isLoading: false,
+        currentUser: currentUser,
+      );
+
+      return true;
+    } on AppException catch (error) {
+      if (error.statusCode == 401 || error.statusCode == 403) {
+        await AuthTokenService.clearTokens();
+
+        state = const AuthState(
+          isLoading: false,
+        );
+
+        return false;
+      }
+
+      state = AuthState(
+        isLoading: false,
+        errorMessage: error.message,
+        currentUser: state.currentUser,
+      );
+
+      return false;
+    } catch (_) {
+      state = AuthState(
+        isLoading: false,
+        errorMessage: 'Unable to load your session. Please try again.',
+        currentUser: state.currentUser,
       );
 
       return false;
@@ -67,6 +120,43 @@ class AuthController extends StateNotifier<AuthState> {
     state = const AuthState(
       successMessage: 'Signed out successfully.',
     );
+  }
+
+  Future<bool> resendVerificationEmail() async {
+    final email = state.currentUser?.email;
+
+    if (email == null || email.isEmpty) {
+      state = state.copyWith(
+        errorMessage: 'Unable to resend verification email.',
+      );
+
+      return false;
+    }
+
+    try {
+      final message = await _authService.resendVerificationEmail(email);
+
+      state = state.copyWith(
+        successMessage: message,
+        clearError: true,
+      );
+
+      return true;
+    } on AppException catch (error) {
+      state = state.copyWith(
+        errorMessage: error.message,
+        clearSuccess: true,
+      );
+
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: 'Unable to resend verification email.',
+        clearSuccess: true,
+      );
+
+      return false;
+    }
   }
 
   void clearMessages() {
@@ -109,8 +199,6 @@ class AuthController extends StateNotifier<AuthState> {
           return false;
       }
     } on AppException catch (error) {
-      // The Service already caught 400s and turned them into RegisterErrors.
-      // Reaching here means it's a Timeout, No Internet, or 500 error.
       state = AuthState(isLoading: false, errorMessage: error.message);
       return false;
     } catch (_) {

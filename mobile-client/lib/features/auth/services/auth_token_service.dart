@@ -12,6 +12,16 @@ class AuthTokenService {
 
   static String? get refreshToken => StorageService.getString(_refreshTokenKey);
 
+  static bool get hasTokens {
+    final access = accessToken;
+    final refresh = refreshToken;
+
+    return access != null &&
+        access.isNotEmpty &&
+        refresh != null &&
+        refresh.isNotEmpty;
+  }
+
   static Future<void> saveTokens(AuthTokens tokens) async {
     await StorageService.setString(_accessTokenKey, tokens.access);
     await StorageService.setString(_refreshTokenKey, tokens.refresh);
