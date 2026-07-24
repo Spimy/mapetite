@@ -29,28 +29,24 @@ class _AdjustBudgetSheet extends ConsumerStatefulWidget {
 }
 
 class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
-  late TextEditingController _monthlyCtrl;
-  late TextEditingController _groceriesCtrl;
-  late TextEditingController _diningCtrl;
+  late TextEditingController _groceryCtrl;
+  late TextEditingController _dineInCtrl;
 
-  late double _initialMonthly;
-  late double _initialGroceries;
-  late double _initialDining;
+  late double _initialGrocery;
+  late double _initialDineIn;
 
   bool _isSaving = false;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    final b = ref.read(budgetProvider);
-    _initialMonthly = b.monthlyBudget;
-    _initialGroceries = b.groceriesBudget;
-    _initialDining = b.diningBudget;
-    _monthlyCtrl = TextEditingController(text: b.monthlyBudget.toStringAsFixed(0))
+    final b = ref.read(budgetProvider).value;
+    _initialGrocery = b?.groceryBudget ?? 0;
+    _initialDineIn = b?.dineInBudget ?? 0;
+    _groceryCtrl = TextEditingController(text: _initialGrocery.toStringAsFixed(0))
       ..addListener(_onChanged);
-    _groceriesCtrl = TextEditingController(text: b.groceriesBudget.toStringAsFixed(0))
-      ..addListener(_onChanged);
-    _diningCtrl = TextEditingController(text: b.diningBudget.toStringAsFixed(0))
+    _dineInCtrl = TextEditingController(text: _initialDineIn.toStringAsFixed(0))
       ..addListener(_onChanged);
   }
 
@@ -58,66 +54,46 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
 
   @override
   void dispose() {
-    _monthlyCtrl.dispose();
-    _groceriesCtrl.dispose();
-    _diningCtrl.dispose();
+    _groceryCtrl.dispose();
+    _dineInCtrl.dispose();
     super.dispose();
   }
 
-  double get _monthly => double.tryParse(_monthlyCtrl.text) ?? _initialMonthly;
-  double get _groceries => double.tryParse(_groceriesCtrl.text) ?? _initialGroceries;
-  double get _dining => double.tryParse(_diningCtrl.text) ?? _initialDining;
+  double get _grocery => double.tryParse(_groceryCtrl.text) ?? _initialGrocery;
+  double get _dineIn => double.tryParse(_dineInCtrl.text) ?? _initialDineIn;
 
-  bool get _isDirty =>
-      _monthly != _initialMonthly ||
-      _groceries != _initialGroceries ||
-      _dining != _initialDining;
-
-  bool get _isOverBudget => (_groceries + _dining) > _monthly;
+  bool get _isDirty => _grocery != _initialGrocery || _dineIn != _initialDineIn;
 
   Future<void> _save() async {
-    setState(() => _isSaving = true);
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (!mounted) return;
-    ref.read(budgetProvider.notifier).adjustBudget(
-          monthly: _monthly,
-          groceries: _groceries,
-          dining: _dining,
-        );
-    // Keep profile setup in sync
-    ref.read(profileSetupControllerProvider.notifier).updateBudget(
-          monthly: _monthly,
-          groceries: _groceries,
-          dining: _dining,
-        );
-    setState(() => _isSaving = false);
-    if (mounted) {
+    setState(() {
+      _isSaving = true;
+      _error = null;
+    });
+    try {
+      await ref.read(budgetProvider.notifier).adjustBudget(
+            dineIn: _dineIn,
+            grocery: _grocery,
+          );
+      ref.read(profileSetupControllerProvider.notifier).updateBudget(
+            dineIn: _dineIn,
+            grocery: _grocery,
+          );
+      if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
-            children: [
-              Expanded(
-                child: Text('Budget updated',
-                    style: AppTypography.body1.copyWith(color: AppColors.white)),
-              ),
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.check, color: AppColors.white, size: 14),
-              ),
-            ],
-          ),
+          content: Text('Budget updated',
+              style: AppTypography.body1.copyWith(color: AppColors.white)),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
         ),
       );
+    } catch (_) {
+      setState(() => _error = 'Could not save your budget. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -168,7 +144,6 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: AppSpacing.md),
-            // Handle
             Container(
               width: 32,
               height: 4,
@@ -182,8 +157,8 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
                 style: AppTypography.headline2, textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.xxl),
             AppTextField(
-              label: 'Total Monthly Budget',
-              controller: _monthlyCtrl,
+              label: 'Dine-In Budget',
+              controller: _dineInCtrl,
               prefixIcon: const Padding(
                 padding: EdgeInsets.only(left: 12, right: 4),
                 child: Align(
@@ -199,23 +174,7 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
             const SizedBox(height: AppSpacing.lg),
             AppTextField(
               label: 'Groceries Budget',
-              controller: _groceriesCtrl,
-              prefixIcon: const Padding(
-                padding: EdgeInsets.only(left: 12, right: 4),
-                child: Align(
-                  widthFactor: 1.0,
-                  child: Text('RM',
-                      style: TextStyle(
-                          color: AppColors.neutral600, fontWeight: FontWeight.w600)),
-                ),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppTextField(
-              label: 'Dining Out Budget',
-              controller: _diningCtrl,
+              controller: _groceryCtrl,
               prefixIcon: const Padding(
                 padding: EdgeInsets.only(left: 12, right: 4),
                 child: Align(
@@ -228,12 +187,9 @@ class _AdjustBudgetSheetState extends ConsumerState<_AdjustBudgetSheet> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               textInputAction: TextInputAction.done,
             ),
-            if (_isOverBudget) ...[
+            if (_error != null) ...[
               const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Category budgets exceed monthly total',
-                style: AppTypography.caption.copyWith(color: AppColors.warning),
-              ),
+              Text(_error!, style: AppTypography.caption.copyWith(color: AppColors.error)),
             ],
             const SizedBox(height: AppSpacing.xxl),
             AppButton(
