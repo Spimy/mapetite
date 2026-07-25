@@ -5,6 +5,20 @@
   <link rel="stylesheet" href="{% static 'merchants/css/onboarding.css' %}" />
 {% endblock styles %}
 
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Onboarding - Unclaimed Stores
+{% endblock title %}
+
+{% block description %}
+  Browse unclaimed stores and submit a claim request to become the owner. Only stores without an owner appear here. Once Mapetite reviews and approves your request, you will be able to manage the store profile and its products.
+{% endblock description %}
+
+{% block keywords %}
+  merchant onboarding, unclaimed stores, claim request, store management
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
 {% block content %}
   <div class="onboarding-page">
     <aside class="onboarding-page__rail">

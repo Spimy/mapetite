@@ -5,6 +5,20 @@
   <link rel="stylesheet" href="{% static 'merchants/css/onboarding.css' %}" />
 {% endblock styles %}
 
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Onboarding - Claim Store
+{% endblock title %}
+
+{% block description %}
+  Submit a claim request for this store. Provide proof of ownership and a message explaining why you should be assigned as the owner.
+{% endblock description %}
+
+{% block keywords %}
+  merchant onboarding, claim request, store ownership, unclaimed stores
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
 {% block content %}
   <div class="onboarding-page">
     <aside class="onboarding-page__rail">

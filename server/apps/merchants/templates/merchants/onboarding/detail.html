@@ -7,6 +7,20 @@
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 {% endblock styles %}
 
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Onboarding - {{ store.business_name }} Details
+{% endblock title %}
+
+{% block description %}
+  View the details of {{ store.business_name }} and submit a claim request if you are the owner. Only stores without an owner appear here. Once Mapetite reviews and approves your request, you will be able to manage the store profile and its products.
+{% endblock description %}
+
+{% block keywords %}
+  merchant onboarding, unclaimed store details, claim request, store management
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
 {% block content %}
   <div class="onboarding-page">
     <aside class="onboarding-page__rail">
