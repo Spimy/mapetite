@@ -36,7 +36,6 @@ class StoreContextMixin(ContextMixin):
         context["store"] = self.get_active_store(stores)
         context["stores"] = stores
         context["current_index"] = self.kwargs.get("store_index", 0)
-        context["has_managed_stores"] = stores.count() > 0
         return context
 
 
