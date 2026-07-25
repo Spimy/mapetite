@@ -890,6 +890,32 @@ class OnboardingStoreDetailView(MerchantRequiredMixin, MerchantHasStoresMixin, D
         return context
 
 
+class ClaimRequestCreateView(MerchantRequiredMixin, MerchantHasStoresMixin, CreateView):
+    model = StoreClaimRequest
+    form_class = StoreClaimRequestForm
+    template_name = "merchants/onboarding/claim_request_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.store = get_object_or_404(
+            StoreProfile, pk=kwargs["pk"], owner__isnull=True
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["store"] = self.store
+        return context
+
+    def form_valid(self, form):
+        form.instance.store = self.store
+        form.instance.requested_by = self.request.user
+        messages.success(self.request, "Claim request submitted successfully.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("merchants:onboarding_detail", kwargs={"pk": self.store.pk})
+
+
 class MarkLocationView(MerchantRequiredMixin, View):
     """Handles both rendering the Leaflet placement UI and receiving the coordinates."""
     

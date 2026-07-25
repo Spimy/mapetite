@@ -1,6 +1,6 @@
 from typing import Any, cast
 from django import forms
-from .models import ItemCategory, Promotion, StoreItem
+from .models import ItemCategory, Promotion, StoreItem, StoreClaimRequest
 
 
 BASIC_FIELDS = [
@@ -155,3 +155,17 @@ class PromotionForm(forms.ModelForm):
             cleaned_data['eligible_items'] = []
 
         return cleaned_data
+
+
+class StoreClaimRequestForm(forms.ModelForm):
+    class Meta:
+        model = StoreClaimRequest
+        fields = ["proof", "message"]
+        widgets = {
+            "message": forms.Textarea(
+                attrs={
+                    "rows": 5,
+                    "placeholder": "Explain why this store belongs to your business and add any supporting context.",
+                }
+            ),
+        }
