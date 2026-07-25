@@ -868,7 +868,17 @@ class OnboardingView(MerchantRequiredMixin, MerchantHasStoresMixin, ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        return StoreProfile.objects.filter(owner__isnull=True).order_by("business_name")
+        queryset = StoreProfile.objects.filter(owner__isnull=True)
+
+        query = self.request.GET.get("q", "").strip()
+        if query:
+            queryset = trigram_fuzzy_search(
+                queryset,
+                'business_name',
+                query,
+            )
+
+        return queryset.order_by("business_name")
 
 
 class OnboardingStoreDetailView(MerchantRequiredMixin, MerchantHasStoresMixin, DetailView):

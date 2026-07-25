@@ -34,6 +34,18 @@
           <p class="onboarding-page__hero-text">
             Only stores without an owner appear here. Once Mapetite reviews and approves your request, you will be able to manage the store profile and its products.
           </p>
+
+          <form method="get" class="onboarding-page__search-form">
+            <input type="search"
+                   name="q"
+                   value="{{ request.GET.q }}"
+                   placeholder="Search stores by name..."
+                   aria-label="Search stores" />
+            <button type="submit" class="btn">Search</button>
+            {% if request.GET.q %}
+              <a href="{% url 'merchants:onboarding' %}" class="btn btn--danger">Clear</a>
+            {% endif %}
+          </form>
         </div>
       </section>
 

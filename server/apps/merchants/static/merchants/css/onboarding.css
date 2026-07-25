@@ -7,6 +7,21 @@
     linear-gradient(180deg, color-mix(in srgb, var(--color-tertiary) 78%, var(--color-white)), var(--color-white));
 }
 
+.onboarding-page__search-form {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.5rem
+}
+
+.onboarding-page__search-form input {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: var(--color-grey-100);
+  flex: 1;
+  max-width: 20rem;
+}
+
 .onboarding-page__rail {
   padding: 2rem;
   background: color-mix(in srgb, var(--color-white) 94%, var(--color-tertiary));
