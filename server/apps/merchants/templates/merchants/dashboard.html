@@ -110,6 +110,24 @@
               <span class="sidebar__nav-text">Account Settings</span>
             </a>
           </li>
+
+          <li class="sidebar__nav-item">
+            <a class="sidebar__nav-link"
+                href="{% url 'merchants:onboarding' %}"
+                {% if request.resolver_match.view_name == 'merchants:onboarding' %}aria-current="page"{% endif %}>
+              <span class="sidebar__nav-icon">{% include "icons/store.html" %}</span>
+              <span class="sidebar__nav-text">Unclaimed Stores</span>
+            </a>
+          </li>
+
+          <li class="sidebar__nav-item">
+            <a class="sidebar__nav-link"
+                href="{% url 'merchants:claim_requests' %}"
+                {% if request.resolver_match.view_name == 'merchants:claim_requests' %}aria-current="page"{% endif %}>
+              <span class="sidebar__nav-icon">{% include "icons/inbox.html" %}</span>
+              <span class="sidebar__nav-text">Claim Requests</span>
+            </a>
+          </li>
         </ul>
       </nav>
 

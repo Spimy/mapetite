@@ -42,5 +42,8 @@ urlpatterns = [
         "dashboard/<int:store_index>/settings/", views.DashboardSettingsView.as_view(), name="dashboard_settings"
     ),
     path("onboarding/", views.OnboardingView.as_view(), name="onboarding"),
+    path("onboarding/<int:pk>/", views.OnboardingStoreDetailView.as_view(), name="onboarding_detail"),
+    path("onboarding/<int:pk>/claim/", views.ClaimRequestCreateView.as_view(), name="claim_request_create"),
+    path("onboarding/claim-requests/", views.ClaimRequestListView.as_view(), name="claim_requests"),
     path("store/<int:store_id>/mark-location/", views.MarkLocationView.as_view(), name="mark_location"),
 ]

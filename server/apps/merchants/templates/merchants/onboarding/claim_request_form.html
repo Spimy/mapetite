@@ -1,0 +1,133 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/onboarding.css' %}" />
+{% endblock styles %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Onboarding - Claim Store
+{% endblock title %}
+
+{% block description %}
+  Submit a claim request for this store. Provide proof of ownership and a message explaining why you should be assigned as the owner.
+{% endblock description %}
+
+{% block keywords %}
+  merchant onboarding, claim request, store ownership, unclaimed stores
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block content %}
+  <div class="onboarding-page">
+    <aside class="onboarding-page__rail">
+      <div class="onboarding-page__brand">
+        <span class="onboarding-page__eyebrow">Mapetite Merchant Onboarding</span>
+        <h1 class="onboarding-page__title">Claim Store</h1>
+        <p class="onboarding-page__summary">
+          Submit a claim request for this store. Provide proof of ownership and a message explaining why you should be assigned as the owner.
+        </p>
+      </div>
+
+      <nav class="onboarding-page__nav" aria-label="Onboarding navigation">
+        {% if has_managed_stores %}
+          <a class="onboarding-page__nav-link"
+             href="{% url 'merchants:dashboard' %}">Main dashboard</a>
+        {% endif %}
+        <a class="onboarding-page__nav-link"
+           href="{% url 'merchants:claim_requests' %}">My claim requests</a>
+        <a class="onboarding-page__nav-link"
+           href="{% url 'merchants:onboarding' %}">Browse unclaimed stores</a>
+        <a class="onboarding-page__nav-link" href="{% url 'users:sign_out' %}">Sign out</a>
+      </nav>
+    </aside>
+
+    <div class="onboarding-form">
+      <div class="onboarding-form__header">
+        <a class="onboarding-form__back-link"
+           href="{% url 'merchants:onboarding_detail' store.pk %}">Back to store details</a>
+        <h1 class="onboarding-form__title">{{ store.business_name }}</h1>
+        <p class="onboarding-form__summary">
+          Upload supporting documents and explain why this store should be assigned to your merchant account.
+        </p>
+      </div>
+
+      <form class="onboarding-form__form"
+            method="post"
+            enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <fieldset class="items-form-group">
+          <div class="items-form-group__field">
+            <label class="items-form-group__label" for="{{ form.proof.id_for_label }}">Proof of ownership</label>
+
+            <div class="items-form-group__file-dropzone">
+              <div class="file-dropzone-content">
+                <div class="file-dropzone-placeholder">
+                  {% include "icons/upload.html" %}
+                  <span class="upload-title">Upload proof image</span>
+                  <span class="upload-subtitle">JPG or PNG, max 5MB</span>
+                </div>
+
+                <img class="file-dropzone-preview"
+                     alt="Image preview"
+                     width="100"
+                     height="100"
+                     hidden />
+              </div>
+
+              {{ form.proof }}
+            </div>
+
+            {% if form.proof.errors %}<div class="onboarding-form__errors">{{ form.proof.errors }}</div>{% endif %}
+          </div>
+
+          <div class="items-form-group__field">
+            <label class="items-form-group__label" for="{{ form.message.id_for_label }}">Message</label>
+            <div class="items-form-group__control">{{ form.message }}</div>
+
+            {% if form.message.errors %}<div class="onboarding-form__errors">{{ form.message.errors }}</div>{% endif %}
+          </div>
+        </fieldset>
+
+        <div class="onboarding-form__actions">
+          <button class="btn" type="submit">Submit claim request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const dropzone = document.querySelector(".items-form-group__file-dropzone");
+    if (!dropzone) return;
+
+    dropzone.classList.add("js-enhanced");
+
+    const fileInput = dropzone.querySelector('input[type="file"]');
+    const placeholder = dropzone.querySelector(".file-dropzone-placeholder");
+    const previewImage = dropzone.querySelector(".file-dropzone-preview");
+
+    fileInput.addEventListener("change", function (event) {
+      const file = event.target.files[0];
+
+      if (file && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          placeholder.style.display = "none";
+          previewImage.src = e.target.result;
+          previewImage.style.display = "block";
+        };
+
+        reader.readAsDataURL(file);
+      } else {
+        previewImage.src = "";
+        previewImage.style.display = "none";
+        placeholder.style.display = "flex";
+      }
+    });
+  });
+  </script>
+{% endblock content %}

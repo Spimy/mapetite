@@ -1,0 +1,237 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/onboarding.css' %}" />
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock styles %}
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Onboarding - {{ store.business_name }} Details
+{% endblock title %}
+
+{% block description %}
+  View the details of {{ store.business_name }} and submit a claim request if you are the owner. Only stores without an owner appear here. Once Mapetite reviews and approves your request, you will be able to manage the store profile and its products.
+{% endblock description %}
+
+{% block keywords %}
+  merchant onboarding, unclaimed store details, claim request, store management
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block content %}
+  <div class="onboarding-page">
+    <aside class="onboarding-page__rail">
+      <div class="onboarding-page__brand">
+        <span class="onboarding-page__eyebrow">Mapetite Merchant Onboarding</span>
+        <h1 class="onboarding-page__title">Store Details</h1>
+        <p class="onboarding-page__summary">
+          View the details of this unclaimed store and submit a claim request if you are the owner.
+        </p>
+      </div>
+
+      <nav class="onboarding-page__nav" aria-label="Onboarding navigation">
+        {% if has_managed_stores %}
+          <a class="onboarding-page__nav-link"
+             href="{% url 'merchants:dashboard' %}">Main dashboard</a>
+        {% endif %}
+        <a class="onboarding-page__nav-link"
+           href="{% url 'merchants:claim_requests' %}">My claim requests</a>
+        <a class="onboarding-page__nav-link"
+           href="{% url 'merchants:onboarding' %}">Browse unclaimed stores</a>
+        <a class="onboarding-page__nav-link" href="{% url 'users:sign_out' %}">Sign out</a>
+      </nav>
+    </aside>
+
+    <div class="onboarding-detail">
+      <header class="onboarding-detail__hero">
+        <div class="onboarding-detail__hero-media">
+          {% if store.image %}
+            <img class="onboarding-detail__hero-image"
+                 src="{{ store.image.url }}"
+                 alt="{{ store.business_name }}"
+                 width="300"
+                 height="300" />
+          {% else %}
+            <div class="onboarding-detail__hero-fallback">{{ store.business_name|slice:":1" }}</div>
+          {% endif %}
+        </div>
+
+        <div class="onboarding-detail__hero-content">
+          <h1 class="onboarding-detail__title">{{ store.business_name }}</h1>
+          <p class="onboarding-detail__summary">{{ store.description|default:"No description provided yet." }}</p>
+
+          <div class="onboarding-detail__meta">
+            <span class="onboarding-detail__meta-item">{{ store.get_merchant_type_display }}</span>
+            {% if store.category %}<span class="onboarding-detail__meta-item">{{ store.get_category_display }}</span>{% endif %}
+            <span class="onboarding-detail__badge">Unclaimed store</span>
+          </div>
+
+          <a class="btn onboarding-detail__claim-button"
+             href="{% url 'merchants:claim_request_create' store.pk %}">Claim this store</a>
+        </div>
+      </header>
+
+      <section class="onboarding-detail__grid">
+        <article class="onboarding-detail__panel onboarding-detail__panel--store">
+          <div class="onboarding-detail__panel-header">
+            <h2 class="onboarding-detail__panel-title">Store details</h2>
+            <p class="onboarding-detail__panel-text">Unclaimed store profile and location.</p>
+          </div>
+
+          <div class="onboarding-detail__store-layout">
+            <dl class="onboarding-detail__details">
+              <div class="onboarding-detail__detail">
+                <dt class="onboarding-detail__detail-label">Type</dt>
+                <dd class="onboarding-detail__detail-value">
+                  {{ store.get_merchant_type_display }}
+                </dd>
+              </div>
+              <div class="onboarding-detail__detail">
+                <dt class="onboarding-detail__detail-label">Category</dt>
+                <dd class="onboarding-detail__detail-value">
+                  {{ store.get_category_display|default:"Not set" }}
+                </dd>
+              </div>
+              <div class="onboarding-detail__detail">
+                <dt class="onboarding-detail__detail-label">Address</dt>
+                <dd class="onboarding-detail__detail-value">
+                  {{ store.street_address|default:"Not set" }}
+                </dd>
+              </div>
+              <div class="onboarding-detail__detail">
+                <dt class="onboarding-detail__detail-label">Phone</dt>
+                <dd class="onboarding-detail__detail-value">
+                  {{ store.phone|default:"Not set" }}
+                </dd>
+              </div>
+              <div class="onboarding-detail__detail">
+                <dt class="onboarding-detail__detail-label">Status</dt>
+                <dd class="onboarding-detail__detail-value">
+                  Unclaimed
+                </dd>
+              </div>
+            </dl>
+
+            {% if store.location %}
+              <div class="onboarding-detail__map-wrap">
+                <div id="store-map"
+                     class="onboarding-detail__map"
+                     data-lat="{{ store.latitude }}"
+                     data-lng="{{ store.longitude }}"
+                     data-name="{{ store.business_name|escape }}"></div>
+              </div>
+            {% endif %}
+          </div>
+        </article>
+
+        <article class="onboarding-detail__panel onboarding-detail__panel--full">
+          <h2 class="onboarding-detail__panel-title">Your claim history for this store</h2>
+
+          {% if claim_requests %}
+            <div class="claim-requests__list">
+              {% for request in claim_requests %}
+                <article class="claim-request-card">
+                  <div class="claim-request-card__header">
+                    <div class="claim-request-card__heading">
+                      <h3 class="claim-request-card__title">{{ request.created_at|date:"M j, Y" }}</h3>
+                      <p class="claim-request-card__summary">
+                        {% if request.message %}
+                          {{ request.message|truncatechars:120 }}
+                        {% else %}
+                          No message provided.
+                        {% endif %}
+                      </p>
+                    </div>
+
+                    <span class="claim-request-card__status claim-request-card__status--{{ request.status|lower }}">
+                      {{ request.get_status_display }}
+                    </span>
+                  </div>
+
+                  <dl class="claim-request-card__meta">
+                    <div class="claim-request-card__meta-item">
+                      <dt class="claim-request-card__meta-label">Submitted</dt>
+                      <dd class="claim-request-card__meta-value">
+                        {{ request.created_at|date:"F j, Y" }} at {{ request.created_at|time:"g:i A" }}
+                      </dd>
+                    </div>
+
+                    <div class="claim-request-card__meta-item">
+                      <dt class="claim-request-card__meta-label">Reviewed</dt>
+                      <dd class="claim-request-card__meta-value">
+                        {% if request.admin_reviewed_at %}
+                          {{ request.admin_reviewed_at|date:"F j, Y" }} at {{ request.admin_reviewed_at|time:"g:i A" }}
+                        {% else %}
+                          Pending review
+                        {% endif %}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {% if request.proof %}
+                    <div class="onboarding-claims__proof">
+                      <p class="claim-request-card__text">Proof of ownership provided:</p>
+                      <img src="{{ request.proof.url }}"
+                           alt="Proof of ownership"
+                           width="300"
+                           height="300" />
+                    </div>
+                  {% endif %}
+
+                  {% if request.rejection_reason %}
+                    <div class="claim-request-card__note">
+                      <strong>Rejection reason:</strong> {{ request.rejection_reason }}
+                    </div>
+                  {% endif %}
+                </article>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="onboarding-detail__text">You have not submitted a claim request for this store yet.</p>
+          {% endif %}
+        </article>
+      </section>
+    </div>
+  </div>
+
+  <script>document.documentElement.classList.add("js");</script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const mapElement = document.getElementById("store-map");
+
+      if (!mapElement || typeof L === "undefined") {
+        return;
+      }
+
+      const latitude = parseFloat(mapElement.dataset.lat);
+      const longitude = parseFloat(mapElement.dataset.lng);
+      const storeName = mapElement.dataset.name || "Store location";
+
+      if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+        return;
+      }
+
+      const map = L.map("store-map", {
+        scrollWheelZoom: true,
+        zoomControl: true,
+        dragging: true,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        touchZoom: true,
+      }).setView([latitude, longitude], 16);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "© OpenStreetMap",
+        referrerPolicy: "strict-origin-when-cross-origin"
+      }).addTo(map);
+
+      L.marker([latitude, longitude]).addTo(map).bindPopup(storeName).openPopup();
+    });
+  </script>
+{% endblock content %}

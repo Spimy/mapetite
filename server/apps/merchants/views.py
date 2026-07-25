@@ -10,7 +10,7 @@ from config.settings import WGS84_SRID, DEFAULT_RADIUS_KM
 from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import ListView, RedirectView, TemplateView, View, UpdateView
+from django.views.generic import ListView, RedirectView, TemplateView, View, UpdateView, DetailView, CreateView
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
@@ -23,10 +23,10 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from .models import Promotion, StoreInvitation, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
-from .forms import ItemCategoryForm, PromotionForm, StoreItemForm
+from .models import Promotion, StoreClaimRequest, StoreInvitation, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
+from .forms import ItemCategoryForm, PromotionForm, StoreItemForm, StoreClaimRequestForm
 from .serializers import BundlePromotionSerializer, DiscountPromotionSerializer, FreeItemPromotionSerializer, StoreItemSerializer, StoreOperatingHourSerializer, StoreProfileSerializer, NearbyStoreSerializer, NearbyStoresResponseSerializer, StorePromotionSerializer
-from .mixins import StoreContextMixin
+from .mixins import MerchantHasStoresMixin, StoreContextMixin
 
 
 # Create your views here.
@@ -818,7 +818,7 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = cast(User, self.request.user)
-        
+
         store = context.get('store')
         context['user_form'] = UserInfoForm(instance=getattr(user, 'user_profile'), store=store)
         
@@ -826,13 +826,13 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
         for field in password_form.fields.values():
             field.widget.attrs.pop('autofocus', None)            
         context['password_form'] = password_form
-        
+
         return context
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         store = context.get('store')
-        
+
         if 'submit_user_info' in request.POST:
             form = UserInfoForm(
                 request.POST, 
@@ -840,12 +840,12 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
                 instance=request.user.user_profile, 
                 store=store
             )
-            
+
             if form.is_valid():
                 form.save()
                 messages.success(request, "Settings updated!")
                 return redirect('merchants:dashboard_settings', store_index=kwargs.get("store_index", 0))
-            
+
             # If invalid, re-render the context with the errored form
             context['user_form'] = form
             return self.render_to_response(context)
@@ -861,8 +861,82 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
         return self.get(request, *args, **kwargs)
 
 
-class OnboardingView(MerchantRequiredMixin, TemplateView):
-    template_name = "merchants/onboarding.html"
+class OnboardingView(MerchantRequiredMixin, MerchantHasStoresMixin, ListView):
+    template_name = "merchants/onboarding/list.html"
+    model = StoreProfile
+    context_object_name = "stores"
+    paginate_by = 12
+
+    def get_queryset(self):
+        queryset = StoreProfile.objects.filter(owner__isnull=True)
+
+        query = self.request.GET.get("q", "").strip()
+        if query:
+            queryset = trigram_fuzzy_search(
+                queryset,
+                'business_name',
+                query,
+            )
+
+        return queryset.order_by("business_name")
+
+
+class OnboardingStoreDetailView(MerchantRequiredMixin, MerchantHasStoresMixin, DetailView):
+    template_name = "merchants/onboarding/detail.html"
+    model = StoreProfile
+    context_object_name = "store"
+
+    object: StoreProfile | None = None
+
+    def get_queryset(self):
+        return StoreProfile.objects.filter(owner__isnull=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["claim_requests"] = StoreClaimRequest.objects.filter(
+            store=self.object, 
+            requested_by=self.request.user,
+        ).order_by("-created_at")
+        return context
+
+
+class ClaimRequestCreateView(MerchantRequiredMixin, MerchantHasStoresMixin, CreateView):
+    model = StoreClaimRequest
+    form_class = StoreClaimRequestForm
+    template_name = "merchants/onboarding/claim_request_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.store = get_object_or_404(
+            StoreProfile, pk=kwargs["pk"], owner__isnull=True
+        )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["store"] = self.store
+        return context
+
+    def form_valid(self, form):
+        form.instance.store = self.store
+        form.instance.requested_by = self.request.user
+        messages.success(self.request, "Claim request submitted successfully.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("merchants:onboarding_detail", kwargs={"pk": self.store.pk})
+
+
+class ClaimRequestListView(MerchantRequiredMixin, MerchantHasStoresMixin, ListView):
+    template_name = "merchants/onboarding/claims.html"
+    model = StoreClaimRequest
+    context_object_name = "claim_requests"
+
+    def get_queryset(self):
+        return (
+            StoreClaimRequest.objects.filter(requested_by=self.request.user)
+            .select_related("store", "admin_reviewed_by")
+            .order_by("-created_at")
+        )
 
 
 class MarkLocationView(MerchantRequiredMixin, View):

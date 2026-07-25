@@ -473,6 +473,92 @@ class StoreInvitation(models.Model):
         return f"Invite to {self.email} for {self.store.business_name}"
 
 
+class StoreClaimRequest(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+
+    store = models.ForeignKey(
+        "StoreProfile",
+        on_delete=models.CASCADE,
+        related_name="claim_requests",
+    )
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="store_claim_requests",
+    )
+    proof = models.FileField(upload_to="merchants/claim-proofs/")
+    message = models.TextField(blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+    admin_reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_store_claim_requests",
+    )
+    admin_reviewed_at = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["store", "requested_by"],
+                condition=models.Q(status="PENDING"),
+                name="unique_pending_claim_per_user_store",
+            )
+        ]
+
+    def approve(self, reviewer, save=True):
+        if self.store.owner_id is None:
+            self.store.owner = self.requested_by
+            self.store.save(update_fields=["owner", "updated_at"])
+
+        self.status = self.Status.APPROVED
+        self.admin_reviewed_by = reviewer
+        self.admin_reviewed_at = timezone.now()
+        self.rejection_reason = ""
+
+        if save:
+            self.save(
+                update_fields=[
+                    "status",
+                    "admin_reviewed_by",
+                    "admin_reviewed_at",
+                    "rejection_reason",
+                    "updated_at",
+                ]
+            )
+
+    def reject(self, reviewer, reason="", save=True):
+        self.status = self.Status.REJECTED
+        self.admin_reviewed_by = reviewer
+        self.admin_reviewed_at = timezone.now()
+        self.rejection_reason = reason
+
+        if save:
+            self.save(
+                update_fields=[
+                    "status",
+                    "admin_reviewed_by",
+                    "admin_reviewed_at",
+                    "rejection_reason",
+                    "updated_at",
+                ]
+            )
+
+
 @receiver(pre_save, sender=StoreProfile)
 @receiver(pre_save, sender=StoreOperatingHour)
 @receiver(pre_save, sender=ItemCategory)
