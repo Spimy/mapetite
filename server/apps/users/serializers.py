@@ -30,6 +30,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_vegan",
             "is_vegetarian",
             "allergies",
+            "preferred_cuisines",
         ]
 
 
@@ -41,6 +42,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
     allergy_options = serializers.SerializerMethodField()
     health_goal_options = serializers.SerializerMethodField()
     activity_level_options = serializers.SerializerMethodField()
+    preferred_cuisine_options = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -55,6 +57,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "allergy_options",
             "health_goal_options",
             "activity_level_options",
+            "preferred_cuisine_options",
         ]
 
     def get_is_verified(self, obj):
@@ -80,6 +83,13 @@ class UserDetailSerializer(serializers.ModelSerializer):
         return [
             {"value": value, "label": label}
             for value, label in UserProfile.ActivityLevelChoices.choices
+        ]
+
+    @extend_schema_field(ChoiceOptionSerializer(many=True))
+    def get_preferred_cuisine_options(self, obj):
+        return [
+            {"value": value, "label": label}
+            for value, label in UserProfile.PreferredCuisineChoices.choices
         ]
 
 
@@ -124,6 +134,12 @@ class UserProfileUpdateSerializer(serializers.Serializer):
     is_vegetarian = serializers.BooleanField(required=False)
     allergies = serializers.ListField(
         child=serializers.ChoiceField(choices=UserProfile.AllergyChoices.choices),
+        required=False,
+    )
+    preferred_cuisines = serializers.ListField(
+        child=serializers.ChoiceField(
+            choices=UserProfile.PreferredCuisineChoices.choices
+        ),
         required=False,
     )
 
