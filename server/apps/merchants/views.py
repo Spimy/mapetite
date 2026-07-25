@@ -10,7 +10,7 @@ from config.settings import WGS84_SRID, DEFAULT_RADIUS_KM
 from django.contrib.auth.forms import PasswordChangeForm
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import ListView, RedirectView, TemplateView, View, UpdateView
+from django.views.generic import ListView, RedirectView, TemplateView, View, UpdateView, DetailView, CreateView
 from django.shortcuts import redirect, render
 from django.http import Http404, HttpRequest, JsonResponse
 from django.db.models import Q
@@ -23,8 +23,8 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from .models import Promotion, StoreInvitation, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
-from .forms import ItemCategoryForm, PromotionForm, StoreItemForm
+from .models import Promotion, StoreClaimRequest, StoreInvitation, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
+from .forms import ItemCategoryForm, PromotionForm, StoreItemForm, StoreClaimRequestForm
 from .serializers import BundlePromotionSerializer, DiscountPromotionSerializer, FreeItemPromotionSerializer, StoreItemSerializer, StoreOperatingHourSerializer, StoreProfileSerializer, NearbyStoreSerializer, NearbyStoresResponseSerializer, StorePromotionSerializer
 from .mixins import StoreContextMixin
 
@@ -818,7 +818,7 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = cast(User, self.request.user)
-        
+
         store = context.get('store')
         context['user_form'] = UserInfoForm(instance=getattr(user, 'user_profile'), store=store)
         
@@ -826,13 +826,13 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
         for field in password_form.fields.values():
             field.widget.attrs.pop('autofocus', None)            
         context['password_form'] = password_form
-        
+
         return context
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         store = context.get('store')
-        
+
         if 'submit_user_info' in request.POST:
             form = UserInfoForm(
                 request.POST, 
@@ -840,12 +840,12 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
                 instance=request.user.user_profile, 
                 store=store
             )
-            
+
             if form.is_valid():
                 form.save()
                 messages.success(request, "Settings updated!")
                 return redirect('merchants:dashboard_settings', store_index=kwargs.get("store_index", 0))
-            
+
             # If invalid, re-render the context with the errored form
             context['user_form'] = form
             return self.render_to_response(context)
@@ -861,8 +861,21 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
         return self.get(request, *args, **kwargs)
 
 
-class OnboardingView(MerchantRequiredMixin, TemplateView):
-    template_name = "merchants/onboarding.html"
+class OnboardingView(MerchantRequiredMixin, ListView):
+    template_name = "merchants/onboarding/list.html"
+    model = StoreProfile
+    context_object_name = "stores"
+    paginate_by = 12
+
+    def get_queryset(self):
+        return StoreProfile.objects.filter(owner__isnull=True).order_by("business_name")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["has_managed_stores"] = StoreProfile.objects.filter(
+            Q(owner=self.request.user) | Q(staff=self.request.user)
+        ).exists()
+        return context
 
 
 class MarkLocationView(MerchantRequiredMixin, View):

@@ -1,0 +1,105 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/onboarding.css' %}" />
+{% endblock styles %}
+
+{% block content %}
+  <div class="onboarding-page">
+    <aside class="onboarding-page__rail">
+      <div class="onboarding-page__brand">
+        <span class="onboarding-page__eyebrow">Mapetite Merchant Onboarding</span>
+        <h1 class="onboarding-page__title">Unclaimed stores waiting for an owner</h1>
+        <p class="onboarding-page__summary">
+          Review store profiles that have no owner yet, then submit a claim request with proof of ownership.
+        </p>
+      </div>
+
+      <nav class="onboarding-page__nav" aria-label="Merchant navigation">
+        {% if has_managed_stores %}
+          <a class="onboarding-page__nav-link"
+             href="{% url 'merchants:dashboard' %}">Main dashboard</a>
+        {% endif %}
+        <a class="onboarding-page__nav-link"
+           href="{% url 'merchants:claim_requests' %}">My claim requests</a>
+        <a class="onboarding-page__nav-link" href="{% url 'users:sign_out' %}">Sign out</a>
+      </nav>
+    </aside>
+
+    <main class="onboarding-page__content">
+      <section class="onboarding-page__hero">
+        <div class="onboarding-page__hero-copy">
+          <h2 class="onboarding-page__hero-title">Choose a store and start a claim</h2>
+          <p class="onboarding-page__hero-text">
+            Only stores without an owner appear here. Once Mapetite reviews and approves your request, you will be able to manage the store profile and its products.
+          </p>
+        </div>
+      </section>
+
+      <section class="onboarding-grid" aria-label="Unclaimed stores">
+        {% for store in stores %}
+          <a class="onboarding-card"
+             href="{% url 'merchants:onboarding_detail' store.pk %}">
+            <div class="onboarding-card__media">
+              {% if store.image %}
+                <img class="onboarding-card__image"
+                     src="{{ store.image.url }}"
+                     alt="{{ store.business_name }}"
+                     width="300"
+                     height="300"
+                     loading="lazy" />
+              {% else %}
+                <div class="onboarding-card__image-fallback">{{ store.business_name|slice:":1" }}</div>
+              {% endif %}
+            </div>
+
+            <div class="onboarding-card__body">
+              <div class="onboarding-card__header">
+                <span class="onboarding-card__badge">Unclaimed</span>
+                <span class="onboarding-card__arrow">View details</span>
+              </div>
+
+              <h3 class="onboarding-card__title">{{ store.business_name }}</h3>
+              <p class="onboarding-card__text">{{ store.description|default:"No description provided yet." }}</p>
+
+              <div class="onboarding-card__meta">
+                <span class="onboarding-card__meta-item">{{ store.get_merchant_type_display }}</span>
+                {% if store.category %}<span class="onboarding-card__meta-item">{{ store.get_category_display }}</span>{% endif %}
+              </div>
+
+              <p class="onboarding-card__address">
+                {% if store.street_address %}
+                  {{ store.street_address }}
+                {% else %}
+                  Address not set yet
+                {% endif %}
+              </p>
+            </div>
+          </a>
+        {% empty %}
+          <div class="onboarding-empty">
+            <h3 class="onboarding-empty__title">No unclaimed stores right now</h3>
+            <p class="onboarding-empty__text">Mapetite will show new stores here whenever a profile has no owner.</p>
+          </div>
+        {% endfor %}
+      </section>
+
+      {% if is_paginated %}
+        <nav class="onboarding-pagination" aria-label="Pagination">
+          {% if page_obj.has_previous %}
+            <a class="onboarding-pagination__link"
+               href="?page={{ page_obj.previous_page_number }}">Previous</a>
+          {% endif %}
+
+          <span class="onboarding-pagination__current">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+
+          {% if page_obj.has_next %}
+            <a class="onboarding-pagination__link"
+               href="?page={{ page_obj.next_page_number }}">Next</a>
+          {% endif %}
+        </nav>
+      {% endif %}
+    </main>
+  </div>
+{% endblock content %}
