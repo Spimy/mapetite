@@ -10,9 +10,13 @@ migrate:
 createsuperuser:
 	docker compose exec web python manage.py createsuperuser
 
-seed:
-	docker compose exec web python manage.py loaddata server/fixtures/seed.json
+seed-merchants:
+	docker compose exec web python manage.py loaddata server/fixtures/merchants.json
+
+seed-recipes:
 	docker compose exec web python manage.py loaddata server/fixtures/recipes.json
+
+seed: seed-merchants seed-recipes
 
 generate-embeddings:
 	docker compose exec web python manage.py generate_embeddings
