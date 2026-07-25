@@ -871,6 +871,25 @@ class OnboardingView(MerchantRequiredMixin, MerchantHasStoresMixin, ListView):
         return StoreProfile.objects.filter(owner__isnull=True).order_by("business_name")
 
 
+class OnboardingStoreDetailView(MerchantRequiredMixin, MerchantHasStoresMixin, DetailView):
+    template_name = "merchants/onboarding/detail.html"
+    model = StoreProfile
+    context_object_name = "store"
+
+    object: StoreProfile | None = None
+
+    def get_queryset(self):
+        return StoreProfile.objects.filter(owner__isnull=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["claim_requests"] = StoreClaimRequest.objects.filter(
+            store=self.object, 
+            requested_by=self.request.user,
+        ).order_by("-created_at")
+        return context
+
+
 class MarkLocationView(MerchantRequiredMixin, View):
     """Handles both rendering the Leaflet placement UI and receiving the coordinates."""
     

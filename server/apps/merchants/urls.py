@@ -42,5 +42,6 @@ urlpatterns = [
         "dashboard/<int:store_index>/settings/", views.DashboardSettingsView.as_view(), name="dashboard_settings"
     ),
     path("onboarding/", views.OnboardingView.as_view(), name="onboarding"),
+    path("onboarding/<int:pk>/", views.OnboardingStoreDetailView.as_view(), name="onboarding_detail"),
     path("store/<int:store_id>/mark-location/", views.MarkLocationView.as_view(), name="mark_location"),
 ]
