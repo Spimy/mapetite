@@ -18,10 +18,12 @@ class SpendingRecord(models.Model):
         StoreProfile,
         on_delete=models.SET_NULL,  # If a store is deleted, keep the user's spending history
         null=True,
+        blank=True,  # Allow spending records without a store reference because the store might not be in the system yet, users can use notes to specify the store name instead
         related_name="customer_spendings",
     )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     spending_type = models.CharField(max_length=20, choices=SpendingType.choices)
+    notes = models.CharField(max_length=255, blank=True, null=True)
 
     date_spent = models.DateField()
 
