@@ -523,8 +523,7 @@ class StoreClaimRequest(models.Model):
     def approve(self, reviewer, save=True):
         if self.store.owner_id is None:
             self.store.owner = self.requested_by
-            if save:
-                self.store.save(update_fields=["owner", "updated_at"])
+            self.store.save(update_fields=["owner", "updated_at"])
 
         self.status = self.Status.APPROVED
         self.admin_reviewed_by = reviewer
