@@ -916,6 +916,19 @@ class ClaimRequestCreateView(MerchantRequiredMixin, MerchantHasStoresMixin, Crea
         return reverse("merchants:onboarding_detail", kwargs={"pk": self.store.pk})
 
 
+class ClaimRequestListView(MerchantRequiredMixin, MerchantHasStoresMixin, ListView):
+    template_name = "merchants/onboarding/claims.html"
+    model = StoreClaimRequest
+    context_object_name = "claim_requests"
+
+    def get_queryset(self):
+        return (
+            StoreClaimRequest.objects.filter(requested_by=self.request.user)
+            .select_related("store", "admin_reviewed_by")
+            .order_by("-created_at")
+        )
+
+
 class MarkLocationView(MerchantRequiredMixin, View):
     """Handles both rendering the Leaflet placement UI and receiving the coordinates."""
     
