@@ -26,7 +26,7 @@ from rest_framework.response import Response
 from .models import Promotion, StoreClaimRequest, StoreInvitation, StoreOperatingHour, StoreProfile, StoreItem, ItemCategory
 from .forms import ItemCategoryForm, PromotionForm, StoreItemForm, StoreClaimRequestForm
 from .serializers import BundlePromotionSerializer, DiscountPromotionSerializer, FreeItemPromotionSerializer, StoreItemSerializer, StoreOperatingHourSerializer, StoreProfileSerializer, NearbyStoreSerializer, NearbyStoresResponseSerializer, StorePromotionSerializer
-from .mixins import StoreContextMixin
+from .mixins import MerchantHasStoresMixin, StoreContextMixin
 
 
 # Create your views here.
@@ -861,7 +861,7 @@ class DashboardSettingsView(MerchantRequiredMixin, StoreContextMixin, TemplateVi
         return self.get(request, *args, **kwargs)
 
 
-class OnboardingView(MerchantRequiredMixin, ListView):
+class OnboardingView(MerchantRequiredMixin, MerchantHasStoresMixin, ListView):
     template_name = "merchants/onboarding/list.html"
     model = StoreProfile
     context_object_name = "stores"
@@ -869,13 +869,6 @@ class OnboardingView(MerchantRequiredMixin, ListView):
 
     def get_queryset(self):
         return StoreProfile.objects.filter(owner__isnull=True).order_by("business_name")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["has_managed_stores"] = StoreProfile.objects.filter(
-            Q(owner=self.request.user) | Q(staff=self.request.user)
-        ).exists()
-        return context
 
 
 class MarkLocationView(MerchantRequiredMixin, View):
