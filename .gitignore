@@ -24,4 +24,4 @@ mobile-client/build/
 mobile-client/.dart_tool/
 
 # Media files
-server/media/recipes/*
+server/media

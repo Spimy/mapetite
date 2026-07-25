@@ -1,0 +1,803 @@
+[
+  {
+    "model": "recipes.recipe",
+    "pk": 1,
+    "fields": {
+      "author": 1,
+      "title": "Soy-Oyster Chicken Rice Bowl",
+      "thumbnail": "recipes/thumbnails/1.png",
+      "prep_time": 25,
+      "servings": 2,
+      "calories": 520,
+      "is_halal": true,
+      "is_vegan": false,
+      "is_vegetarian": false,
+      "is_gluten_free": false,
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipe",
+    "pk": 2,
+    "fields": {
+      "author": 1,
+      "title": "Prawn & Mixed Vegetable Stir-Fry",
+      "thumbnail": "recipes/thumbnails/2.png",
+      "prep_time": 20,
+      "servings": 2,
+      "calories": 380,
+      "is_halal": true,
+      "is_vegan": false,
+      "is_vegetarian": false,
+      "is_gluten_free": false,
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipe",
+    "pk": 3,
+    "fields": {
+      "author": 1,
+      "title": "Spinach Egg Toast",
+      "thumbnail": "recipes/thumbnails/3.png",
+      "prep_time": 15,
+      "servings": 2,
+      "calories": 420,
+      "is_halal": true,
+      "is_vegan": false,
+      "is_vegetarian": true,
+      "is_gluten_free": false,
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipe",
+    "pk": 4,
+    "fields": {
+      "author": 1,
+      "title": "Pan-Seared Salmon with Avocado Cucumber",
+      "thumbnail": "recipes/thumbnails/4.png",
+      "prep_time": 20,
+      "servings": 2,
+      "calories": 480,
+      "is_halal": true,
+      "is_vegan": false,
+      "is_vegetarian": false,
+      "is_gluten_free": true,
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipe",
+    "pk": 5,
+    "fields": {
+      "author": 1,
+      "title": "Chicken Potato Onion One-Pan",
+      "thumbnail": "recipes/thumbnails/5.png",
+      "prep_time": 40,
+      "servings": 3,
+      "calories": 560,
+      "is_halal": true,
+      "is_vegan": false,
+      "is_vegetarian": false,
+      "is_gluten_free": false,
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 1,
+    "fields": {
+      "recipe": 1,
+      "name": "Chicken Breast",
+      "quantity": "300.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 2,
+    "fields": {
+      "recipe": 1,
+      "name": "Fresh Broccoli",
+      "quantity": "150.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 3,
+    "fields": {
+      "recipe": 1,
+      "name": "Long Beans",
+      "quantity": "100.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 4,
+    "fields": {
+      "recipe": 1,
+      "name": "Rice",
+      "quantity": "300.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 5,
+    "fields": {
+      "recipe": 1,
+      "name": "Cooking Oil",
+      "quantity": "2.00",
+      "unit": "tbsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 6,
+    "fields": {
+      "recipe": 1,
+      "name": "Soy Sauce",
+      "quantity": "2.00",
+      "unit": "tbsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 7,
+    "fields": {
+      "recipe": 1,
+      "name": "Osyter Sauce",
+      "quantity": "1.00",
+      "unit": "tbsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 8,
+    "fields": {
+      "recipe": 1,
+      "name": "Sea Salt",
+      "quantity": "1.00",
+      "unit": "tsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 9,
+    "fields": {
+      "recipe": 2,
+      "name": "Prawn",
+      "quantity": "200.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 10,
+    "fields": {
+      "recipe": 2,
+      "name": "Baby Carrots",
+      "quantity": "100.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 11,
+    "fields": {
+      "recipe": 2,
+      "name": "French Beans",
+      "quantity": "100.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 12,
+    "fields": {
+      "recipe": 2,
+      "name": "Organic Corn",
+      "quantity": "100.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 13,
+    "fields": {
+      "recipe": 2,
+      "name": "Cooking Oil",
+      "quantity": "2.00",
+      "unit": "tbsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 14,
+    "fields": {
+      "recipe": 2,
+      "name": "Soy Sauce",
+      "quantity": "2.00",
+      "unit": "tbsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 15,
+    "fields": {
+      "recipe": 2,
+      "name": "Osyter Sauce",
+      "quantity": "1.00",
+      "unit": "tbsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 16,
+    "fields": {
+      "recipe": 2,
+      "name": "Sea Salt",
+      "quantity": "1.00",
+      "unit": "tsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 17,
+    "fields": {
+      "recipe": 2,
+      "name": "Rice",
+      "quantity": "300.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 18,
+    "fields": {
+      "recipe": 3,
+      "name": "Omega Eggs",
+      "quantity": "4.00",
+      "unit": "pcs",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 19,
+    "fields": {
+      "recipe": 3,
+      "name": "Fresh Spinach",
+      "quantity": "100.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 20,
+    "fields": {
+      "recipe": 3,
+      "name": "Gardenia Plain Bread",
+      "quantity": "4.00",
+      "unit": "pcs",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 21,
+    "fields": {
+      "recipe": 3,
+      "name": "Salted Butter",
+      "quantity": "20.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 22,
+    "fields": {
+      "recipe": 3,
+      "name": "Fresh Milk",
+      "quantity": "50.00",
+      "unit": "ml",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 23,
+    "fields": {
+      "recipe": 3,
+      "name": "Cheese Slices",
+      "quantity": "2.00",
+      "unit": "pcs",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 24,
+    "fields": {
+      "recipe": 3,
+      "name": "Sea Salt",
+      "quantity": "1.00",
+      "unit": "tsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 25,
+    "fields": {
+      "recipe": 4,
+      "name": "Norwegian Salmon Fillet",
+      "quantity": "300.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 26,
+    "fields": {
+      "recipe": 4,
+      "name": "Australian Avocado",
+      "quantity": "150.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 27,
+    "fields": {
+      "recipe": 4,
+      "name": "Japanese Cucumber",
+      "quantity": "100.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 28,
+    "fields": {
+      "recipe": 4,
+      "name": "Organic Cherry Tomatoes",
+      "quantity": "100.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 29,
+    "fields": {
+      "recipe": 4,
+      "name": "Cooking Oil",
+      "quantity": "2.00",
+      "unit": "tbsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 30,
+    "fields": {
+      "recipe": 4,
+      "name": "Sea Salt",
+      "quantity": "1.00",
+      "unit": "tsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 31,
+    "fields": {
+      "recipe": 4,
+      "name": "Yogurt",
+      "quantity": "100.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 32,
+    "fields": {
+      "recipe": 5,
+      "name": "Chicken Drumstick",
+      "quantity": "500.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 33,
+    "fields": {
+      "recipe": 5,
+      "name": "Potatoes",
+      "quantity": "300.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 34,
+    "fields": {
+      "recipe": 5,
+      "name": "Onions",
+      "quantity": "150.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 35,
+    "fields": {
+      "recipe": 5,
+      "name": "Fresh Spinach",
+      "quantity": "100.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 36,
+    "fields": {
+      "recipe": 5,
+      "name": "Cooking Oil",
+      "quantity": "2.00",
+      "unit": "tbsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 37,
+    "fields": {
+      "recipe": 5,
+      "name": "Soy Sauce",
+      "quantity": "2.00",
+      "unit": "tbsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 38,
+    "fields": {
+      "recipe": 5,
+      "name": "Osyter Sauce",
+      "quantity": "1.00",
+      "unit": "tbsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 39,
+    "fields": {
+      "recipe": 5,
+      "name": "Sea Salt",
+      "quantity": "1.00",
+      "unit": "tsp",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipeingredient",
+    "pk": 40,
+    "fields": {
+      "recipe": 5,
+      "name": "Rice",
+      "quantity": "400.00",
+      "unit": "g",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 1,
+    "fields": {
+      "recipe": 1,
+      "step_number": 1,
+      "instruction": "Rinse the rice and cook it until fluffy. Keep warm.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 2,
+    "fields": {
+      "recipe": 1,
+      "step_number": 2,
+      "instruction": "Slice the chicken breast into bite-sized pieces. Cut broccoli into florets and chop the long beans.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 3,
+    "fields": {
+      "recipe": 1,
+      "step_number": 3,
+      "instruction": "Heat cooking oil in a pan. Stir-fry the chicken with sea salt until lightly browned.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 4,
+    "fields": {
+      "recipe": 1,
+      "step_number": 4,
+      "instruction": "Add broccoli and long beans. Stir-fry until tender-crisp, then glaze with soy sauce and oyster sauce. Serve over rice.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 5,
+    "fields": {
+      "recipe": 2,
+      "step_number": 1,
+      "instruction": "Cook the rice and set aside. Slice baby carrots, trim French beans, and cut corn into bite-sized pieces.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 6,
+    "fields": {
+      "recipe": 2,
+      "step_number": 2,
+      "instruction": "Pat the prawns dry and season lightly with sea salt.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 7,
+    "fields": {
+      "recipe": 2,
+      "step_number": 3,
+      "instruction": "Heat cooking oil in a wok. Sear prawns until just pink, then push aside and stir-fry the vegetables until crisp-tender.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 8,
+    "fields": {
+      "recipe": 2,
+      "step_number": 4,
+      "instruction": "Toss everything with soy sauce and oyster sauce. Serve hot with rice.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 9,
+    "fields": {
+      "recipe": 3,
+      "step_number": 1,
+      "instruction": "Wash the spinach and roughly chop. Beat the eggs with fresh milk and sea salt.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 10,
+    "fields": {
+      "recipe": 3,
+      "step_number": 2,
+      "instruction": "Melt a little salted butter in a pan and wilt the spinach. Pour in the eggs and soft-scramble until just set.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 11,
+    "fields": {
+      "recipe": 3,
+      "step_number": 3,
+      "instruction": "Toast the Gardenia plain bread and spread with the remaining butter.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 12,
+    "fields": {
+      "recipe": 3,
+      "step_number": 4,
+      "instruction": "Top each toast with scrambled spinach eggs and a cheese slice. Serve warm.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 13,
+    "fields": {
+      "recipe": 4,
+      "step_number": 1,
+      "instruction": "Pat the salmon dry and season both sides with sea salt.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 14,
+    "fields": {
+      "recipe": 4,
+      "step_number": 2,
+      "instruction": "Heat cooking oil in a pan over medium-high heat. Sear the salmon skin-side down first until golden, then flip and cook through.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 15,
+    "fields": {
+      "recipe": 4,
+      "step_number": 3,
+      "instruction": "Slice the avocado and Japanese cucumber. Halve the cherry tomatoes.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 16,
+    "fields": {
+      "recipe": 4,
+      "step_number": 4,
+      "instruction": "Plate the salmon with avocado, cucumber, and tomatoes. Serve with yogurt on the side.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 17,
+    "fields": {
+      "recipe": 5,
+      "step_number": 1,
+      "instruction": "Cook the rice and keep warm. Cut potatoes into chunks and slice the onions.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 18,
+    "fields": {
+      "recipe": 5,
+      "step_number": 2,
+      "instruction": "Heat cooking oil in a wide pan. Brown the chicken drumsticks on all sides with a pinch of sea salt.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 19,
+    "fields": {
+      "recipe": 5,
+      "step_number": 3,
+      "instruction": "Add onions and potatoes. Pour in soy sauce and oyster sauce with a splash of water. Cover and braise until chicken and potatoes are tender.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 20,
+    "fields": {
+      "recipe": 5,
+      "step_number": 4,
+      "instruction": "Stir in fresh spinach until just wilted. Adjust seasoning with sea salt if needed.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  },
+  {
+    "model": "recipes.recipestep",
+    "pk": 21,
+    "fields": {
+      "recipe": 5,
+      "step_number": 5,
+      "instruction": "Serve the one-pan chicken and vegetables over rice.",
+      "created_at": "2026-07-25T00:00:00Z",
+      "updated_at": "2026-07-25T00:00:00Z"
+    }
+  }
+]
