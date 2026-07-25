@@ -48,11 +48,19 @@ python manage.py createsuperuser
 
 This step can be ignored if you have already done this by following the [root README](../README.md).
 
-There are fixtures provided for merchants (StoreProfile), menu items/products (StoreItem) and operating hours (StoreOperatingHour). You should seed these into your database:
+There are fixtures provided for:
+
+- **`fixtures/merchants.json`**: merchants (`StoreProfile`), operating hours (`StoreOperatingHour`), item categories (`ItemCategory`), and menu items/products (`StoreItem`)
+- **`fixtures/recipes.json`**: recipes (`Recipe`), ingredients (`RecipeIngredient`), and instruction steps (`RecipeStep`)
+
+You should seed these into your database:
 
 ```bash
-python manage.py loaddata fixtures/seed.json
+python manage.py loaddata fixtures/merchants.json
+python manage.py loaddata fixtures/recipes.json
 ```
+
+From the repo root, `make seed` loads both fixtures via Docker.
 
 After seeding your database, you will need to generate the embeddings for vector searching store items. To do that, there is a custom command located at [`apps/merchants/management/commands/generate_embeddings.py`](apps/merchants/management/commands/generate_embeddings.py). You can run this custom command in your terminal and may take a few minutes to complete:
 
