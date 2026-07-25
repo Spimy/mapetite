@@ -12,6 +12,7 @@ createsuperuser:
 
 seed:
 	docker compose exec web python manage.py loaddata server/fixtures/seed.json
+	docker compose exec web python manage.py loaddata server/fixtures/recipes.json
 
 generate-embeddings:
 	docker compose exec web python manage.py generate_embeddings
