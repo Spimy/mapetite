@@ -13,6 +13,7 @@ import '../../../shared/utils/pricing_util.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dietary_chip.dart';
+import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/pricing_badge.dart';
 import '../widgets/menu_item_detail_sheet.dart';
 
@@ -92,7 +93,27 @@ class _RestaurantDetailScreenState
     return Scaffold(
       backgroundColor: AppColors.white,
       body: storeAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              ShimmerLoader(
+                width: double.infinity,
+                height: 220,
+                borderRadius: AppSpacing.radiusLg,
+              ),
+              SizedBox(height: AppSpacing.lg),
+              ShimmerLoader(width: 220, height: 22),
+              SizedBox(height: AppSpacing.sm),
+              ShimmerLoader(width: 140, height: 14),
+              SizedBox(height: AppSpacing.xl),
+              CardShimmer(height: 90),
+              SizedBox(height: AppSpacing.md),
+              CardShimmer(height: 90),
+            ],
+          ),
+        ),
         error: (_, _) => AppEmptyState(
           icon: Icons.error_outline,
           title: 'Something went wrong',
@@ -104,7 +125,18 @@ class _RestaurantDetailScreenState
           },
         ),
         data: (store) => itemsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              children: const [
+                CardShimmer(height: 90),
+                SizedBox(height: AppSpacing.md),
+                CardShimmer(height: 90),
+                SizedBox(height: AppSpacing.md),
+                CardShimmer(height: 90),
+              ],
+            ),
+          ),
           error: (_, _) => AppEmptyState(
             icon: Icons.error_outline,
             title: 'Something went wrong',
