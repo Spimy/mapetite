@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mapetite/features/discovery/screens/map_explore_screen.dart';
 import 'package:mapetite/shared/models/location_model.dart';
@@ -217,6 +218,28 @@ void main() {
       expect(find.byType(SnackBar), findsOneWidget);
       expect(find.byIcon(Icons.restaurant), findsNothing);
       expect(find.byIcon(Icons.eco_outlined), findsNothing);
+    });
+
+    testWidgets(
+        'shows LocationDeniedState instead of the map when permission is denied and there is no location fix',
+        (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            nearbyStoresProvider
+                .overrideWith((ref, query) async => _defaultStores),
+            locationProvider.overrideWith(_FixedLocationNotifier.new),
+            locationPermissionStatusProvider
+                .overrideWith((ref) async => LocationPermission.denied),
+          ],
+          child: MaterialApp.router(routerConfig: _testRouter()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Location needed.'), findsOneWidget);
+      expect(find.text('Open Settings'), findsOneWidget);
+      expect(find.byType(FlutterMap), findsNothing);
     });
   });
 }

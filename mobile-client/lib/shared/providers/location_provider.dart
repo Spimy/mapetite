@@ -43,3 +43,10 @@ final locationCityProvider = Provider<String>((ref) {
     error: (_, _) => 'Nearby',
   );
 });
+
+/// Raw permission status, independent of whether a location fix has been
+/// obtained — lets screens distinguish "denied" from "still loading".
+final locationPermissionStatusProvider =
+    FutureProvider<LocationPermission>((ref) {
+  return LocationService.instance.checkPermission();
+});

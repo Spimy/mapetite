@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -9,6 +10,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/store_providers.dart';
+import '../../../shared/widgets/location_denied_state.dart';
 
 class MapExploreScreen extends ConsumerStatefulWidget {
   const MapExploreScreen({super.key});
@@ -66,6 +68,18 @@ class _MapExploreScreenState extends ConsumerState<MapExploreScreen> {
   @override
   Widget build(BuildContext context) {
     final loc = ref.watch(locationProvider).valueOrNull;
+    final permissionStatus =
+        ref.watch(locationPermissionStatusProvider).valueOrNull;
+    final isLocationDenied = loc == null &&
+        (permissionStatus == LocationPermission.denied ||
+            permissionStatus == LocationPermission.deniedForever);
+
+    if (isLocationDenied) {
+      return const Scaffold(
+        body: SafeArea(child: LocationDeniedState()),
+      );
+    }
+
     final lat = loc?.latitude ?? _defaultCenter.latitude;
     final lng = loc?.longitude ?? _defaultCenter.longitude;
     // `type: null` fetches both restaurants and groceries in one request —
