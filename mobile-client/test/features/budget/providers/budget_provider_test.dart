@@ -69,4 +69,28 @@ void main() {
     final rolledBack = container.read(budgetProvider).value!;
     expect(rolledBack.transactions.length, 2);
   });
+
+  test('selectMonth surfaces an error instead of leaving the previous month\'s data displayed',
+      () async {
+    // Regression test: the month selector used to only change the display
+    // label without refetching, so switching months silently kept showing
+    // whichever month was originally loaded. selectMonth() must always
+    // resolve to either fresh data for the requested month or an explicit
+    // error — never a silent no-op.
+    final container = ProviderContainer(overrides: [
+      budgetProvider.overrideWith(() => _FakeBudgetNotifier(
+            BudgetState(transactions: [_tx('a', 10)]),
+          )),
+    ]);
+    addTearDown(container.dispose);
+    await container.read(budgetProvider.future);
+
+    // selectMonth talks to the real BudgetService, which has no reachable
+    // backend in this unit test, so it must land in AsyncError rather than
+    // silently keeping the original month's transactions in state.
+    await container.read(budgetProvider.notifier).selectMonth(2026, 6);
+
+    final state = container.read(budgetProvider);
+    expect(state.hasError, isTrue);
+  });
 }

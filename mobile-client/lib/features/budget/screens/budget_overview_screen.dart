@@ -31,10 +31,21 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
   ];
 
-  String get _monthLabel {
+  DateTime get _selectedMonthDate {
     final now = DateTime.now();
-    final dt = DateTime(now.year, now.month - _selectedMonthOffset);
+    return DateTime(now.year, now.month - _selectedMonthOffset);
+  }
+
+  String get _monthLabel {
+    final dt = _selectedMonthDate;
     return '${_monthNames[dt.month - 1]} ${dt.year}';
+  }
+
+  void _changeMonth(int offset) {
+    setState(() => _selectedMonthOffset = offset);
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month - offset);
+    ref.read(budgetProvider.notifier).selectMonth(dt.year, dt.month);
   }
 
   @override
@@ -131,9 +142,9 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
       child: Center(
         child: _MonthSelector(
           label: _monthLabel,
-          onPrev: () => setState(() => _selectedMonthOffset++),
+          onPrev: () => _changeMonth(_selectedMonthOffset + 1),
           onNext: _selectedMonthOffset > 0
-              ? () => setState(() => _selectedMonthOffset--)
+              ? () => _changeMonth(_selectedMonthOffset - 1)
               : null,
         ),
       ),

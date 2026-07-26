@@ -10,11 +10,16 @@ class BudgetNotifier extends AsyncNotifier<BudgetState> {
   final BudgetService _budgetService = BudgetService();
   final ProfileService _profileService = ProfileService();
 
+  int? _year;
+  int? _month;
+
   @override
-  Future<BudgetState> build() async {
+  Future<BudgetState> build() => _load();
+
+  Future<BudgetState> _load() async {
     final results = await Future.wait([
-      _budgetService.getTransactions(),
-      _budgetService.getSummary(),
+      _budgetService.getTransactions(month: _month, year: _year),
+      _budgetService.getSummary(month: _month, year: _year),
       _profileService.getProfile(),
     ]);
     final transactions = results[0] as List<BudgetTransaction>;
@@ -31,6 +36,20 @@ class BudgetNotifier extends AsyncNotifier<BudgetState> {
           (profile['spending_alert_percent'] as num?)?.toInt() ?? 80,
       summary: summary,
     );
+  }
+
+  /// Re-fetches transactions and the summary for the given month/year so the
+  /// month selector actually changes what's displayed, not just its label.
+  Future<void> selectMonth(int year, int month) async {
+    final previous = state;
+    _year = year;
+    _month = month;
+    state = const AsyncLoading<BudgetState>().copyWithPrevious(previous);
+    try {
+      state = AsyncData(await _load());
+    } catch (e, st) {
+      state = AsyncError(e, st);
+    }
   }
 
   Future<List<BudgetTransaction>> _resolveStoreNames(
@@ -57,9 +76,12 @@ class BudgetNotifier extends AsyncNotifier<BudgetState> {
         .toList();
   }
 
+  /// Re-runs [_load] on this same instance (rather than
+  /// `ref.invalidateSelf()`, which would recreate the notifier and reset
+  /// [_year]/[_month] back to the current month) so refreshing after a
+  /// mutation preserves whatever month is currently selected.
   Future<void> refresh() async {
-    ref.invalidateSelf();
-    await future;
+    state = AsyncData(await _load());
   }
 
   Future<void> addTransaction(
