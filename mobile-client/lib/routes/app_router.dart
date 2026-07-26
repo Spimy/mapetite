@@ -191,8 +191,9 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: ':id',
-          builder: (context, state) =>
-              RecipeDetailScreen(recipeId: state.pathParameters['id'] ?? ''),
+          builder: (context, state) => RecipeDetailScreen(
+            recipeId: state.pathParameters['id'] ?? '',
+          ),
           routes: [
             GoRoute(
               path: 'match',
@@ -205,7 +206,10 @@ final GoRouter appRouter = GoRouter(
       ],
     ),
 
-    GoRoute(path: AppRoutes.myList, redirect: (_, _) => AppRoutes.list),
+    GoRoute(
+      path: AppRoutes.myList,
+      redirect: (_, _) => AppRoutes.list,
+    ),
     GoRoute(
       path: AppRoutes.settings,
       builder: (context, state) => const AppSettingsScreen(),
@@ -216,7 +220,10 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.dineIn,
       builder: (context, state) => const RestaurantListingScreen(),
     ),
-    GoRoute(path: AppRoutes.cookIn, redirect: (_, _) => AppRoutes.recipes),
+    GoRoute(
+      path: AppRoutes.cookIn,
+      redirect: (_, _) => AppRoutes.recipes,
+    ),
     GoRoute(
       path: AppRoutes.restaurants,
       builder: (context, state) => const RestaurantListingScreen(),
@@ -296,11 +303,13 @@ final GoRouter appRouter = GoRouter(
               routes: [
                 GoRoute(
                   path: 'analytics',
-                  builder: (context, state) => const SpendingAnalyticsScreen(),
+                  builder: (context, state) =>
+                      const SpendingAnalyticsScreen(),
                 ),
                 GoRoute(
                   path: 'transactions',
-                  builder: (context, state) => const TransactionsScreen(),
+                  builder: (context, state) =>
+                      const TransactionsScreen(),
                 ),
               ],
             ),
@@ -404,9 +413,10 @@ class _WipScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               '$label — work in progress',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(color: AppColors.neutral600),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.copyWith(color: AppColors.neutral600),
             ),
           ],
         ),
