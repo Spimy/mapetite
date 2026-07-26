@@ -5,12 +5,14 @@ class AuthState {
   final String? errorMessage;
   final String? successMessage;
   final CurrentUser? currentUser;
+  final bool sessionExpired;
 
   const AuthState({
     this.isLoading = false,
     this.errorMessage,
     this.successMessage,
     this.currentUser,
+    this.sessionExpired = false,
   });
 
   bool get isAuthenticated => currentUser != null;
@@ -33,6 +35,7 @@ class AuthState {
     bool clearError = false,
     bool clearSuccess = false,
     bool clearUser = false,
+    bool? sessionExpired,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
@@ -41,6 +44,7 @@ class AuthState {
           ? null
           : successMessage ?? this.successMessage,
       currentUser: clearUser ? null : currentUser ?? this.currentUser,
+      sessionExpired: sessionExpired ?? this.sessionExpired,
     );
   }
 }

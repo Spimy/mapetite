@@ -22,10 +22,7 @@ class AuthController extends StateNotifier<AuthState> {
 
   AuthController(this._authService) : super(const AuthState());
 
-  Future<bool> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> login({required String email, required String password}) async {
     state = const AuthState(isLoading: true);
 
     try {
@@ -79,19 +76,14 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       final currentUser = await _authService.getCurrentUser();
 
-      state = AuthState(
-        isLoading: false,
-        currentUser: currentUser,
-      );
+      state = AuthState(isLoading: false, currentUser: currentUser);
 
       return true;
     } on AppException catch (error) {
       if (error.statusCode == 401 || error.statusCode == 403) {
         await AuthTokenService.clearTokens();
 
-        state = const AuthState(
-          isLoading: false,
-        );
+        state = const AuthState(isLoading: false, sessionExpired: true);
 
         return false;
       }
@@ -117,9 +109,7 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> logout() async {
     await AuthTokenService.clearTokens();
 
-    state = const AuthState(
-      successMessage: 'Signed out successfully.',
-    );
+    state = const AuthState(successMessage: 'Signed out successfully.');
   }
 
   Future<bool> resendVerificationEmail() async {
@@ -136,17 +126,11 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       final message = await _authService.resendVerificationEmail(email);
 
-      state = state.copyWith(
-        successMessage: message,
-        clearError: true,
-      );
+      state = state.copyWith(successMessage: message, clearError: true);
 
       return true;
     } on AppException catch (error) {
-      state = state.copyWith(
-        errorMessage: error.message,
-        clearSuccess: true,
-      );
+      state = state.copyWith(errorMessage: error.message, clearSuccess: true);
 
       return false;
     } catch (_) {
