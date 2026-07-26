@@ -45,6 +45,10 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   BudgetCategory _category = BudgetCategory.dining;
   DateTime _selectedDate = DateTime.now();
   StoreModel? _selectedStore;
+  // Tracks the linked store's id independently of _selectedStore (which only
+  // holds a full StoreModel once the picker has been used this session), so
+  // an edit that never reopens the picker still preserves the original link.
+  String? _selectedStoreId;
   bool _isSaving = false;
   bool _isLoadingStores = false;
 
@@ -60,6 +64,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       _selectedDate = e.dateSpent;
       _nameCtrl.text = e.storeName ?? '';
       _notesCtrl.text = e.notes ?? '';
+      _selectedStoreId = e.storeId;
     }
     _amountCtrl.addListener(() => setState(() {}));
     _nameCtrl.addListener(() => setState(() {}));
@@ -136,6 +141,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     if (picked != null && mounted) {
       setState(() {
         _selectedStore = picked;
+        _selectedStoreId = picked.id;
         _nameCtrl.text = picked.businessName;
       });
     }
@@ -148,7 +154,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
 
     final now = DateTime.now();
     final draft = BudgetTransactionDraft(
-      storeId: _selectedStore?.id,
+      storeId: _selectedStore?.id ?? _selectedStoreId,
       name: _nameCtrl.text.trim(),
       category: _category,
       amount: _parsedAmount,
@@ -309,6 +315,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                   onTap: () => setState(() {
                     _category = BudgetCategory.dining;
                     _selectedStore = null;
+                    _selectedStoreId = null;
                   }),
                 )),
                 const SizedBox(width: AppSpacing.sm),
@@ -320,6 +327,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                   onTap: () => setState(() {
                     _category = BudgetCategory.groceries;
                     _selectedStore = null;
+                    _selectedStoreId = null;
                   }),
                 )),
               ],

@@ -217,4 +217,39 @@ void main() {
     expect(built.notifier.addCalled, isFalse);
     expect(built.notifier.deleteCalled, isFalse);
   });
+
+  testWidgets(
+      'editing a store-linked transaction without reopening the store picker keeps the store link',
+      (tester) async {
+    // Regression test: initState() used to only restore the store *name*
+    // into the text field, never the store id, so saving an edit without
+    // re-tapping the picker silently unlinked the transaction from its
+    // store (draft.storeId became null).
+    final built = _buildContainerWithNotifier();
+    addTearDown(built.container.dispose);
+
+    final existing = BudgetTransaction(
+      id: 'tx1',
+      storeId: '1',
+      storeName: 'Jaya Grocer',
+      category: BudgetCategory.groceries,
+      amount: 25.50,
+      dateSpent: DateTime(2026, 7, 20),
+      createdAt: DateTime(2026, 7, 20),
+    );
+
+    await _openSheet(tester, built.container, existing: existing);
+
+    // Change only the amount — never touch the store picker or category.
+    await tester.enterText(_amountFieldFinder, '30.00');
+    await tester.pumpAndSettle();
+
+    final saveButton = find.widgetWithText(ElevatedButton, 'Save Changes');
+    await tester.ensureVisible(saveButton);
+    await tester.pumpAndSettle();
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(built.notifier.editedDraft?.storeId, '1');
+  });
 }
