@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/custom_button.dart';
 import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
+import 'add_transaction_sheet.dart';
 
 Future<BudgetTransaction?> showTransactionDetailSheet(
     BuildContext context, BudgetTransaction tx) {
@@ -138,20 +140,42 @@ class _TransactionDetailSheet extends ConsumerWidget {
           const Divider(color: AppColors.border),
           const SizedBox(height: AppSpacing.md),
 
-          // Delete
-          TextButton.icon(
-            onPressed: () => _confirmDelete(context, ref),
-            icon: const Icon(Icons.delete_outline,
-                size: AppSpacing.iconSm, color: AppColors.error),
-            label: Text('Delete Expense',
-                style: AppTypography.body1.copyWith(color: AppColors.error)),
-            style: TextButton.styleFrom(
-              minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
-            ),
+          // Edit / Delete
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: 'Edit',
+                  variant: AppButtonVariant.outlined,
+                  leadingIcon: Icons.edit_outlined,
+                  onPressed: () => _edit(context),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: TextButton.icon(
+                  onPressed: () => _confirmDelete(context, ref),
+                  icon: const Icon(Icons.delete_outline,
+                      size: AppSpacing.iconSm, color: AppColors.error),
+                  label: Text('Delete',
+                      style:
+                          AppTypography.body1.copyWith(color: AppColors.error)),
+                  style: TextButton.styleFrom(
+                    minimumSize:
+                        const Size(double.infinity, AppSpacing.buttonHeight),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  void _edit(BuildContext context) {
+    Navigator.of(context).pop();
+    showAddTransactionSheet(context, existing: transaction);
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
