@@ -34,6 +34,8 @@ import '../features/settings/screens/about_screen.dart';
 import '../features/settings/legal_content.dart';
 import '../shared/screens/legal_document_screen.dart';
 
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
 abstract class AppRoutes {
   static const String splash = '/';
   static const String onboarding = '/onboarding';
@@ -81,6 +83,7 @@ abstract class AppRoutes {
 }
 
 final GoRouter appRouter = GoRouter(
+  navigatorKey: appNavigatorKey,
   initialLocation: AppRoutes.splash,
   routes: [
     GoRoute(
