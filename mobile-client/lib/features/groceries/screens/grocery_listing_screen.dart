@@ -5,11 +5,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/errors/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/store_providers.dart';
 import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/empty_feed_state.dart';
+import '../../../shared/widgets/network_error_state.dart';
 import '../../../shared/widgets/location_sheet.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dietary_chip.dart';
@@ -111,8 +114,11 @@ class _GroceryListingScreenState extends ConsumerState<GroceryListingScreen> {
       backgroundColor: AppColors.background,
       body: storesAsync.when(
         loading: () => _buildLoadingBody(context),
-        error: (_, _) => _buildErrorBody(context, query),
+        error: (error, _) => _buildErrorBody(context, query, error),
         data: (stores) {
+          if (stores.isEmpty) {
+            return _buildNothingNearbyBody(context, query);
+          }
           final groceries = _filterStores(stores);
           return groceries.isEmpty
               ? _buildEmptyBody(context)
@@ -146,17 +152,45 @@ class _GroceryListingScreenState extends ConsumerState<GroceryListingScreen> {
     );
   }
 
-  Widget _buildErrorBody(BuildContext context, NearbyStoresQuery query) {
+  Widget _buildErrorBody(
+    BuildContext context,
+    NearbyStoresQuery query,
+    Object error,
+  ) {
+    final isNetworkError = error is AppException && error.isNetworkError;
     return CustomScrollView(
       slivers: [
         _buildSliverAppBar(context),
         SliverFillRemaining(
           hasScrollBody: false,
-          child: AppEmptyState(
-            icon: Icons.error_outline,
-            title: 'Something went wrong',
-            description: 'Unable to load grocery stores. Please try again.',
-            ctaLabel: 'Retry',
+          child: isNetworkError
+              ? NetworkErrorState(
+                  onRetry: () => ref.invalidate(nearbyStoresProvider(query)),
+                )
+              : AppEmptyState(
+                  icon: Icons.error_outline,
+                  title: 'Something went wrong',
+                  description: 'Unable to load grocery stores. Please try again.',
+                  ctaLabel: 'Retry',
+                  onCta: () => ref.invalidate(nearbyStoresProvider(query)),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNothingNearbyBody(
+    BuildContext context,
+    NearbyStoresQuery query,
+  ) {
+    return CustomScrollView(
+      slivers: [
+        _buildSliverAppBar(context),
+        SliverToBoxAdapter(child: _buildSearchBar()),
+        SliverToBoxAdapter(child: _buildFilterChips()),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: EmptyFeedState(
             onCta: () => ref.invalidate(nearbyStoresProvider(query)),
           ),
         ),
