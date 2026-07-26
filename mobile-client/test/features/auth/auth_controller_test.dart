@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mapetite/core/errors/app_exception.dart';
+import 'package:mapetite/core/network/refresh_interceptor.dart';
 import 'package:mapetite/features/auth/controllers/auth_controller.dart';
 import 'package:mapetite/features/auth/models/current_user.dart';
 import 'package:mapetite/features/auth/services/auth_service.dart';
@@ -46,4 +47,15 @@ void main() {
 
     expect(controller.state.sessionExpired, isFalse);
   });
+
+  test(
+    'the refresh-interceptor session-expiry hook flips sessionExpired on this controller',
+    () async {
+      final controller = AuthController(_UnauthorisedAuthService());
+
+      onSessionExpired?.call();
+
+      expect(controller.state.sessionExpired, isTrue);
+    },
+  );
 }

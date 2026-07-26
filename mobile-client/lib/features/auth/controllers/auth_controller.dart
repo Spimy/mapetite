@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mapetite/core/errors/app_exception.dart';
+import '../../../core/network/refresh_interceptor.dart';
 import 'package:mapetite/features/auth/models/auth_state.dart';
 import 'package:mapetite/features/auth/models/register_request.dart';
 import 'package:mapetite/features/auth/models/register_response.dart';
@@ -20,7 +21,11 @@ final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
 class AuthController extends StateNotifier<AuthState> {
   final AuthService _authService;
 
-  AuthController(this._authService) : super(const AuthState());
+  AuthController(this._authService) : super(const AuthState()) {
+    onSessionExpired = () {
+      state = const AuthState(isLoading: false, sessionExpired: true);
+    };
+  }
 
   Future<bool> login({required String email, required String password}) async {
     state = const AuthState(isLoading: true);
