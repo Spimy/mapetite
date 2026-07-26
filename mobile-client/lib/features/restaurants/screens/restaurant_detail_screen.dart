@@ -93,11 +93,11 @@ class _RestaurantDetailScreenState
     return Scaffold(
       backgroundColor: AppColors.white,
       body: storeAsync.when(
-        loading: () => SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+        loading: () => const SingleChildScrollView(
+          padding: EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               ShimmerLoader(
                 width: double.infinity,
                 height: 220,
@@ -125,10 +125,10 @@ class _RestaurantDetailScreenState
           },
         ),
         data: (store) => itemsAsync.when(
-          loading: () => SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+          loading: () => const SingleChildScrollView(
+            padding: EdgeInsets.all(AppSpacing.lg),
             child: Column(
-              children: const [
+              children: [
                 CardShimmer(height: 90),
                 SizedBox(height: AppSpacing.md),
                 CardShimmer(height: 90),

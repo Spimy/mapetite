@@ -166,10 +166,10 @@ class _SpendingAnalyticsScreenState
       loading: () => Scaffold(
         backgroundColor: AppColors.background,
         appBar: _buildInsightsAppBar(),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+        body: const SingleChildScrollView(
+          padding: EdgeInsets.all(AppSpacing.lg),
           child: Column(
-            children: const [
+            children: [
               CardShimmer(height: 220),
               SizedBox(height: AppSpacing.lg),
               CardShimmer(height: 140),

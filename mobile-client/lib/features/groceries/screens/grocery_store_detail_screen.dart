@@ -124,13 +124,13 @@ class _GroceryStoreDetailScreenState
   }
 
   Scaffold _buildLoadingScaffold() {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             ShimmerLoader(
               width: double.infinity,
               height: 160,

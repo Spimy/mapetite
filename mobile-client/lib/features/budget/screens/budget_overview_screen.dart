@@ -70,10 +70,10 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
       ),
       body: SafeArea(
         child: budgetAsync.when(
-          loading: () => SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+          loading: () => const SingleChildScrollView(
+            padding: EdgeInsets.all(AppSpacing.lg),
             child: Column(
-              children: const [
+              children: [
                 ShimmerLoader(
                   width: double.infinity,
                   height: 180,
