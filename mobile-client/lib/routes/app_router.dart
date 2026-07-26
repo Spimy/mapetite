@@ -31,7 +31,8 @@ import '../features/notifications/screens/notification_centre_screen.dart';
 import '../features/notifications/screens/notification_settings_screen.dart';
 import '../features/settings/screens/app_settings_screen.dart';
 import '../features/settings/screens/about_screen.dart';
-import '../shared/screens/web_placeholder_screen.dart';
+import '../features/settings/legal_content.dart';
+import '../shared/screens/legal_document_screen.dart';
 
 abstract class AppRoutes {
   static const String splash = '/';
@@ -153,18 +154,22 @@ final GoRouter appRouter = GoRouter(
       routes: [
         GoRoute(
           path: 'terms',
-          builder: (context, state) =>
-              const WebPlaceholderScreen(title: 'Terms of Service'),
+          builder: (context, state) => const LegalDocumentScreen(
+            title: 'Terms of Service',
+            body: LegalContent.termsOfService,
+          ),
         ),
         GoRoute(
           path: 'privacy',
-          builder: (context, state) =>
-              const WebPlaceholderScreen(title: 'Privacy Policy'),
+          builder: (context, state) => const LegalDocumentScreen(
+            title: 'Privacy Policy',
+            body: LegalContent.privacyPolicy,
+          ),
         ),
         GoRoute(
           path: 'licences',
           builder: (context, state) =>
-              const WebPlaceholderScreen(title: 'Open Source Licences'),
+              const LicensePage(applicationName: 'Mapetite'),
         ),
       ],
     ),
@@ -186,9 +191,8 @@ final GoRouter appRouter = GoRouter(
         ),
         GoRoute(
           path: ':id',
-          builder: (context, state) => RecipeDetailScreen(
-            recipeId: state.pathParameters['id'] ?? '',
-          ),
+          builder: (context, state) =>
+              RecipeDetailScreen(recipeId: state.pathParameters['id'] ?? ''),
           routes: [
             GoRoute(
               path: 'match',
@@ -201,10 +205,7 @@ final GoRouter appRouter = GoRouter(
       ],
     ),
 
-    GoRoute(
-      path: AppRoutes.myList,
-      redirect: (_, _) => AppRoutes.list,
-    ),
+    GoRoute(path: AppRoutes.myList, redirect: (_, _) => AppRoutes.list),
     GoRoute(
       path: AppRoutes.settings,
       builder: (context, state) => const AppSettingsScreen(),
@@ -215,10 +216,7 @@ final GoRouter appRouter = GoRouter(
       path: AppRoutes.dineIn,
       builder: (context, state) => const RestaurantListingScreen(),
     ),
-    GoRoute(
-      path: AppRoutes.cookIn,
-      redirect: (_, _) => AppRoutes.recipes,
-    ),
+    GoRoute(path: AppRoutes.cookIn, redirect: (_, _) => AppRoutes.recipes),
     GoRoute(
       path: AppRoutes.restaurants,
       builder: (context, state) => const RestaurantListingScreen(),
@@ -298,13 +296,11 @@ final GoRouter appRouter = GoRouter(
               routes: [
                 GoRoute(
                   path: 'analytics',
-                  builder: (context, state) =>
-                      const SpendingAnalyticsScreen(),
+                  builder: (context, state) => const SpendingAnalyticsScreen(),
                 ),
                 GoRoute(
                   path: 'transactions',
-                  builder: (context, state) =>
-                      const TransactionsScreen(),
+                  builder: (context, state) => const TransactionsScreen(),
                 ),
               ],
             ),
@@ -408,10 +404,9 @@ class _WipScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               '$label — work in progress',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: AppColors.neutral600),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: AppColors.neutral600),
             ),
           ],
         ),
