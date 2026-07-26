@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mapetite/core/errors/app_exception.dart';
 import 'package:mapetite/features/discovery/models/home_feed_models.dart';
 import 'package:mapetite/features/discovery/screens/home_feed_screen.dart';
 import 'package:mapetite/shared/models/store_model.dart';
@@ -691,6 +692,49 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('GroceryDetail'), findsOneWidget);
+    });
+
+    testWidgets(
+        'shows NetworkErrorState instead of the generic error when the restaurant fetch is a network error',
+        (tester) async {
+      await tester.pumpWidget(_routerWrap(
+        storesBuilder: (query) async {
+          if (query.type == StoreType.restaurant) {
+            throw const AppException(
+              message: 'No internet connection.',
+              isNetworkError: true,
+            );
+          }
+          return _defaultGroceries;
+        },
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Could not connect.'), findsOneWidget);
+      expect(find.byIcon(Icons.wifi_off), findsOneWidget);
+      expect(find.text('Something went wrong'), findsNothing);
+    });
+
+    testWidgets(
+        'shows EmptyFeedState with Expand Radius when both nearby lists are empty, and tapping it re-fetches at the max radius',
+        (tester) async {
+      final seenRadii = <double>[];
+      await tester.pumpWidget(_routerWrap(
+        storesBuilder: (query) async {
+          seenRadii.add(query.radiusKm);
+          return <StoreModel>[];
+        },
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nothing nearby.'), findsOneWidget);
+      expect(find.text('Expand Radius'), findsOneWidget);
+      expect(seenRadii, everyElement(5.0));
+
+      await tester.tap(find.text('Expand Radius'));
+      await tester.pumpAndSettle();
+
+      expect(seenRadii, contains(20.0));
     });
   });
 

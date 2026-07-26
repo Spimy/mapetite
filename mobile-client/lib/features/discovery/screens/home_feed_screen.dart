@@ -8,10 +8,14 @@ import 'package:shimmer/shimmer.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/errors/app_exception.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/dietary_chip.dart';
+import '../../../shared/widgets/empty_feed_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
+import '../../../shared/widgets/network_error_state.dart';
 import '../models/mocks/home_feed_mocks.dart';
 import '../../../routes/app_router.dart';
 import '../../../features/notifications/providers/notification_provider.dart';
@@ -35,6 +39,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
   late Animation<double> _fadeAnim;
   late Animation<Offset> _cardAnim1;
   late Animation<Offset> _cardAnim2;
+  double _radiusKm = AppConstants.defaultSearchRadiusKm;
 
   @override
   void initState() {
@@ -107,13 +112,13 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     final restaurantQuery = NearbyStoresQuery(
       lat: lat,
       lng: lng,
-      radiusKm: 5,
+      radiusKm: _radiusKm,
       type: StoreType.restaurant,
     );
     final groceryQuery = NearbyStoresQuery(
       lat: lat,
       lng: lng,
-      radiusKm: 5,
+      radiusKm: _radiusKm,
       type: StoreType.grocery,
     );
     final restaurantsAsync = ref.watch(nearbyStoresProvider(restaurantQuery));
@@ -128,33 +133,52 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
       body: SafeArea(
         child: restaurantsAsync.when(
           loading: () => const HomeFeedSkeleton(),
-          error: (_, _) => AppEmptyState(
-            icon: Icons.error_outline,
-            title: 'Something went wrong',
-            description: 'Unable to load your feed. Please try again.',
-            ctaLabel: 'Retry',
-            onCta: () {
-              ref.invalidate(nearbyStoresProvider(restaurantQuery));
-              ref.invalidate(nearbyStoresProvider(groceryQuery));
-            },
-          ),
+          error: (error, _) => error is AppException && error.isNetworkError
+              ? NetworkErrorState(
+                  onRetry: () {
+                    ref.invalidate(nearbyStoresProvider(restaurantQuery));
+                    ref.invalidate(nearbyStoresProvider(groceryQuery));
+                  },
+                )
+              : AppEmptyState(
+                  icon: Icons.error_outline,
+                  title: 'Something went wrong',
+                  description: 'Unable to load your feed. Please try again.',
+                  ctaLabel: 'Retry',
+                  onCta: () {
+                    ref.invalidate(nearbyStoresProvider(restaurantQuery));
+                    ref.invalidate(nearbyStoresProvider(groceryQuery));
+                  },
+                ),
           data: (restaurants) => groceriesAsync.when(
             loading: () => const HomeFeedSkeleton(),
-            error: (_, _) => AppEmptyState(
-              icon: Icons.error_outline,
-              title: 'Something went wrong',
-              description: 'Unable to load your feed. Please try again.',
-              ctaLabel: 'Retry',
-              onCta: () => ref.invalidate(nearbyStoresProvider(groceryQuery)),
-            ),
-            data: (groceries) => CustomScrollView(
-              slivers: [
-                _buildAppBar(),
-                SliverToBoxAdapter(
-                  child: _buildContent(restaurants, groceries),
-                ),
-              ],
-            ),
+            error: (error, _) => error is AppException && error.isNetworkError
+                ? NetworkErrorState(
+                    onRetry: () =>
+                        ref.invalidate(nearbyStoresProvider(groceryQuery)),
+                  )
+                : AppEmptyState(
+                    icon: Icons.error_outline,
+                    title: 'Something went wrong',
+                    description: 'Unable to load your feed. Please try again.',
+                    ctaLabel: 'Retry',
+                    onCta: () => ref.invalidate(nearbyStoresProvider(groceryQuery)),
+                  ),
+            data: (groceries) => restaurants.isEmpty && groceries.isEmpty
+                ? EmptyFeedState(
+                    ctaLabel: 'Expand Radius',
+                    onCta: () => setState(
+                      () => _radiusKm = AppConstants.maxSearchRadiusKm,
+                    ),
+                  )
+                : CustomScrollView(
+                    slivers: [
+                      _buildAppBar(),
+                      SliverToBoxAdapter(
+                        child: _buildContent(restaurants, groceries),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
