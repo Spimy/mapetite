@@ -13,7 +13,8 @@ class UserProfile {
   final int dailyCalorieTarget;
   final List<String> cuisinePreferences;
 
-  final double monthlyBudget;
+  final double dineInBudget;
+  final double groceryBudget;
   final int alertThresholdPercent;
 
   final String healthGoal;
@@ -33,12 +34,15 @@ class UserProfile {
     this.allergens = const [],
     this.dailyCalorieTarget = 2000,
     this.cuisinePreferences = const [],
-    this.monthlyBudget = 600.0,
+    this.dineInBudget = 300.0,
+    this.groceryBudget = 300.0,
     this.alertThresholdPercent = 80,
     this.healthGoal = 'general_health',
     this.activityLevel = 'light',
     this.weightKg,
   });
+
+  double get monthlyBudget => dineInBudget + groceryBudget;
 
   UserProfile copyWith({
     String? id,
@@ -53,7 +57,8 @@ class UserProfile {
     List<String>? allergens,
     int? dailyCalorieTarget,
     List<String>? cuisinePreferences,
-    double? monthlyBudget,
+    double? dineInBudget,
+    double? groceryBudget,
     int? alertThresholdPercent,
     String? healthGoal,
     String? activityLevel,
@@ -72,7 +77,8 @@ class UserProfile {
       allergens: allergens ?? this.allergens,
       dailyCalorieTarget: dailyCalorieTarget ?? this.dailyCalorieTarget,
       cuisinePreferences: cuisinePreferences ?? this.cuisinePreferences,
-      monthlyBudget: monthlyBudget ?? this.monthlyBudget,
+      dineInBudget: dineInBudget ?? this.dineInBudget,
+      groceryBudget: groceryBudget ?? this.groceryBudget,
       alertThresholdPercent: alertThresholdPercent ?? this.alertThresholdPercent,
       healthGoal: healthGoal ?? this.healthGoal,
       activityLevel: activityLevel ?? this.activityLevel,

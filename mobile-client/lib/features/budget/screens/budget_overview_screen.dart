@@ -6,7 +6,9 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../routes/app_router.dart';
+import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/undo_toast.dart';
+import '../models/budget_state.dart';
 import '../providers/budget_provider.dart';
 import '../models/budget_transaction.dart';
 import '../widgets/transaction_detail_sheet.dart';
@@ -29,10 +31,21 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
   ];
 
-  String get _monthLabel {
+  DateTime get _selectedMonthDate {
     final now = DateTime.now();
-    final dt = DateTime(now.year, now.month - _selectedMonthOffset);
+    return DateTime(now.year, now.month - _selectedMonthOffset);
+  }
+
+  String get _monthLabel {
+    final dt = _selectedMonthDate;
     return '${_monthNames[dt.month - 1]} ${dt.year}';
+  }
+
+  void _changeMonth(int offset) {
+    setState(() => _selectedMonthOffset = offset);
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month - offset);
+    ref.read(budgetProvider.notifier).selectMonth(dt.year, dt.month);
   }
 
   @override
@@ -42,7 +55,7 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final budget = ref.watch(budgetProvider);
+    final budgetAsync = ref.watch(budgetProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -55,28 +68,46 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
         child: const Icon(Icons.add, color: AppColors.white),
       ),
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            _buildAppBar(context),
-            SliverToBoxAdapter(child: _buildMonthRow()),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.screenHorizontalPadding),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildRingCard(budget),
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildCategoriesCard(budget),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildAnalyticsBanner(context),
-                  const SizedBox(height: AppSpacing.lg),
-                  _buildRecentTransactionsCard(context, budget),
-                  const SizedBox(height: 100),
-                ]),
+        child: budgetAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => CustomScrollView(
+            slivers: [
+              _buildAppBar(context),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: AppEmptyState(
+                  icon: Icons.error_outline,
+                  title: 'Something went wrong',
+                  description: 'Unable to load your budget. Please try again.',
+                  ctaLabel: 'Retry',
+                  onCta: () => ref.invalidate(budgetProvider),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+          data: (budget) => CustomScrollView(
+            slivers: [
+              _buildAppBar(context),
+              SliverToBoxAdapter(child: _buildMonthRow()),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screenHorizontalPadding),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildRingCard(budget),
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildCategoriesCard(budget),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildAnalyticsBanner(context),
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildRecentTransactionsCard(context, budget),
+                    const SizedBox(height: 100),
+                  ]),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -111,9 +142,9 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
       child: Center(
         child: _MonthSelector(
           label: _monthLabel,
-          onPrev: () => setState(() => _selectedMonthOffset++),
+          onPrev: () => _changeMonth(_selectedMonthOffset + 1),
           onNext: _selectedMonthOffset > 0
-              ? () => setState(() => _selectedMonthOffset--)
+              ? () => _changeMonth(_selectedMonthOffset - 1)
               : null,
         ),
       ),
@@ -122,9 +153,9 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
 
   // ─── Budget Ring Card ─────────────────────────────────────────────────────
 
-  Widget _buildRingCard(dynamic budget) {
-    final spent = budget.totalSpent as double;
-    final total = budget.monthlyBudget as double;
+  Widget _buildRingCard(BudgetState budget) {
+    final spent = budget.totalSpent;
+    final total = budget.monthlyBudget;
     final ratio = total > 0 ? (spent / total).clamp(0.0, 1.0) : 0.0;
     final isExceeded = spent > total;
     final isWarning = !isExceeded && ratio >= 0.8;
@@ -262,23 +293,7 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
 
   // ─── Categories Card ──────────────────────────────────────────────────────
 
-  Widget _buildCategoriesCard(dynamic budget) {
-    final transactions =
-        budget.transactions as List<BudgetTransaction>;
-    final now = DateTime.now();
-    final monthTx = transactions
-        .where((t) =>
-            t.dateTime.year == now.year && t.dateTime.month == now.month)
-        .toList();
-
-    double spentFor(BudgetCategory cat) =>
-        monthTx.where((t) => t.category == cat).fold(0.0, (s, t) => s + t.amount);
-
-    final diningSpent = spentFor(BudgetCategory.dining);
-    final groceriesSpent = spentFor(BudgetCategory.groceries);
-    const diningBudget = 200.0;
-    const groceriesBudget = 300.0;
-
+  Widget _buildCategoriesCard(BudgetState budget) {
     return _Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,8 +305,8 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
             iconBg: AppColors.primaryLight,
             iconColor: AppColors.primary,
             label: 'Dining Out',
-            spent: diningSpent,
-            budget: diningBudget,
+            spent: budget.diningSpent,
+            budget: budget.dineInBudget,
             progressColor: AppColors.primary,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -300,8 +315,8 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
             iconBg: AppColors.secondaryLight,
             iconColor: AppColors.secondary,
             label: 'Cook-In',
-            spent: groceriesSpent,
-            budget: groceriesBudget,
+            spent: budget.groceriesSpent,
+            budget: budget.groceryBudget,
             progressColor: AppColors.secondary,
           ),
         ],
@@ -358,9 +373,9 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
 
   // ─── Recent Transactions Card ─────────────────────────────────────────────
 
-  Widget _buildRecentTransactionsCard(BuildContext context, dynamic budget) {
+  Widget _buildRecentTransactionsCard(BuildContext context, BudgetState budget) {
     final recent =
-        budget.recentTransactions as List<BudgetTransaction>;
+        budget.recentTransactions;
 
     return _Card(
       padding: EdgeInsets.zero,
@@ -414,7 +429,24 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
                         onUndo: () {
                           ref
                               .read(budgetProvider.notifier)
-                              .restoreTransaction(deleted);
+                              .restoreTransaction(deleted)
+                              .catchError((_) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Could not restore transaction. Please try again.',
+                                      style: AppTypography.body1
+                                          .copyWith(color: AppColors.white)),
+                                  backgroundColor: AppColors.error,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          AppSpacing.radiusMd)),
+                                ),
+                              );
+                            }
+                          });
                         },
                       );
                     },
@@ -596,11 +628,11 @@ class _TransactionRow extends StatelessWidget {
   String get _dateLabel {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final txDay = DateTime(tx.dateTime.year, tx.dateTime.month, tx.dateTime.day);
+    final txDay = DateTime(tx.dateSpent.year, tx.dateSpent.month, tx.dateSpent.day);
     final diff = today.difference(txDay).inDays;
     if (diff == 0) return 'Today';
     if (diff == 1) return 'Yesterday';
-    return '${tx.dateTime.day} ${_months[tx.dateTime.month - 1]}';
+    return '${tx.dateSpent.day} ${_months[tx.dateSpent.month - 1]}';
   }
 
   IconData get _categoryIcon {
@@ -642,7 +674,7 @@ class _TransactionRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(tx.name,
+                  Text(tx.displayLabel,
                       style: AppTypography.body1
                           .copyWith(fontWeight: FontWeight.w500),
                       maxLines: 1,

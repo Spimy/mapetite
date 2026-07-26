@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../controllers/profile_setup_controller.dart';
 import '../models/profile_setup_data.dart';
@@ -27,10 +28,9 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
 
   late ProfileSetupData _initial;
   late final TextEditingController _alertController;
-  late final TextEditingController _budgetController;
-  late final FocusNode _budgetFocusNode;
+  late final TextEditingController _dineInController;
+  late final TextEditingController _groceryController;
   late final FocusNode _alertFocusNode;
-  bool _editingBudget = false;
   late int _alertPreset;
   late bool _isCustomAlert;
 
@@ -43,9 +43,10 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
     _initial = data;
     final initial = data.alertThresholdPercent;
     _alertController = TextEditingController(text: initial.toString());
-    _budgetController =
-        TextEditingController(text: data.monthlyBudget.toStringAsFixed(0));
-    _budgetFocusNode = FocusNode()..addListener(_onBudgetFocusChange);
+    _dineInController =
+        TextEditingController(text: data.dineInBudget.toStringAsFixed(0));
+    _groceryController =
+        TextEditingController(text: data.groceryBudget.toStringAsFixed(0));
     _alertFocusNode = FocusNode();
     _isCustomAlert = !_presets.contains(initial);
     _alertPreset = _isCustomAlert ? _presets[2] : initial;
@@ -54,45 +55,22 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
   @override
   void dispose() {
     _alertController.dispose();
-    _budgetController.dispose();
-    _budgetFocusNode.dispose();
+    _dineInController.dispose();
+    _groceryController.dispose();
     _alertFocusNode.dispose();
     super.dispose();
   }
 
-  void _onBudgetFocusChange() {
-    if (!_budgetFocusNode.hasFocus && _editingBudget) {
-      _submitBudget();
-    }
+  void _onDineInChanged(String raw) {
+    final parsed = double.tryParse(raw);
+    if (parsed == null) return;
+    ref.read(profileSetupControllerProvider.notifier).updateBudget(dineIn: parsed);
   }
 
-  void _startEditingBudget() {
-    final current = ref.read(profileSetupControllerProvider).monthlyBudget;
-    _budgetController.text = current.toStringAsFixed(0);
-    setState(() => _editingBudget = true);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _budgetFocusNode.requestFocus();
-      _budgetController.selection = TextSelection(
-        baseOffset: 0,
-        extentOffset: _budgetController.text.length,
-      );
-    });
-  }
-
-  void _submitBudget() {
-    final parsed = double.tryParse(_budgetController.text);
-    final clamped = parsed?.clamp(100, 10000).toDouble();
-    if (clamped != null) {
-      _budgetController.text = clamped.toStringAsFixed(0);
-      ref
-          .read(profileSetupControllerProvider.notifier)
-          .updateBudget(monthly: clamped);
-    } else {
-      final fallback =
-          ref.read(profileSetupControllerProvider).monthlyBudget;
-      _budgetController.text = fallback.toStringAsFixed(0);
-    }
-    setState(() => _editingBudget = false);
+  void _onGroceryChanged(String raw) {
+    final parsed = double.tryParse(raw);
+    if (parsed == null) return;
+    ref.read(profileSetupControllerProvider.notifier).updateBudget(grocery: parsed);
   }
 
   void _onAlertChanged(String raw) {
@@ -122,17 +100,15 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
   }
 
   bool _hasUnsavedChanges(ProfileSetupData current) {
-    return current.monthlyBudget != _initial.monthlyBudget ||
-        current.diningBudget != _initial.diningBudget ||
-        current.groceriesBudget != _initial.groceriesBudget ||
+    return current.dineInBudget != _initial.dineInBudget ||
+        current.groceryBudget != _initial.groceryBudget ||
         current.alertThresholdPercent != _initial.alertThresholdPercent;
   }
 
   void _discardAndPop() {
     ref.read(profileSetupControllerProvider.notifier).updateBudget(
-      monthly: _initial.monthlyBudget,
-      dining: _initial.diningBudget,
-      groceries: _initial.groceriesBudget,
+      dineIn: _initial.dineInBudget,
+      grocery: _initial.groceryBudget,
       alertThreshold: _initial.alertThresholdPercent,
     );
     context.pop();
@@ -150,12 +126,6 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(profileSetupControllerProvider);
-    final notifier = ref.read(profileSetupControllerProvider.notifier);
-
-    final estimatedPerMeal = data.monthlyBudget / 30 / 3;
-    final totalAllocated = data.diningBudget + data.groceriesBudget;
-    final overBudget = totalAllocated > data.monthlyBudget;
-    final safeMax = data.monthlyBudget > 0 ? data.monthlyBudget : 1.0;
 
     final body = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -166,114 +136,50 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
           ),
           const SizedBox(height: AppSpacing.xxl),
 
-          // ── Budget amount card ─────────────────────────────────────────────
-          _SectionCard(
-            child: Column(
-              children: [
-                if (_editingBudget)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        'RM',
-                        style: AppTypography.headline2
-                            .copyWith(color: AppColors.neutral600),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      SizedBox(
-                        width: 140,
-                        child: TextField(
-                          controller: _budgetController,
-                          focusNode: _budgetFocusNode,
-                          textAlign: TextAlign.center,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(5),
-                          ],
-                          style: AppTypography.budgetHero,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          onSubmitted: (_) => _submitBudget(),
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  GestureDetector(
-                    onTap: _startEditingBudget,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          'RM',
-                          style: AppTypography.headline2
-                              .copyWith(color: AppColors.neutral600),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          data.monthlyBudget.toStringAsFixed(0),
-                          style: AppTypography.budgetHero,
-                        ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  _editingBudget ? 'Tap elsewhere to confirm' : 'Tap to change',
-                  style: AppTypography.caption,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _EstimatedMealChip(estimatedPerMeal: estimatedPerMeal),
-              ],
-            ),
-          ),
-
-          // ── Category split ─────────────────────────────────────────────────
-          const SizedBox(height: AppSpacing.lg),
+          // ── Category budgets ─────────────────────────────────────────────
           _SectionCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Category split', style: AppTypography.headline3),
-                    Text('Optional', style: AppTypography.caption),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _CategorySlider(
-                  icon: Icons.restaurant_outlined,
+                AppTextField(
                   label: 'Dining Out',
-                  value: data.diningBudget,
-                  max: safeMax,
-                  onChanged: (v) => notifier.updateBudget(dining: v),
+                  controller: _dineInController,
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.only(left: 12, right: 4),
+                    child: Align(
+                      widthFactor: 1.0,
+                      child: Text('RM',
+                          style: TextStyle(
+                              color: AppColors.neutral600,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: _onDineInChanged,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AppTextField(
+                  label: 'Groceries',
+                  controller: _groceryController,
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.only(left: 12, right: 4),
+                    child: Align(
+                      widthFactor: 1.0,
+                      child: Text('RM',
+                          style: TextStyle(
+                              color: AppColors.neutral600,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: _onGroceryChanged,
+                  textInputAction: TextInputAction.done,
                 ),
                 const SizedBox(height: AppSpacing.md),
-                _CategorySlider(
-                  icon: Icons.local_grocery_store_outlined,
-                  label: 'Groceries',
-                  value: data.groceriesBudget,
-                  max: safeMax,
-                  onChanged: (v) => notifier.updateBudget(groceries: v),
+                _EstimatedMealChip(
+                  estimatedPerMeal: data.monthlyBudget / 30 / 3,
                 ),
-                if (overBudget) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Allocations exceed budget',
-                    style:
-                        AppTypography.caption.copyWith(color: AppColors.warning),
-                  ),
-                ],
               ],
             ),
           ),
@@ -416,16 +322,32 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 child: AppButton(
                   label: 'Done',
-                  onPressed: () {
-                    // Sync any slider/budget changes back to the budget provider
-                    // so the Budget tab reflects the latest values immediately.
+                  onPressed: () async {
                     final d = ref.read(profileSetupControllerProvider);
-                    ref.read(budgetProvider.notifier).adjustBudget(
-                          monthly: d.monthlyBudget,
-                          groceries: d.groceriesBudget,
-                          dining: d.diningBudget,
+                    try {
+                      await ref.read(budgetProvider.notifier).adjustBudget(
+                            dineIn: d.dineInBudget,
+                            grocery: d.groceryBudget,
+                            alertPercent: d.alertThresholdPercent,
+                          );
+                      if (context.mounted) context.pop();
+                    } catch (_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Could not save your budget. Please try again.',
+                                style: AppTypography.body1
+                                    .copyWith(color: AppColors.white)),
+                            backgroundColor: AppColors.error,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(AppSpacing.radiusMd)),
+                          ),
                         );
-                    context.pop();
+                      }
+                    }
                   },
                 ),
               ),
@@ -499,61 +421,6 @@ class _EstimatedMealChip extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _CategorySlider extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final double value;
-  final double max;
-  final ValueChanged<double> onChanged;
-
-  const _CategorySlider({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.max,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon,
-                    size: AppSpacing.iconXs, color: AppColors.neutral600),
-                const SizedBox(width: AppSpacing.xs),
-                Text(label, style: AppTypography.body1),
-              ],
-            ),
-            Text(
-              'RM ${value.toStringAsFixed(0)}',
-              style: AppTypography.body2.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Slider(
-          min: 0,
-          max: max,
-          value: value.clamp(0, max),
-          activeColor: AppColors.primary,
-          inactiveColor: AppColors.border,
-          onChanged: onChanged,
-        ),
-      ],
     );
   }
 }

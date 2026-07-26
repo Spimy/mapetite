@@ -29,9 +29,10 @@ class EditProfileController extends StateNotifier<UserProfile> {
     );
   }
 
-  void updateBudget({double? monthly, int? alertThreshold}) {
+  void updateBudget({double? dineIn, double? grocery, int? alertThreshold}) {
     state = state.copyWith(
-      monthlyBudget: monthly ?? state.monthlyBudget,
+      dineInBudget: dineIn ?? state.dineInBudget,
+      groceryBudget: grocery ?? state.groceryBudget,
       alertThresholdPercent: alertThreshold ?? state.alertThresholdPercent,
     );
   }
@@ -71,7 +72,8 @@ final editProfileControllerProvider =
     allergens: List<String>.from(setup.allergens),
     dailyCalorieTarget: setup.dailyCalorieTarget,
     cuisinePreferences: List<String>.from(setup.cuisinePreferences),
-    monthlyBudget: setup.monthlyBudget,
+    dineInBudget: setup.dineInBudget,
+    groceryBudget: setup.groceryBudget,
     alertThresholdPercent: setup.alertThresholdPercent,
     healthGoal: setup.healthGoal,
     activityLevel: setup.activityLevel,

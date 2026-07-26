@@ -110,14 +110,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Future<void> _navigateToBudget() async {
     final profile = ref.read(editProfileControllerProvider);
     ref.read(profileSetupControllerProvider.notifier).updateBudget(
-      monthly: profile.monthlyBudget,
+      dineIn: profile.dineInBudget,
+      grocery: profile.groceryBudget,
       alertThreshold: profile.alertThresholdPercent,
     );
     await context.push('/profile/budget-setup?mode=edit');
     if (!mounted) return;
     final setup = ref.read(profileSetupControllerProvider);
     ref.read(editProfileControllerProvider.notifier).updateBudget(
-      monthly: setup.monthlyBudget,
+      dineIn: setup.dineInBudget,
+      grocery: setup.groceryBudget,
       alertThreshold: setup.alertThresholdPercent,
     );
   }
@@ -191,7 +193,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         !listEquals(current.allergens, _initialProfile.allergens) ||
         current.dailyCalorieTarget != _initialProfile.dailyCalorieTarget ||
         !listEquals(current.cuisinePreferences, _initialProfile.cuisinePreferences) ||
-        current.monthlyBudget != _initialProfile.monthlyBudget ||
+        current.dineInBudget != _initialProfile.dineInBudget ||
+        current.groceryBudget != _initialProfile.groceryBudget ||
         current.alertThresholdPercent != _initialProfile.alertThresholdPercent ||
         current.healthGoal != _initialProfile.healthGoal ||
         current.activityLevel != _initialProfile.activityLevel ||

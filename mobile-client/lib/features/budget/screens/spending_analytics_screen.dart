@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_empty_state.dart';
+import '../models/budget_state.dart';
 import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
 import '../widgets/budget_bar_chart.dart';
@@ -59,8 +61,8 @@ class _SpendingAnalyticsScreenState
           final weekSun = weekMon.add(const Duration(days: 6));
           return transactions
               .where((t) =>
-                  !t.dateTime.isBefore(weekMon) &&
-                  !t.dateTime.isAfter(
+                  !t.dateSpent.isBefore(weekMon) &&
+                  !t.dateSpent.isAfter(
                       DateTime(weekSun.year, weekSun.month, weekSun.day, 23, 59, 59)))
               .fold(0.0, (s, t) => s + t.amount);
         });
@@ -68,7 +70,7 @@ class _SpendingAnalyticsScreenState
         return List.generate(4, (i) {
           final y = now.year - 3 + i;
           return transactions
-              .where((t) => t.dateTime.year == y)
+              .where((t) => t.dateSpent.year == y)
               .fold(0.0, (s, t) => s + t.amount);
         });
       default: // Month
@@ -77,7 +79,7 @@ class _SpendingAnalyticsScreenState
           var y = now.year;
           while (m <= 0) { m += 12; y--; }
           return transactions
-              .where((t) => t.dateTime.year == y && t.dateTime.month == m)
+              .where((t) => t.dateSpent.year == y && t.dateSpent.month == m)
               .fold(0.0, (s, t) => s + t.amount);
         });
     }
@@ -95,8 +97,8 @@ class _SpendingAnalyticsScreenState
           return transactions
               .where((t) =>
                   t.category == category &&
-                  !t.dateTime.isBefore(weekMon) &&
-                  !t.dateTime.isAfter(DateTime(
+                  !t.dateSpent.isBefore(weekMon) &&
+                  !t.dateSpent.isAfter(DateTime(
                       weekSun.year, weekSun.month, weekSun.day, 23, 59, 59)))
               .fold(0.0, (s, t) => s + t.amount);
         });
@@ -104,7 +106,7 @@ class _SpendingAnalyticsScreenState
         return List.generate(4, (i) {
           final y = now.year - 3 + i;
           return transactions
-              .where((t) => t.category == category && t.dateTime.year == y)
+              .where((t) => t.category == category && t.dateSpent.year == y)
               .fold(0.0, (s, t) => s + t.amount);
         });
       default: // Month
@@ -118,8 +120,8 @@ class _SpendingAnalyticsScreenState
           return transactions
               .where((t) =>
                   t.category == category &&
-                  t.dateTime.year == y &&
-                  t.dateTime.month == m)
+                  t.dateSpent.year == y &&
+                  t.dateSpent.month == m)
               .fold(0.0, (s, t) => s + t.amount);
         });
     }
@@ -157,7 +159,42 @@ class _SpendingAnalyticsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final budget = ref.watch(budgetProvider);
+    final budgetAsync = ref.watch(budgetProvider);
+
+    return budgetAsync.when(
+      loading: () => Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: _buildInsightsAppBar(),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, _) => Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: _buildInsightsAppBar(),
+        body: AppEmptyState(
+          icon: Icons.error_outline,
+          title: 'Something went wrong',
+          description: 'Unable to load spending insights. Please try again.',
+          ctaLabel: 'Retry',
+          onCta: () => ref.invalidate(budgetProvider),
+        ),
+      ),
+      data: (budget) => _buildLoaded(context, budget),
+    );
+  }
+
+  PreferredSizeWidget _buildInsightsAppBar() => AppBar(
+        backgroundColor: AppColors.white,
+        foregroundColor: AppColors.primary,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        titleTextStyle:
+            AppTypography.headline2.copyWith(color: AppColors.primary),
+        title: const Text('Insights'),
+      );
+
+  Widget _buildLoaded(BuildContext context, BudgetState budget) {
     final transactions = budget.transactions;
     final totalAmounts = _barAmounts(transactions);
     final groceriesAmounts =
@@ -173,17 +210,7 @@ class _SpendingAnalyticsScreenState
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.primary,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        titleTextStyle:
-            AppTypography.headline2.copyWith(color: AppColors.primary),
-        title: const Text('Insights'),
-      ),
+      appBar: _buildInsightsAppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(

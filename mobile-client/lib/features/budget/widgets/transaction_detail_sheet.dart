@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/custom_button.dart';
 import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
+import 'add_transaction_sheet.dart';
 
 Future<BudgetTransaction?> showTransactionDetailSheet(
     BuildContext context, BudgetTransaction tx) {
@@ -98,13 +100,13 @@ class _TransactionDetailSheet extends ConsumerWidget {
           const SizedBox(height: AppSpacing.lg),
 
           // Name
-          Text(transaction.name,
+          Text(transaction.displayLabel,
               style: AppTypography.headline1, textAlign: TextAlign.center),
           const SizedBox(height: AppSpacing.xs),
 
           // Category + date
           Text(
-            '${transaction.category.label}  •  ${_fullDateTime(transaction.dateTime)}',
+            '${transaction.category.label}  •  ${_fullDateTime(transaction.dateSpent)}',
             style: AppTypography.body2,
             textAlign: TextAlign.center,
           ),
@@ -138,20 +140,42 @@ class _TransactionDetailSheet extends ConsumerWidget {
           const Divider(color: AppColors.border),
           const SizedBox(height: AppSpacing.md),
 
-          // Delete
-          TextButton.icon(
-            onPressed: () => _confirmDelete(context, ref),
-            icon: const Icon(Icons.delete_outline,
-                size: AppSpacing.iconSm, color: AppColors.error),
-            label: Text('Delete Expense',
-                style: AppTypography.body1.copyWith(color: AppColors.error)),
-            style: TextButton.styleFrom(
-              minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
-            ),
+          // Edit / Delete
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: 'Edit',
+                  variant: AppButtonVariant.outlined,
+                  leadingIcon: Icons.edit_outlined,
+                  onPressed: () => _edit(context),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: TextButton.icon(
+                  onPressed: () => _confirmDelete(context, ref),
+                  icon: const Icon(Icons.delete_outline,
+                      size: AppSpacing.iconSm, color: AppColors.error),
+                  label: Text('Delete',
+                      style:
+                          AppTypography.body1.copyWith(color: AppColors.error)),
+                  style: TextButton.styleFrom(
+                    minimumSize:
+                        const Size(double.infinity, AppSpacing.buttonHeight),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  void _edit(BuildContext context) {
+    Navigator.of(context).pop();
+    showAddTransactionSheet(context, existing: transaction);
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
@@ -165,7 +189,7 @@ class _TransactionDetailSheet extends ConsumerWidget {
         icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 28),
         title: Text('Delete expense?', style: AppTypography.headline2),
         content: Text(
-          'Remove "${transaction.name}" from your records?',
+          'Remove "${transaction.displayLabel}" from your records?',
           style: AppTypography.body2.copyWith(color: AppColors.neutral600),
           textAlign: TextAlign.center,
         ),
@@ -214,8 +238,23 @@ class _TransactionDetailSheet extends ConsumerWidget {
     if (confirmed == true && context.mounted) {
       final container = ProviderScope.containerOf(context);
       final deleted = transaction;
-      container.read(budgetProvider.notifier).deleteTransaction(deleted.id);
-      Navigator.of(context).pop(deleted);
+      try {
+        await container.read(budgetProvider.notifier).deleteTransaction(deleted.id);
+        if (context.mounted) Navigator.of(context).pop(deleted);
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not delete transaction. Please try again.',
+                  style: AppTypography.body1.copyWith(color: AppColors.white)),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
+            ),
+          );
+        }
+      }
     }
   }
 }

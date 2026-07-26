@@ -1,59 +1,51 @@
+import 'budget_summary.dart';
 import 'budget_transaction.dart';
 
 class BudgetState {
   final List<BudgetTransaction> transactions;
-  final double monthlyBudget;
-  final double groceriesBudget;
-  final double diningBudget;
+  final double dineInBudget;
+  final double groceryBudget;
+  final int spendingAlertPercent;
+  final BudgetSummary? summary;
 
   const BudgetState({
     required this.transactions,
-    this.monthlyBudget = 1000.0,
-    this.groceriesBudget = 400.0,
-    this.diningBudget = 400.0,
+    this.dineInBudget = 0,
+    this.groceryBudget = 0,
+    this.spendingAlertPercent = 80,
+    this.summary,
   });
 
-  List<BudgetTransaction> get _currentMonth {
-    final now = DateTime.now();
-    return transactions
-        .where((t) =>
-            t.dateTime.year == now.year && t.dateTime.month == now.month)
-        .toList();
-  }
+  double get monthlyBudget => dineInBudget + groceryBudget;
 
-  double get totalSpent =>
-      _currentMonth.fold(0.0, (s, t) => s + t.amount);
-
-  double get groceriesSpent => _currentMonth
-      .where((t) => t.category == BudgetCategory.groceries)
-      .fold(0.0, (s, t) => s + t.amount);
-
-  double get diningSpent => _currentMonth
-      .where((t) => t.category == BudgetCategory.dining)
-      .fold(0.0, (s, t) => s + t.amount);
+  double get diningSpent => summary?.dineIn.spent ?? 0;
+  double get groceriesSpent => summary?.grocery.spent ?? 0;
+  double get totalSpent => diningSpent + groceriesSpent;
 
   List<BudgetTransaction> get recentTransactions {
-    final sorted = List<BudgetTransaction>.from(_currentMonth)
-      ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
+    final sorted = List<BudgetTransaction>.from(transactions)
+      ..sort((a, b) => b.dateSpent.compareTo(a.dateSpent));
     return sorted.take(3).toList();
   }
 
   List<BudgetTransaction> get allSortedDesc {
     final sorted = List<BudgetTransaction>.from(transactions)
-      ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
+      ..sort((a, b) => b.dateSpent.compareTo(a.dateSpent));
     return sorted;
   }
 
   BudgetState copyWith({
     List<BudgetTransaction>? transactions,
-    double? monthlyBudget,
-    double? groceriesBudget,
-    double? diningBudget,
+    double? dineInBudget,
+    double? groceryBudget,
+    int? spendingAlertPercent,
+    BudgetSummary? summary,
   }) =>
       BudgetState(
         transactions: transactions ?? this.transactions,
-        monthlyBudget: monthlyBudget ?? this.monthlyBudget,
-        groceriesBudget: groceriesBudget ?? this.groceriesBudget,
-        diningBudget: diningBudget ?? this.diningBudget,
+        dineInBudget: dineInBudget ?? this.dineInBudget,
+        groceryBudget: groceryBudget ?? this.groceryBudget,
+        spendingAlertPercent: spendingAlertPercent ?? this.spendingAlertPercent,
+        summary: summary ?? this.summary,
       );
 }
