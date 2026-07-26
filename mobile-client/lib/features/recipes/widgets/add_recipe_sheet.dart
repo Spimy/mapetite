@@ -8,6 +8,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/widgets/app_chip.dart';
+import '../../../shared/widgets/toast_helpers.dart';
 import '../models/recipe_model.dart';
 import '../providers/recipe_provider.dart';
 
@@ -607,35 +608,12 @@ class _ImageUploadAreaState extends State<_ImageUploadArea> {
       if (picked == null) return;
       final bytes = await picked.readAsBytes();
       if (mounted) setState(() => _imageBytes = bytes);
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Could not load image. Please try again.',
-                    style: AppTypography.body1.copyWith(color: AppColors.white),
-                  ),
-                ),
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: AppColors.white.withValues(alpha: 0.25),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.close, color: AppColors.white, size: 14),
-                ),
-              ],
-            ),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            ),
-          ),
+        showErrorSnackbar(
+          context,
+          'Could not load image. Please try again.',
+          onRetry: () => _pickImage(source),
         );
       }
     }

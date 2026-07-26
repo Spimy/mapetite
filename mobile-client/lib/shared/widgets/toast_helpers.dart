@@ -51,3 +51,50 @@ void showIngredientAddedToast(BuildContext context, String itemName) {
     ),
   );
 }
+
+void showErrorSnackbar(
+  BuildContext context,
+  String message, {
+  VoidCallback? onRetry,
+}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Row(
+        children: [
+          Expanded(
+            child: Text(
+              message,
+              style: AppTypography.body2.copyWith(color: AppColors.white),
+            ),
+          ),
+          if (onRetry != null)
+            TextButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                onRetry();
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Retry',
+                style: AppTypography.label.copyWith(
+                  color: AppColors.primaryLight,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+        ],
+      ),
+      backgroundColor: AppColors.neutral,
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(AppSpacing.lg),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+      ),
+      duration: const Duration(seconds: 4),
+    ),
+  );
+}
