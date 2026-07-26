@@ -34,12 +34,15 @@ class MapetiteApp extends ConsumerWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [Locale('en'), Locale('ms')],
+          supportedLocales: const [
+            Locale('en'),
+            Locale('ms'),
+          ],
           builder: (context, widget) {
             return MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: TextScaler.noScaling),
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.noScaling,
+              ),
               child: widget!,
             );
           },
