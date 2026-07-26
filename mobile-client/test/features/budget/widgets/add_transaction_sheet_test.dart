@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapetite/features/budget/models/budget_state.dart';
+import 'package:mapetite/features/budget/models/budget_transaction.dart';
 import 'package:mapetite/features/budget/providers/budget_provider.dart';
 import 'package:mapetite/features/budget/widgets/add_transaction_sheet.dart';
 import 'package:mapetite/shared/providers/store_providers.dart';
 import 'package:mapetite/shared/models/store_model.dart';
 
 class _NoopBudgetNotifier extends BudgetNotifier {
+  bool addCalled = false;
+  bool deleteCalled = false;
+  String? editedId;
+  BudgetTransactionDraft? editedDraft;
+
   @override
   Future<BudgetState> build() async => const BudgetState(transactions: []);
 
@@ -15,6 +21,22 @@ class _NoopBudgetNotifier extends BudgetNotifier {
   Future<void> addTransaction(draft, {String? draftDisplayName}) async {
     // no-op — this test only checks the form renders and validates input,
     // not the network round trip (covered by the integration test suite).
+    addCalled = true;
+  }
+
+  @override
+  Future<void> deleteTransaction(String id) async {
+    deleteCalled = true;
+  }
+
+  @override
+  Future<void> editTransaction(
+    String id,
+    BudgetTransactionDraft draft, {
+    String? draftDisplayName,
+  }) async {
+    editedId = id;
+    editedDraft = draft;
   }
 }
 
@@ -39,14 +61,18 @@ final _fakeStores = <StoreModel>[
   ),
 ];
 
-Future<void> _openSheet(WidgetTester tester, ProviderContainer container) async {
+Future<void> _openSheet(
+  WidgetTester tester,
+  ProviderContainer container, {
+  BudgetTransaction? existing,
+}) async {
   await tester.pumpWidget(UncontrolledProviderScope(
     container: container,
     child: MaterialApp(
       home: Scaffold(
         body: Builder(
           builder: (context) => ElevatedButton(
-            onPressed: () => showAddTransactionSheet(context),
+            onPressed: () => showAddTransactionSheet(context, existing: existing),
             child: const Text('open'),
           ),
         ),
@@ -63,6 +89,16 @@ ProviderContainer _buildContainer({List<StoreModel> stores = const []}) {
     budgetProvider.overrideWith(_NoopBudgetNotifier.new),
     storesProvider(StoreType.restaurant).overrideWith((ref) async => stores),
   ]);
+}
+
+({ProviderContainer container, _NoopBudgetNotifier notifier})
+    _buildContainerWithNotifier({List<StoreModel> stores = const []}) {
+  final notifier = _NoopBudgetNotifier();
+  final container = ProviderContainer(overrides: [
+    budgetProvider.overrideWith(() => notifier),
+    storesProvider(StoreType.restaurant).overrideWith((ref) async => stores),
+  ]);
+  return (container: container, notifier: notifier);
 }
 
 // The amount field is a raw TextField; the name field ("Item / Place") is
@@ -148,5 +184,37 @@ void main() {
 
     final nameField = tester.widget<TextFormField>(_nameFieldFinder);
     expect(nameField.controller?.text, 'Jaya Grocer');
+  });
+
+  testWidgets(
+      'saving an edit calls editTransaction, never delete+add',
+      (tester) async {
+    final built = _buildContainerWithNotifier();
+    addTearDown(built.container.dispose);
+
+    final existing = BudgetTransaction(
+      id: 'tx1',
+      storeId: '1',
+      storeName: 'Jaya Grocer',
+      category: BudgetCategory.groceries,
+      amount: 25.50,
+      dateSpent: DateTime(2026, 7, 20),
+      createdAt: DateTime(2026, 7, 20),
+    );
+
+    await _openSheet(tester, built.container, existing: existing);
+
+    final saveButton = find.widgetWithText(ElevatedButton, 'Save Changes');
+    expect(saveButton, findsOneWidget);
+
+    await tester.ensureVisible(saveButton);
+    await tester.pumpAndSettle();
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(built.notifier.editedId, 'tx1');
+    expect(built.notifier.editedDraft, isNotNull);
+    expect(built.notifier.addCalled, isFalse);
+    expect(built.notifier.deleteCalled, isFalse);
   });
 }

@@ -70,6 +70,49 @@ void main() {
     expect(rolledBack.transactions.length, 2);
   });
 
+  test(
+      'editTransaction updates the transaction in place (keeping its id) and rolls back on failure',
+      () async {
+    // Regression test: edit used to be delete-then-add, so a mid-flight
+    // failure could permanently lose the original transaction and a
+    // successful edit would change the transaction's id. editTransaction
+    // must update in place and preserve the id through both the optimistic
+    // update and any rollback.
+    final container = ProviderContainer(overrides: [
+      budgetProvider.overrideWith(() => _FakeBudgetNotifier(
+            BudgetState(transactions: [_tx('a', 10), _tx('b', 20)]),
+          )),
+    ]);
+    addTearDown(container.dispose);
+    await container.read(budgetProvider.future);
+
+    final draft = BudgetTransactionDraft(
+      name: 'Updated',
+      category: BudgetCategory.dining,
+      amount: 42,
+      dateSpent: DateTime(2026, 7, 21),
+    );
+
+    final future = container
+        .read(budgetProvider.notifier)
+        .editTransaction('a', draft, draftDisplayName: 'Updated');
+
+    await Future<void>.delayed(Duration.zero);
+    final optimistic = container.read(budgetProvider).value!;
+    final optimisticA =
+        optimistic.transactions.firstWhere((t) => t.id == 'a');
+    expect(optimisticA.amount, 42);
+    expect(optimistic.transactions.length, 2);
+
+    // The underlying network call will fail (no backend reachable in this
+    // unit test), so state should roll back to the original amount, with
+    // the id unchanged throughout.
+    await future.catchError((_) {});
+    final rolledBack = container.read(budgetProvider).value!;
+    final rolledBackA = rolledBack.transactions.firstWhere((t) => t.id == 'a');
+    expect(rolledBackA.amount, 10);
+  });
+
   test('selectMonth surfaces an error instead of leaving the previous month\'s data displayed',
       () async {
     // Regression test: the month selector used to only change the display

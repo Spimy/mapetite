@@ -133,6 +133,41 @@ class BudgetNotifier extends AsyncNotifier<BudgetState> {
     }
   }
 
+  /// Updates a transaction in place via PUT, keeping its id. Deliberately
+  /// not delete+add: if delete succeeds but the follow-up call fails, the
+  /// original transaction would be permanently lost.
+  Future<void> editTransaction(
+    String id,
+    BudgetTransactionDraft draft, {
+    String? draftDisplayName,
+  }) async {
+    final current = await future;
+    final previous = state;
+
+    final updated = current.transactions.map((t) {
+      if (t.id != id) return t;
+      return BudgetTransaction(
+        id: t.id,
+        storeId: draft.storeId,
+        storeName: draftDisplayName,
+        category: draft.category,
+        amount: draft.amount,
+        dateSpent: draft.dateSpent,
+        notes: draft.notes,
+        createdAt: t.createdAt,
+      );
+    }).toList();
+    state = AsyncData(current.copyWith(transactions: updated));
+
+    try {
+      await _budgetService.updateTransaction(id, draft);
+      await refresh();
+    } catch (e) {
+      state = previous;
+      rethrow;
+    }
+  }
+
   /// Re-creates a deleted transaction (delete is permanent server-side, so
   /// "undo" is really "add it back" — it will get a new id).
   Future<void> restoreTransaction(BudgetTransaction tx) async {

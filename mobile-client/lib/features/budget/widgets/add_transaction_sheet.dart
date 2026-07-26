@@ -163,13 +163,18 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     );
 
     try {
+      final displayName = _selectedStore?.businessName ?? _nameCtrl.text.trim();
       if (_isEditing) {
-        await ref.read(budgetProvider.notifier).deleteTransaction(widget.existing!.id);
+        await ref.read(budgetProvider.notifier).editTransaction(
+              widget.existing!.id,
+              draft,
+              draftDisplayName: displayName,
+            );
+      } else {
+        await ref
+            .read(budgetProvider.notifier)
+            .addTransaction(draft, draftDisplayName: displayName);
       }
-      await ref.read(budgetProvider.notifier).addTransaction(
-            draft,
-            draftDisplayName: _selectedStore?.businessName ?? _nameCtrl.text.trim(),
-          );
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
