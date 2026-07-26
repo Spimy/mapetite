@@ -10,6 +10,9 @@ class AppEmptyState extends StatelessWidget {
   final String description;
   final String? ctaLabel;
   final VoidCallback? onCta;
+  final Color iconBackgroundColor;
+  final Color iconColor;
+  final AppButtonVariant buttonVariant;
 
   const AppEmptyState({
     super.key,
@@ -18,6 +21,9 @@ class AppEmptyState extends StatelessWidget {
     required this.description,
     this.ctaLabel,
     this.onCta,
+    this.iconBackgroundColor = AppColors.tertiary,
+    this.iconColor = AppColors.primary,
+    this.buttonVariant = AppButtonVariant.primary,
   });
 
   @override
@@ -31,11 +37,11 @@ class AppEmptyState extends StatelessWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                color: AppColors.tertiary,
+              decoration: BoxDecoration(
+                color: iconBackgroundColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 36, color: AppColors.primary),
+              child: Icon(icon, size: 36, color: iconColor),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
@@ -54,6 +60,7 @@ class AppEmptyState extends StatelessWidget {
               AppButton(
                 label: ctaLabel!,
                 onPressed: onCta,
+                variant: buttonVariant,
                 isFullWidth: false,
                 width: 200,
               ),
