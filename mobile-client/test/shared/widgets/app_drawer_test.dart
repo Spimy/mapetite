@@ -9,7 +9,7 @@ GoRouter _testRouter() {
       GoRoute(
         path: '/',
         builder: (_, _) => const Scaffold(
-          drawer: AppDrawer(displayName: 'Joshua', savedThisMonth: 47.50),
+          drawer: AppDrawer(displayName: 'Joshua', remainingThisMonth: 47.50),
           body: Text('Home'),
         ),
       ),
@@ -72,9 +72,9 @@ void main() {
       expect(find.text('Account & Preferences'), findsOneWidget);
     });
 
-    testWidgets('renders savings pill text', (tester) async {
+    testWidgets('renders budget pill text', (tester) async {
       await openDrawer(tester);
-      expect(find.textContaining('Saved This Month'), findsOneWidget);
+      expect(find.textContaining('Left This Month'), findsOneWidget);
     });
 
     testWidgets('renders all 6 nav items', (tester) async {

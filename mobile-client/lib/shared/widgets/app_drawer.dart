@@ -8,12 +8,12 @@ import '../../routes/app_router.dart';
 
 class AppDrawer extends StatelessWidget {
   final String displayName;
-  final double savedThisMonth;
+  final double remainingThisMonth;
 
   const AppDrawer({
     super.key,
     required this.displayName,
-    required this.savedThisMonth,
+    required this.remainingThisMonth,
   });
 
   @override
@@ -102,7 +102,7 @@ class AppDrawer extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.md),
-            _SavingsPill(amount: savedThisMonth),
+            _BudgetPill(amount: remainingThisMonth),
           ],
         ),
       ),
@@ -153,9 +153,9 @@ class _NavItem {
   const _NavItem(this.icon, this.label, this.route);
 }
 
-class _SavingsPill extends StatelessWidget {
+class _BudgetPill extends StatelessWidget {
   final double amount;
-  const _SavingsPill({required this.amount});
+  const _BudgetPill({required this.amount});
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +174,7 @@ class _SavingsPill extends StatelessWidget {
           const SizedBox(width: AppSpacing.xs),
           Flexible(
             child: Text(
-              'RM ${amount.toStringAsFixed(2)} Saved This Month',
+              'RM ${amount.toStringAsFixed(2)} Left This Month',
               style: AppTypography.label
                   .copyWith(color: AppColors.primary, fontWeight: FontWeight.w600),
               overflow: TextOverflow.ellipsis,

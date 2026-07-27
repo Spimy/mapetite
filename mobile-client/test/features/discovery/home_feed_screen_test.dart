@@ -9,6 +9,9 @@ import 'package:mapetite/features/auth/controllers/auth_controller.dart';
 import 'package:mapetite/features/auth/models/auth_state.dart';
 import 'package:mapetite/features/auth/models/current_user.dart';
 import 'package:mapetite/features/auth/services/auth_service.dart';
+import 'package:mapetite/features/budget/models/budget_state.dart';
+import 'package:mapetite/features/budget/models/budget_summary.dart';
+import 'package:mapetite/features/budget/providers/budget_provider.dart';
 import 'package:mapetite/features/discovery/models/home_feed_models.dart';
 import 'package:mapetite/features/discovery/screens/home_feed_screen.dart';
 import 'package:mapetite/shared/models/store_model.dart';
@@ -136,6 +139,25 @@ const _testCurrentUser = CurrentUser(
   profile: _testUserProfile,
 );
 
+const _testBudgetState = BudgetState(
+  transactions: [],
+  dineInBudget: 300,
+  groceryBudget: 200,
+  summary: BudgetSummary(
+    month: 1,
+    year: 2026,
+    dineIn: BudgetCategorySummary(spent: 100, budget: 300, percentageUsed: 33),
+    grocery: BudgetCategorySummary(spent: 50, budget: 200, percentageUsed: 25),
+  ),
+);
+
+/// Avoids the real BudgetNotifier.build() hitting the network, which would
+/// leave a pending timer behind and fail the test on teardown.
+class _FixedBudgetNotifier extends BudgetNotifier {
+  @override
+  Future<BudgetState> build() async => _testBudgetState;
+}
+
 Widget _wrap(Widget child) {
   return ProviderScope(child: MaterialApp(home: child));
 }
@@ -241,6 +263,7 @@ Widget _routerWrap({_StoresBuilder? storesBuilder}) => ProviderScope(
           (ref) => AuthController(AuthService())
             ..state = const AuthState(currentUser: _testCurrentUser),
         ),
+        budgetProvider.overrideWith(() => _FixedBudgetNotifier()),
       ],
       child: MaterialApp.router(routerConfig: _testRouter()),
     );

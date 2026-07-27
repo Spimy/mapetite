@@ -16,7 +16,6 @@ import '../../../shared/widgets/dietary_chip.dart';
 import '../../../shared/widgets/empty_feed_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/network_error_state.dart';
-import '../models/mocks/home_feed_mocks.dart';
 import '../../../routes/app_router.dart';
 import '../../../features/notifications/providers/notification_provider.dart';
 import '../../../shared/models/store_model.dart';
@@ -26,6 +25,7 @@ import '../../../shared/widgets/dialogs/location_permission_dialog.dart';
 import '../../../shared/widgets/location_sheet.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../budget/providers/budget_provider.dart';
 
 class HomeFeedScreen extends ConsumerStatefulWidget {
   const HomeFeedScreen({super.key});
@@ -126,12 +126,16 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     final groceriesAsync = ref.watch(nearbyStoresProvider(groceryQuery));
     final displayName =
         ref.watch(authControllerProvider).currentUser?.displayName ?? '';
+    final budgetState = ref.watch(budgetProvider).valueOrNull;
+    final remainingThisMonth = budgetState == null
+        ? 0.0
+        : budgetState.monthlyBudget - budgetState.totalSpent;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       drawer: AppDrawer(
         displayName: displayName,
-        savedThisMonth: 47.50,
+        remainingThisMonth: remainingThisMonth,
       ),
       body: SafeArea(
         child: restaurantsAsync.when(
@@ -258,6 +262,10 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
   Widget _buildGreetingSection() {
     final displayName =
         ref.watch(authControllerProvider).currentUser?.displayName ?? '';
+    final budgetState = ref.watch(budgetProvider).valueOrNull;
+    final remainingThisMonth = budgetState == null
+        ? 0.0
+        : budgetState.monthlyBudget - budgetState.totalSpent;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -286,7 +294,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
           Row(
             children: [
               Text(
-                'RM ${HomeFeedMocks.budgetRemaining.toStringAsFixed(0)}',
+                'RM ${remainingThisMonth.toStringAsFixed(0)}',
                 style: AppTypography.button.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
