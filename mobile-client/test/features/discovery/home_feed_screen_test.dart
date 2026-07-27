@@ -5,6 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mapetite/core/errors/app_exception.dart';
+import 'package:mapetite/features/auth/controllers/auth_controller.dart';
+import 'package:mapetite/features/auth/models/auth_state.dart';
+import 'package:mapetite/features/auth/models/current_user.dart';
+import 'package:mapetite/features/auth/services/auth_service.dart';
 import 'package:mapetite/features/discovery/models/home_feed_models.dart';
 import 'package:mapetite/features/discovery/screens/home_feed_screen.dart';
 import 'package:mapetite/shared/models/store_model.dart';
@@ -107,6 +111,31 @@ const _testGroceryStore = StoreModel(
 const _defaultRestaurants = [_testRestaurantStore];
 const _defaultGroceries = [_testGroceryStore];
 
+const _testUserProfile = UserProfile(
+  onboardingCompleted: true,
+  avatar: null,
+  phoneNumber: '',
+  address: '',
+  city: '',
+  country: '',
+  spendingAlertPercent: 80,
+  healthGoal: '',
+  activityLevel: '',
+  isHalal: false,
+  isVegan: false,
+  allergies: [],
+);
+
+const _testCurrentUser = CurrentUser(
+  id: 1,
+  email: 'joshua@example.com',
+  username: 'joshua',
+  firstName: 'Joshua',
+  lastName: '',
+  isVerified: true,
+  profile: _testUserProfile,
+);
+
 Widget _wrap(Widget child) {
   return ProviderScope(child: MaterialApp(home: child));
 }
@@ -207,6 +236,10 @@ Widget _routerWrap({_StoresBuilder? storesBuilder}) => ProviderScope(
       overrides: [
         nearbyStoresProvider.overrideWith(
           (ref, query) => (storesBuilder ?? _defaultStoresBuilder)(query),
+        ),
+        authControllerProvider.overrideWith(
+          (ref) => AuthController(AuthService())
+            ..state = const AuthState(currentUser: _testCurrentUser),
         ),
       ],
       child: MaterialApp.router(routerConfig: _testRouter()),

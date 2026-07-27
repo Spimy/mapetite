@@ -25,6 +25,7 @@ import '../../../shared/providers/store_providers.dart';
 import '../../../shared/widgets/dialogs/location_permission_dialog.dart';
 import '../../../shared/widgets/location_sheet.dart';
 import 'package:geolocator/geolocator.dart';
+import '../../auth/controllers/auth_controller.dart';
 
 class HomeFeedScreen extends ConsumerStatefulWidget {
   const HomeFeedScreen({super.key});
@@ -123,11 +124,13 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     );
     final restaurantsAsync = ref.watch(nearbyStoresProvider(restaurantQuery));
     final groceriesAsync = ref.watch(nearbyStoresProvider(groceryQuery));
+    final displayName =
+        ref.watch(authControllerProvider).currentUser?.displayName ?? '';
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(
-        displayName: HomeFeedMocks.userName,
+      drawer: AppDrawer(
+        displayName: displayName,
         savedThisMonth: 47.50,
       ),
       body: SafeArea(
@@ -253,6 +256,9 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
   // ─── Greeting section ────────────────────────────────────────────────────────
 
   Widget _buildGreetingSection() {
+    final displayName =
+        ref.watch(authControllerProvider).currentUser?.displayName ?? '';
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
@@ -264,7 +270,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Hi, ${HomeFeedMocks.userName}.',
+            'Hi, $displayName.',
             style: AppTypography.display.copyWith(color: AppColors.neutral),
           ),
           const SizedBox(height: AppSpacing.xxs),
