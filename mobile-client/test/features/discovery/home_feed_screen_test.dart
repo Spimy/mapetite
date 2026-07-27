@@ -4,6 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mapetite/core/errors/app_exception.dart';
+import 'package:mapetite/features/auth/controllers/auth_controller.dart';
+import 'package:mapetite/features/auth/models/auth_state.dart';
+import 'package:mapetite/features/auth/models/current_user.dart';
+import 'package:mapetite/features/auth/services/auth_service.dart';
+import 'package:mapetite/features/budget/models/budget_state.dart';
+import 'package:mapetite/features/budget/models/budget_summary.dart';
+import 'package:mapetite/features/budget/providers/budget_provider.dart';
 import 'package:mapetite/features/discovery/models/home_feed_models.dart';
 import 'package:mapetite/features/discovery/screens/home_feed_screen.dart';
 import 'package:mapetite/shared/models/store_model.dart';
@@ -106,6 +114,50 @@ const _testGroceryStore = StoreModel(
 const _defaultRestaurants = [_testRestaurantStore];
 const _defaultGroceries = [_testGroceryStore];
 
+const _testUserProfile = UserProfile(
+  onboardingCompleted: true,
+  avatar: null,
+  phoneNumber: '',
+  address: '',
+  city: '',
+  country: '',
+  spendingAlertPercent: 80,
+  healthGoal: '',
+  activityLevel: '',
+  isHalal: false,
+  isVegan: false,
+  allergies: [],
+);
+
+const _testCurrentUser = CurrentUser(
+  id: 1,
+  email: 'joshua@example.com',
+  username: 'joshua',
+  firstName: 'Joshua',
+  lastName: '',
+  isVerified: true,
+  profile: _testUserProfile,
+);
+
+const _testBudgetState = BudgetState(
+  transactions: [],
+  dineInBudget: 300,
+  groceryBudget: 200,
+  summary: BudgetSummary(
+    month: 1,
+    year: 2026,
+    dineIn: BudgetCategorySummary(spent: 100, budget: 300, percentageUsed: 33),
+    grocery: BudgetCategorySummary(spent: 50, budget: 200, percentageUsed: 25),
+  ),
+);
+
+/// Avoids the real BudgetNotifier.build() hitting the network, which would
+/// leave a pending timer behind and fail the test on teardown.
+class _FixedBudgetNotifier extends BudgetNotifier {
+  @override
+  Future<BudgetState> build() async => _testBudgetState;
+}
+
 Widget _wrap(Widget child) {
   return ProviderScope(child: MaterialApp(home: child));
 }
@@ -207,6 +259,11 @@ Widget _routerWrap({_StoresBuilder? storesBuilder}) => ProviderScope(
         nearbyStoresProvider.overrideWith(
           (ref, query) => (storesBuilder ?? _defaultStoresBuilder)(query),
         ),
+        authControllerProvider.overrideWith(
+          (ref) => AuthController(AuthService())
+            ..state = const AuthState(currentUser: _testCurrentUser),
+        ),
+        budgetProvider.overrideWith(() => _FixedBudgetNotifier()),
       ],
       child: MaterialApp.router(routerConfig: _testRouter()),
     );
@@ -691,6 +748,49 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('GroceryDetail'), findsOneWidget);
+    });
+
+    testWidgets(
+        'shows NetworkErrorState instead of the generic error when the restaurant fetch is a network error',
+        (tester) async {
+      await tester.pumpWidget(_routerWrap(
+        storesBuilder: (query) async {
+          if (query.type == StoreType.restaurant) {
+            throw const AppException(
+              message: 'No internet connection.',
+              isNetworkError: true,
+            );
+          }
+          return _defaultGroceries;
+        },
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Could not connect.'), findsOneWidget);
+      expect(find.byIcon(Icons.wifi_off), findsOneWidget);
+      expect(find.text('Something went wrong'), findsNothing);
+    });
+
+    testWidgets(
+        'shows EmptyFeedState with Expand Radius when both nearby lists are empty, and tapping it re-fetches at the max radius',
+        (tester) async {
+      final seenRadii = <double>[];
+      await tester.pumpWidget(_routerWrap(
+        storesBuilder: (query) async {
+          seenRadii.add(query.radiusKm);
+          return <StoreModel>[];
+        },
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nothing nearby.'), findsOneWidget);
+      expect(find.text('Expand Radius'), findsOneWidget);
+      expect(seenRadii, everyElement(5.0));
+
+      await tester.tap(find.text('Expand Radius'));
+      await tester.pumpAndSettle();
+
+      expect(seenRadii, contains(20.0));
     });
   });
 

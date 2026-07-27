@@ -110,10 +110,16 @@ void main() {
         const AuthTokens(access: 'bad-access', refresh: 'bad-refresh'),
       );
 
-      expect(
+      var sessionExpiredCalled = false;
+      onSessionExpired = () => sessionExpiredCalled = true;
+      addTearDown(() => onSessionExpired = null);
+
+      await expectLater(
         () => ApiClient.get('stores/'),
         throwsA(isA<AppException>()),
       );
+
+      expect(sessionExpiredCalled, isTrue);
     });
   });
 }

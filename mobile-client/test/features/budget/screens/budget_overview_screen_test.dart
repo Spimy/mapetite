@@ -7,6 +7,7 @@ import 'package:mapetite/features/budget/models/budget_state.dart';
 import 'package:mapetite/features/budget/models/budget_summary.dart';
 import 'package:mapetite/features/budget/providers/budget_provider.dart';
 import 'package:mapetite/features/budget/screens/budget_overview_screen.dart';
+import 'package:mapetite/shared/widgets/loading_indicator.dart';
 
 class _FixedBudgetNotifier extends BudgetNotifier {
   final BudgetState _state;
@@ -56,7 +57,8 @@ void main() {
     expect(bars.first.value, closeTo(111 / 555, 0.001));
   });
 
-  testWidgets('shows a loading indicator while budgetProvider is loading', (tester) async {
+  testWidgets('shows a shimmer skeleton while budgetProvider is loading',
+      (tester) async {
     final container = ProviderContainer(overrides: [
       budgetProvider.overrideWith(_PendingBudgetNotifier.new),
     ]);
@@ -68,6 +70,8 @@ void main() {
     ));
     await tester.pump();
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(ShimmerLoader), findsOneWidget);
+    expect(find.byType(CardShimmer), findsNWidgets(2));
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 }

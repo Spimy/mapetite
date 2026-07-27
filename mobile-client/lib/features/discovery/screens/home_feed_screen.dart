@@ -8,11 +8,14 @@ import 'package:shimmer/shimmer.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/errors/app_exception.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/dietary_chip.dart';
+import '../../../shared/widgets/empty_feed_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
-import '../models/mocks/home_feed_mocks.dart';
+import '../../../shared/widgets/network_error_state.dart';
 import '../../../routes/app_router.dart';
 import '../../../features/notifications/providers/notification_provider.dart';
 import '../../../shared/models/store_model.dart';
@@ -21,6 +24,8 @@ import '../../../shared/providers/store_providers.dart';
 import '../../../shared/widgets/dialogs/location_permission_dialog.dart';
 import '../../../shared/widgets/location_sheet.dart';
 import 'package:geolocator/geolocator.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../budget/providers/budget_provider.dart';
 
 class HomeFeedScreen extends ConsumerStatefulWidget {
   const HomeFeedScreen({super.key});
@@ -35,6 +40,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
   late Animation<double> _fadeAnim;
   late Animation<Offset> _cardAnim1;
   late Animation<Offset> _cardAnim2;
+  double _radiusKm = AppConstants.defaultSearchRadiusKm;
 
   @override
   void initState() {
@@ -107,54 +113,79 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     final restaurantQuery = NearbyStoresQuery(
       lat: lat,
       lng: lng,
-      radiusKm: 5,
+      radiusKm: _radiusKm,
       type: StoreType.restaurant,
     );
     final groceryQuery = NearbyStoresQuery(
       lat: lat,
       lng: lng,
-      radiusKm: 5,
+      radiusKm: _radiusKm,
       type: StoreType.grocery,
     );
     final restaurantsAsync = ref.watch(nearbyStoresProvider(restaurantQuery));
     final groceriesAsync = ref.watch(nearbyStoresProvider(groceryQuery));
+    final displayName =
+        ref.watch(authControllerProvider).currentUser?.displayName ?? '';
+    final budgetState = ref.watch(budgetProvider).valueOrNull;
+    final remainingThisMonth = budgetState == null
+        ? 0.0
+        : budgetState.monthlyBudget - budgetState.totalSpent;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      drawer: const AppDrawer(
-        displayName: HomeFeedMocks.userName,
-        savedThisMonth: 47.50,
+      drawer: AppDrawer(
+        displayName: displayName,
+        remainingThisMonth: remainingThisMonth,
       ),
       body: SafeArea(
         child: restaurantsAsync.when(
           loading: () => const HomeFeedSkeleton(),
-          error: (_, _) => AppEmptyState(
-            icon: Icons.error_outline,
-            title: 'Something went wrong',
-            description: 'Unable to load your feed. Please try again.',
-            ctaLabel: 'Retry',
-            onCta: () {
-              ref.invalidate(nearbyStoresProvider(restaurantQuery));
-              ref.invalidate(nearbyStoresProvider(groceryQuery));
-            },
-          ),
+          error: (error, _) => error is AppException && error.isNetworkError
+              ? NetworkErrorState(
+                  onRetry: () {
+                    ref.invalidate(nearbyStoresProvider(restaurantQuery));
+                    ref.invalidate(nearbyStoresProvider(groceryQuery));
+                  },
+                )
+              : AppEmptyState(
+                  icon: Icons.error_outline,
+                  title: 'Something went wrong',
+                  description: 'Unable to load your feed. Please try again.',
+                  ctaLabel: 'Retry',
+                  onCta: () {
+                    ref.invalidate(nearbyStoresProvider(restaurantQuery));
+                    ref.invalidate(nearbyStoresProvider(groceryQuery));
+                  },
+                ),
           data: (restaurants) => groceriesAsync.when(
             loading: () => const HomeFeedSkeleton(),
-            error: (_, _) => AppEmptyState(
-              icon: Icons.error_outline,
-              title: 'Something went wrong',
-              description: 'Unable to load your feed. Please try again.',
-              ctaLabel: 'Retry',
-              onCta: () => ref.invalidate(nearbyStoresProvider(groceryQuery)),
-            ),
-            data: (groceries) => CustomScrollView(
-              slivers: [
-                _buildAppBar(),
-                SliverToBoxAdapter(
-                  child: _buildContent(restaurants, groceries),
-                ),
-              ],
-            ),
+            error: (error, _) => error is AppException && error.isNetworkError
+                ? NetworkErrorState(
+                    onRetry: () =>
+                        ref.invalidate(nearbyStoresProvider(groceryQuery)),
+                  )
+                : AppEmptyState(
+                    icon: Icons.error_outline,
+                    title: 'Something went wrong',
+                    description: 'Unable to load your feed. Please try again.',
+                    ctaLabel: 'Retry',
+                    onCta: () => ref.invalidate(nearbyStoresProvider(groceryQuery)),
+                  ),
+            data: (groceries) => restaurants.isEmpty && groceries.isEmpty
+                ? EmptyFeedState(
+                    ctaLabel: 'Expand Radius',
+                    onCta: () => setState(
+                      () => _radiusKm = AppConstants.maxSearchRadiusKm,
+                    ),
+                  )
+                : CustomScrollView(
+                    slivers: [
+                      _buildAppBar(),
+                      SliverToBoxAdapter(
+                        child: _buildContent(restaurants, groceries),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -229,6 +260,13 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
   // ─── Greeting section ────────────────────────────────────────────────────────
 
   Widget _buildGreetingSection() {
+    final displayName =
+        ref.watch(authControllerProvider).currentUser?.displayName ?? '';
+    final budgetState = ref.watch(budgetProvider).valueOrNull;
+    final remainingThisMonth = budgetState == null
+        ? 0.0
+        : budgetState.monthlyBudget - budgetState.totalSpent;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
@@ -240,7 +278,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Hi, ${HomeFeedMocks.userName}.',
+            'Hi, $displayName.',
             style: AppTypography.display.copyWith(color: AppColors.neutral),
           ),
           const SizedBox(height: AppSpacing.xxs),
@@ -256,7 +294,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
           Row(
             children: [
               Text(
-                'RM ${HomeFeedMocks.budgetRemaining.toStringAsFixed(0)}',
+                'RM ${remainingThisMonth.toStringAsFixed(0)}',
                 style: AppTypography.button.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,

@@ -9,6 +9,7 @@ import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/store_providers.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../../shared/widgets/loading_indicator.dart';
 
 class GroceryStoreDetailScreen extends ConsumerStatefulWidget {
   final String storeId;
@@ -125,7 +126,27 @@ class _GroceryStoreDetailScreenState
   Scaffold _buildLoadingScaffold() {
     return const Scaffold(
       backgroundColor: AppColors.background,
-      body: Center(child: CircularProgressIndicator()),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ShimmerLoader(
+              width: double.infinity,
+              height: 160,
+              borderRadius: AppSpacing.radiusLg,
+            ),
+            SizedBox(height: AppSpacing.lg),
+            ShimmerLoader(width: 200, height: 20),
+            SizedBox(height: AppSpacing.sm),
+            ShimmerLoader(width: 140, height: 14),
+            SizedBox(height: AppSpacing.xl),
+            CardShimmer(height: 80),
+            SizedBox(height: AppSpacing.md),
+            CardShimmer(height: 80),
+          ],
+        ),
+      ),
     );
   }
 

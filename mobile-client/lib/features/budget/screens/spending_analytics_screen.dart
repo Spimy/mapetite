@@ -4,6 +4,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/loading_indicator.dart';
 import '../models/budget_state.dart';
 import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
@@ -165,7 +166,16 @@ class _SpendingAnalyticsScreenState
       loading: () => Scaffold(
         backgroundColor: AppColors.background,
         appBar: _buildInsightsAppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const SingleChildScrollView(
+          padding: EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            children: [
+              CardShimmer(height: 220),
+              SizedBox(height: AppSpacing.lg),
+              CardShimmer(height: 140),
+            ],
+          ),
+        ),
       ),
       error: (_, _) => Scaffold(
         backgroundColor: AppColors.background,

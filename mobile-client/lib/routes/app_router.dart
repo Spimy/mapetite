@@ -31,7 +31,10 @@ import '../features/notifications/screens/notification_centre_screen.dart';
 import '../features/notifications/screens/notification_settings_screen.dart';
 import '../features/settings/screens/app_settings_screen.dart';
 import '../features/settings/screens/about_screen.dart';
-import '../shared/screens/web_placeholder_screen.dart';
+import '../features/settings/legal_content.dart';
+import '../shared/screens/legal_document_screen.dart';
+
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 abstract class AppRoutes {
   static const String splash = '/';
@@ -77,9 +80,11 @@ abstract class AppRoutes {
   static const String aboutPrivacy = '/about/privacy';
   static const String aboutLicences = '/about/licences';
   static const String settingsNotifications = '/settings/notifications';
+  static const String settingsPrivacy = '/settings/privacy';
 }
 
 final GoRouter appRouter = GoRouter(
+  navigatorKey: appNavigatorKey,
   initialLocation: AppRoutes.splash,
   routes: [
     GoRoute(
@@ -140,6 +145,10 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const NotificationSettingsScreen(),
     ),
     GoRoute(
+      path: AppRoutes.settingsPrivacy,
+      builder: (context, state) => const _WipScreen(label: 'Privacy & Data'),
+    ),
+    GoRoute(
       path: AppRoutes.directions,
       builder: (context, state) => const _WipScreen(label: 'Get Directions'),
     ),
@@ -153,18 +162,22 @@ final GoRouter appRouter = GoRouter(
       routes: [
         GoRoute(
           path: 'terms',
-          builder: (context, state) =>
-              const WebPlaceholderScreen(title: 'Terms of Service'),
+          builder: (context, state) => const LegalDocumentScreen(
+            title: 'Terms of Service',
+            body: LegalContent.termsOfService,
+          ),
         ),
         GoRoute(
           path: 'privacy',
-          builder: (context, state) =>
-              const WebPlaceholderScreen(title: 'Privacy Policy'),
+          builder: (context, state) => const LegalDocumentScreen(
+            title: 'Privacy Policy',
+            body: LegalContent.privacyPolicy,
+          ),
         ),
         GoRoute(
           path: 'licences',
           builder: (context, state) =>
-              const WebPlaceholderScreen(title: 'Open Source Licences'),
+              const LicensePage(applicationName: 'Mapetite'),
         ),
       ],
     ),

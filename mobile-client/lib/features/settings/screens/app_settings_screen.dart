@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../../shared/providers/location_provider.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dialogs/logout_dialog.dart';
 
-class AppSettingsScreen extends StatelessWidget {
+class AppSettingsScreen extends ConsumerWidget {
   const AppSettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -45,9 +50,9 @@ class AppSettingsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildProfileCard(context),
+              _buildProfileCard(context, ref),
               const SizedBox(height: AppSpacing.xxl),
-              _buildPreferencesSection(context),
+              _buildPreferencesSection(context, ref),
               const SizedBox(height: AppSpacing.xxl),
               _buildAccountSection(context),
               const SizedBox(height: AppSpacing.xxl),
@@ -61,7 +66,12 @@ class AppSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileCard(BuildContext context) {
+  Widget _buildProfileCard(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(authControllerProvider).currentUser;
+    final displayName = currentUser?.displayName ?? '';
+    final email = currentUser?.email ?? '';
+    final initials = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+
     return InkWell(
       onTap: () => context.push('/profile/edit'),
       borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
@@ -83,7 +93,7 @@ class AppSettingsScreen extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'AS',
+                  initials,
                   style: AppTypography.headline3.copyWith(color: AppColors.white),
                 ),
               ),
@@ -93,10 +103,10 @@ class AppSettingsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Joshua Bonham', style: AppTypography.headline2),
+                  Text(displayName, style: AppTypography.headline2),
                   const SizedBox(height: AppSpacing.xxs),
                   Text(
-                    'joshua.bonham@example.com',
+                    email,
                     style: AppTypography.body2.copyWith(color: AppColors.neutral600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -115,7 +125,10 @@ class AppSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPreferencesSection(BuildContext context) {
+  Widget _buildPreferencesSection(BuildContext context, WidgetRef ref) {
+    final locationPermission =
+        ref.watch(locationPermissionStatusProvider).valueOrNull;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -150,15 +163,21 @@ class AppSettingsScreen extends StatelessWidget {
               _SettingsRow(
                 icon: Icons.location_on_outlined,
                 label: 'Location',
-                value: 'Always allowed',
+                value: _locationPermissionLabel(locationPermission),
                 onTap: () {},
               ),
               const _RowDivider(),
               _SettingsRow(
                 icon: Icons.notifications_outlined,
                 label: 'Notifications',
-                isLast: true,
                 onTap: () => context.push('/settings/notifications'),
+              ),
+              const _RowDivider(),
+              _SettingsRow(
+                icon: Icons.privacy_tip_outlined,
+                label: 'Privacy & Data',
+                isLast: true,
+                onTap: () => context.push('/settings/privacy'),
               ),
             ],
           ),
@@ -195,11 +214,36 @@ class AppSettingsScreen extends StatelessWidget {
 
   Widget _buildFooter() {
     return Center(
-      child: Text(
-        'Mapetite v1.0.0 · Build 42',
-        style: AppTypography.caption.copyWith(color: AppColors.neutral400),
+      child: FutureBuilder<PackageInfo>(
+        future: PackageInfo.fromPlatform(),
+        builder: (context, snapshot) {
+          final info = snapshot.data;
+          final label =
+              info == null ? '' : 'Mapetite v${info.version} · Build ${info.buildNumber}';
+          return Text(
+            label,
+            style: AppTypography.caption.copyWith(color: AppColors.neutral400),
+          );
+        },
       ),
     );
+  }
+}
+
+String? _locationPermissionLabel(LocationPermission? permission) {
+  switch (permission) {
+    case LocationPermission.always:
+      return 'Always allowed';
+    case LocationPermission.whileInUse:
+      return 'While using app';
+    case LocationPermission.denied:
+      return 'Not allowed';
+    case LocationPermission.deniedForever:
+      return 'Denied';
+    case LocationPermission.unableToDetermine:
+      return 'Unknown';
+    case null:
+      return null;
   }
 }
 

@@ -5,6 +5,14 @@ import '../../features/auth/models/auth_tokens.dart';
 import '../../features/auth/services/auth_token_service.dart';
 import '../errors/app_exception.dart';
 
+/// Invoked whenever the refresh flow determines a session cannot be
+/// refreshed (no refresh token, or the refresh request itself fails),
+/// regardless of which request's 401 triggered the check. Registered by
+/// AuthController at construction time so the app-root SessionExpiredDialog
+/// listener fires for a 401 from any request, not just the ones
+/// AuthController.loadCurrentUser() makes itself.
+void Function()? onSessionExpired;
+
 bool shouldAttemptRefresh(DioException err) {
   if (err.requestOptions.extra['__retried'] == true) {
     return false;
@@ -119,6 +127,7 @@ class RefreshInterceptor extends Interceptor {
     _releaseWaiters();
 
     await AuthTokenService.clearTokens();
+    onSessionExpired?.call();
 
     handler.next(
       DioException(

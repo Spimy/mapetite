@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../features/auth/controllers/auth_controller.dart';
+import '../../../routes/app_router.dart';
 import '../custom_button.dart';
 
-void showLogoutDialog(BuildContext context) {
+void showSessionExpiredDialog() {
+  final context = appNavigatorKey.currentContext;
+  if (context == null) return;
+
   showDialog(
     context: context,
     barrierDismissible: false,
-    builder: (_) => const LogoutDialog(),
+    builder: (_) => const SessionExpiredDialog(),
   );
 }
 
-class LogoutDialog extends ConsumerWidget {
-  const LogoutDialog({super.key});
+class SessionExpiredDialog extends StatelessWidget {
+  const SessionExpiredDialog({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.white,
       surfaceTintColor: Colors.transparent,
@@ -35,53 +37,34 @@ class LogoutDialog extends ConsumerWidget {
               width: 56,
               height: 56,
               decoration: const BoxDecoration(
-                color: AppColors.neutral100,
+                color: AppColors.primaryLight,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.logout,
+                Icons.lock_outline,
                 size: 28,
-                color: AppColors.neutral,
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Sign out?',
+              'Session expired',
               style: AppTypography.headline2,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              "You'll need to sign in again to access your account.",
+              'Please sign in again to continue.',
               style: AppTypography.body1.copyWith(color: AppColors.neutral600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xxl),
-            Row(
-              children: [
-                Expanded(
-                  child: AppButton(
-                    label: 'Cancel',
-                    variant: AppButtonVariant.outlined,
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: AppButton(
-                    label: 'Sign Out',
-                    onPressed: () async {
-                      final router = GoRouter.of(context);
-
-                      Navigator.of(context).pop();
-
-                      await ref.read(authControllerProvider.notifier).logout();
-
-                      router.go('/login');
-                    },
-                  ),
-                ),
-              ],
+            AppButton(
+              label: 'Sign In',
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.go('/login');
+              },
             ),
           ],
         ),

@@ -4,16 +4,27 @@ class AppException implements Exception {
   final String message;
   final int? statusCode;
   final dynamic responseData;
+  final bool isNetworkError;
 
   const AppException({
     required this.message,
     this.statusCode,
     this.responseData,
+    this.isNetworkError = false,
   });
 
   factory AppException.fromDio(DioException e) {
     final statusCode = e.response?.statusCode;
     final responseData = e.response?.data;
+
+    final isNetworkError = switch (e.type) {
+      DioExceptionType.connectionTimeout ||
+      DioExceptionType.sendTimeout ||
+      DioExceptionType.receiveTimeout ||
+      DioExceptionType.connectionError =>
+        true,
+      _ => false,
+    };
 
     final message = switch (e.type) {
       DioExceptionType.connectionTimeout ||
@@ -30,6 +41,7 @@ class AppException implements Exception {
       message: message,
       statusCode: statusCode,
       responseData: responseData,
+      isNetworkError: isNetworkError,
     );
   }
 

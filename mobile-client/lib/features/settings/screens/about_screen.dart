@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_card.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -81,9 +83,20 @@ class AboutScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Version 1.0.0 (Build 42)',
-            style: AppTypography.caption.copyWith(color: AppColors.neutral400),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              final info = snapshot.data;
+              final label = info == null
+                  ? ''
+                  : 'Version ${info.version} (Build ${info.buildNumber})';
+              return Text(
+                label,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.neutral400,
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -91,21 +104,20 @@ class AboutScreen extends StatelessWidget {
   }
 
   Widget _buildMissionCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.border),
-      ),
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Our Mission', style: AppTypography.headline2),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Mapetite aims to seamlessly integrate health, diet, and local exploration into the daily lives of urban professionals. We believe navigating the city\'s culinary landscape should be an empowering experience that supports your wellbeing.',
+            'Mapetite exists to make everyday food choices healthier, more '
+            'sustainable, and more connected to the local community — '
+            'directly supporting the UN Sustainable Development Goals '
+            '(SDGs) on good health, sustainable cities, and responsible '
+            'consumption. Every recommendation we make is built around '
+            'helping you eat well without losing sight of the city and '
+            'businesses around you.',
             style: AppTypography.body1.copyWith(color: AppColors.neutral600),
           ),
         ],
@@ -152,12 +164,8 @@ class AboutScreen extends StatelessWidget {
       children: [
         Text('Legal', style: AppTypography.headline2),
         const SizedBox(height: AppSpacing.md),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(color: AppColors.border),
-          ),
+        AppCard(
+          padding: EdgeInsets.zero,
           child: Column(
             children: [
               _LegalRow(
@@ -165,12 +173,20 @@ class AboutScreen extends StatelessWidget {
                 isFirst: true,
                 onTap: () => context.push('/about/terms'),
               ),
-              const Divider(height: 1, color: AppColors.border, indent: AppSpacing.lg),
+              const Divider(
+                height: 1,
+                color: AppColors.border,
+                indent: AppSpacing.lg,
+              ),
               _LegalRow(
                 label: 'Privacy Policy',
                 onTap: () => context.push('/about/privacy'),
               ),
-              const Divider(height: 1, color: AppColors.border, indent: AppSpacing.lg),
+              const Divider(
+                height: 1,
+                color: AppColors.border,
+                indent: AppSpacing.lg,
+              ),
               _LegalRow(
                 label: 'Open Source Licences',
                 isLast: true,
@@ -184,12 +200,8 @@ class AboutScreen extends StatelessWidget {
   }
 
   Widget _buildContactCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.border),
-      ),
+    return AppCard(
+      padding: EdgeInsets.zero,
       child: InkWell(
         onTap: () async {
           final uri = Uri.parse('mailto:hello@mapetite.app');
@@ -221,7 +233,9 @@ class AboutScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Contact Us',
-                    style: AppTypography.label.copyWith(color: AppColors.neutral600),
+                    style: AppTypography.label.copyWith(
+                      color: AppColors.neutral600,
+                    ),
                   ),
                   Text(
                     'hello@mapetite.app',
@@ -255,13 +269,7 @@ class _SdgCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.border),
-      ),
+    return AppCard(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -288,7 +296,9 @@ class _SdgCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
                   description,
-                  style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+                  style: AppTypography.body2.copyWith(
+                    color: AppColors.neutral600,
+                  ),
                 ),
               ],
             ),
@@ -318,7 +328,9 @@ class _LegalRow extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.vertical(
         top: isFirst ? const Radius.circular(AppSpacing.radiusLg) : Radius.zero,
-        bottom: isLast ? const Radius.circular(AppSpacing.radiusLg) : Radius.zero,
+        bottom: isLast
+            ? const Radius.circular(AppSpacing.radiusLg)
+            : Radius.zero,
       ),
       child: SizedBox(
         height: 48,
@@ -329,7 +341,9 @@ class _LegalRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: AppTypography.body1.copyWith(fontWeight: FontWeight.w500),
+                  style: AppTypography.body1.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               const Icon(

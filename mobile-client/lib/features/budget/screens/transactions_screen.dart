@@ -9,6 +9,7 @@ import '../widgets/transaction_tile.dart';
 import '../widgets/transaction_detail_sheet.dart';
 import '../widgets/add_transaction_sheet.dart';
 import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/loading_indicator.dart';
 import '../models/budget_state.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
@@ -143,7 +144,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       appBar: appBar,
       body: SafeArea(
         child: budgetAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => ListView.separated(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            itemCount: 6,
+            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+            itemBuilder: (_, _) =>
+                const ShimmerLoader(width: double.infinity, height: 64),
+          ),
           error: (_, _) => AppEmptyState(
             icon: Icons.error_outline,
             title: 'Something went wrong',

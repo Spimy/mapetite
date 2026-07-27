@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mapetite/features/auth/models/auth_state.dart';
 
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
@@ -11,14 +10,6 @@ import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/password_strength_bar.dart';
-
-final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
-  (ref) {
-    // We grab the service from the provider above
-    final service = ref.watch(authServiceProvider);
-    return AuthController(service);
-  },
-);
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});

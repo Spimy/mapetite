@@ -7,6 +7,7 @@ import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../routes/app_router.dart';
 import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/undo_toast.dart';
 import '../models/budget_state.dart';
 import '../providers/budget_provider.dart';
@@ -69,7 +70,22 @@ class _BudgetOverviewScreenState extends ConsumerState<BudgetOverviewScreen> {
       ),
       body: SafeArea(
         child: budgetAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const SingleChildScrollView(
+            padding: EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              children: [
+                ShimmerLoader(
+                  width: double.infinity,
+                  height: 180,
+                  borderRadius: AppSpacing.radiusLg,
+                ),
+                SizedBox(height: AppSpacing.lg),
+                CardShimmer(height: 140),
+                SizedBox(height: AppSpacing.md),
+                CardShimmer(height: 140),
+              ],
+            ),
+          ),
           error: (_, _) => CustomScrollView(
             slivers: [
               _buildAppBar(context),

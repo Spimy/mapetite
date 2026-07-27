@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/custom_button.dart';
-import '../../../shared/widgets/profile_drawer.dart';
+import '../../../features/auth/controllers/auth_controller.dart';
+import '../../../features/budget/providers/budget_provider.dart';
 import '../../../features/grocery/models/grocery_list_model.dart';
 import '../../../features/grocery/providers/grocery_list_provider.dart';
 import '../../../features/recipes/providers/selected_ingredients_provider.dart';
@@ -131,10 +133,19 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
     final unchecked = items.where((i) => !i.isChecked).toList();
     final checked = items.where((i) => i.isChecked).toList();
     final isEmpty = items.isEmpty;
+    final displayName =
+        ref.watch(authControllerProvider).currentUser?.displayName ?? '';
+    final budgetState = ref.watch(budgetProvider).valueOrNull;
+    final remainingThisMonth = budgetState == null
+        ? 0.0
+        : budgetState.monthlyBudget - budgetState.totalSpent;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      drawer: const ProfileDrawer(),
+      drawer: AppDrawer(
+        displayName: displayName,
+        remainingThisMonth: remainingThisMonth,
+      ),
       appBar: _buildAppBar(context, items.length),
       body: SafeArea(
         top: false,

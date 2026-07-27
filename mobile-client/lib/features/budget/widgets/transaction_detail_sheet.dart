@@ -4,6 +4,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../../shared/widgets/toast_helpers.dart';
 import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
 import 'add_transaction_sheet.dart';
@@ -236,24 +237,23 @@ class _TransactionDetailSheet extends ConsumerWidget {
       ),
     );
     if (confirmed == true && context.mounted) {
-      final container = ProviderScope.containerOf(context);
-      final deleted = transaction;
-      try {
-        await container.read(budgetProvider.notifier).deleteTransaction(deleted.id);
-        if (context.mounted) Navigator.of(context).pop(deleted);
-      } catch (_) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Could not delete transaction. Please try again.',
-                  style: AppTypography.body1.copyWith(color: AppColors.white)),
-              backgroundColor: AppColors.error,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
-            ),
-          );
-        }
+      await _performDelete(context, ref);
+    }
+  }
+
+  Future<void> _performDelete(BuildContext context, WidgetRef ref) async {
+    final container = ProviderScope.containerOf(context);
+    final deleted = transaction;
+    try {
+      await container.read(budgetProvider.notifier).deleteTransaction(deleted.id);
+      if (context.mounted) Navigator.of(context).pop(deleted);
+    } catch (_) {
+      if (context.mounted) {
+        showErrorSnackbar(
+          context,
+          'Could not delete transaction. Please try again.',
+          onRetry: () => _performDelete(context, ref),
+        );
       }
     }
   }

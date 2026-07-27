@@ -7,6 +7,7 @@ import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../../shared/widgets/toast_helpers.dart';
 import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/store_providers.dart';
 import '../models/budget_transaction.dart';
@@ -197,15 +198,10 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       );
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not save transaction. Please try again.',
-              style: AppTypography.body1.copyWith(color: AppColors.white)),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
-        ),
+      showErrorSnackbar(
+        context,
+        'Could not save transaction. Please try again.',
+        onRetry: _save,
       );
     } finally {
       if (mounted) setState(() => _isSaving = false);
