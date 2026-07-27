@@ -558,6 +558,9 @@ class StoreClaimRequest(models.Model):
                 ]
             )
 
+    def __str__(self):
+        return f"Claim request by {self.requested_by.email} for {self.store.business_name} - {self.status}"
+
 
 @receiver(pre_save, sender=StoreProfile)
 @receiver(pre_save, sender=StoreOperatingHour)

@@ -55,6 +55,21 @@ class UserProfile(models.Model):
         EGGS = "eggs", "Eggs"
         SOY = "soy", "Soy"
 
+    class PreferredCuisineChoices(models.TextChoices):
+        MAMAK = "mamak", "Mamak"
+        NASI_KANDAR = "nasi_kandar", "Nasi Kandar"
+        MALAYSIAN = "malaysian", "Malaysian"
+        KOPITIAM = "kopitiam", "Kopitiam"
+        CHINESE = "chinese", "Chinese"
+        JAPANESE = "japanese", "Japanese"
+        KOREAN = "korean", "Korean"
+        FUSION = "fusion", "Fusion"
+        INDONESIAN = "indonesian", "Indonesian"
+        MEXICAN = "mexican", "Mexican"
+        MEDITERRANEAN = "mediterranean", "Mediterranean"
+        HEALTHY = "healthy", "Healthy"
+        VEGETARIAN = "vegetarian", "Vegetarian"
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="user_profile"
     )
@@ -108,7 +123,15 @@ class UserProfile(models.Model):
         help_text="List of user allergies",
     )
 
-    # TODO: Include preferred cuisines once the's a clear list of cuisines to choose from
+    preferred_cuisines = ArrayField(
+        models.CharField(
+            max_length=30,
+            choices=PreferredCuisineChoices.choices,
+        ),
+        blank=True,
+        default=list,
+        help_text="List of user's preferred cuisines",
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
