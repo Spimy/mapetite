@@ -80,6 +80,7 @@ abstract class AppRoutes {
   static const String aboutPrivacy = '/about/privacy';
   static const String aboutLicences = '/about/licences';
   static const String settingsNotifications = '/settings/notifications';
+  static const String settingsPrivacy = '/settings/privacy';
 }
 
 final GoRouter appRouter = GoRouter(
@@ -142,6 +143,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.settingsNotifications,
       builder: (context, state) => const NotificationSettingsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.settingsPrivacy,
+      builder: (context, state) => const _WipScreen(label: 'Privacy & Data'),
     ),
     GoRoute(
       path: AppRoutes.directions,

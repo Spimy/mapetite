@@ -157,8 +157,14 @@ class AppSettingsScreen extends StatelessWidget {
               _SettingsRow(
                 icon: Icons.notifications_outlined,
                 label: 'Notifications',
-                isLast: true,
                 onTap: () => context.push('/settings/notifications'),
+              ),
+              const _RowDivider(),
+              _SettingsRow(
+                icon: Icons.privacy_tip_outlined,
+                label: 'Privacy & Data',
+                isLast: true,
+                onTap: () => context.push('/settings/privacy'),
               ),
             ],
           ),
