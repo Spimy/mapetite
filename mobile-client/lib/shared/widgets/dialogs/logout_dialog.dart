@@ -71,11 +71,13 @@ class LogoutDialog extends ConsumerWidget {
                   child: AppButton(
                     label: 'Sign Out',
                     onPressed: () async {
+                      final router = GoRouter.of(context);
+
                       Navigator.of(context).pop();
+
                       await ref.read(authControllerProvider.notifier).logout();
-                      if (context.mounted) {
-                        context.go('/login');
-                      }
+
+                      router.go('/login');
                     },
                   ),
                 ),
