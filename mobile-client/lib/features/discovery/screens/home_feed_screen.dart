@@ -714,7 +714,7 @@ class _CookInCard extends StatelessWidget {
                               ),
                               const SizedBox(width: AppSpacing.xs),
                               Text(
-                                '4 saved',
+                                'Recipes',
                                 style: AppTypography.headline3.copyWith(
                                   color: AppColors.neutral600,
                                 ),

@@ -1,13 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/grocery_list_model.dart';
 import '../models/mocks/grocery_list_mocks.dart';
 
 class GroceryListNotifier extends StateNotifier<List<GroceryListItem>> {
-  GroceryListNotifier() : super(List.from(GroceryListMocks.initialItems));
+  GroceryListNotifier() : super([]);
 
   void toggleItem(String id) {
     state = state.map((item) {
-      if (item.id == id) return item.copyWith(isChecked: !item.isChecked);
+      if (item.id == id) {
+        return item.copyWith(isChecked: !item.isChecked);
+      }
+
       return item;
     }).toList();
   }
@@ -28,18 +32,24 @@ class GroceryListNotifier extends StateNotifier<List<GroceryListItem>> {
     state = [];
   }
 
-  void addFromIngredients(List<({String name, String quantity, String storeName, double cost})> ingredients) {
+  void addFromIngredients(
+    List<({String name, String quantity, String storeName, double cost})>
+        ingredients,
+  ) {
     final base = DateTime.now().millisecondsSinceEpoch;
+
     final newItems = ingredients.indexed.map((entry) {
-      final (i, ing) = entry;
+      final (index, ingredient) = entry;
+
       return GroceryListItem(
-        id: 'g_${base}_$i',
-        name: ing.name,
-        quantity: ing.quantity,
-        storeName: ing.storeName,
-        estimatedPrice: ing.cost,
+        id: 'g_${base}_$index',
+        name: ingredient.name,
+        quantity: ingredient.quantity,
+        storeName: ingredient.storeName,
+        estimatedPrice: ingredient.cost,
       );
     }).toList();
+
     state = [...state, ...newItems];
   }
 }
@@ -51,10 +61,12 @@ final groceryListProvider =
 
 final groceryTotalProvider = Provider<double>((ref) {
   final items = ref.watch(groceryListProvider);
+
   return items.fold(0.0, (sum, item) => sum + item.estimatedPrice);
 });
 
 final groceryBudgetAlertProvider = Provider<bool>((ref) {
   final total = ref.watch(groceryTotalProvider);
+
   return total >= GroceryListMocks.weeklyBudgetLimit * 0.80;
 });

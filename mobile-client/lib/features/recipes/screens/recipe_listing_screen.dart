@@ -24,6 +24,15 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
   final _searchController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recipeListProvider.notifier).loadRecipes();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -389,7 +398,7 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   height: 2,
-                  width: double.infinity,
+                  width: isActive ? 32 : 0,
                   decoration: BoxDecoration(
                     color: isActive ? AppColors.primary : Colors.transparent,
                     borderRadius: BorderRadius.circular(

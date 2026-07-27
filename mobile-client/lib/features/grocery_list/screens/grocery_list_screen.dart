@@ -158,8 +158,6 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       child: Column(
                         children: [
-                          _buildRecipeSourceCard(),
-                          const SizedBox(height: AppSpacing.md),
                           _buildItemList(context, unchecked, checked),
                           const SizedBox(height: AppSpacing.md),
                           _buildAddItemRow(),
@@ -168,6 +166,7 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
                             context,
                             total,
                             checked.isNotEmpty,
+                            items,
                           ),
                           const SizedBox(height: AppSpacing.xxl),
                         ],
@@ -241,47 +240,6 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
     );
   }
 
-  Widget _buildRecipeSourceCard() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: const BoxDecoration(
-              color: AppColors.neutral100,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.restaurant,
-              size: 20,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'From Recipe',
-                style: AppTypography.label.copyWith(
-                  color: AppColors.neutral600,
-                ),
-              ),
-              Text('Nasi Goreng Kampung', style: AppTypography.headline3),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildItemList(
     BuildContext context,
     List<GroceryListItem> unchecked,
@@ -349,7 +307,13 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
     BuildContext context,
     double total,
     bool hasCompleted,
+    List<GroceryListItem> items,
   ) {
+    final storeNames = items
+        .map((item) => item.storeName.trim())
+        .where((storeName) => storeName.isNotEmpty)
+        .toSet()
+        .toList();
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -371,20 +335,40 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              const Icon(
-                Icons.storefront,
-                size: 16,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                '2 stores: Jaya Grocer + Village Grocer',
-                style: AppTypography.caption.copyWith(color: AppColors.primary),
-              ),
-            ],
-          ),
+          if (storeNames.isNotEmpty)
+            Row(
+              children: [
+                const Icon(
+                  Icons.storefront,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    '${storeNames.length} store${storeNames.length != 1 ? 's' : ''}: ${storeNames.join(' + ')}',
+                    style: AppTypography.caption.copyWith(color: AppColors.primary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                const Icon(
+                  Icons.storefront,
+                  size: 16,
+                  color: AppColors.neutral400,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Text(
+                  'No store selected yet',
+                  style: AppTypography.caption.copyWith(color: AppColors.neutral600),
+                ),
+              ],
+            ),
           if (hasCompleted) ...[
             const SizedBox(height: AppSpacing.sm),
             Align(

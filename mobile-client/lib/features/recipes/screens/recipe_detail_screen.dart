@@ -39,12 +39,6 @@ class _RecipeDetailScreenState extends ConsumerState<RecipeDetailScreen> {
   }
 
   Future<void> _loadRecipeIfNeeded() async {
-    final cachedRecipe = ref.read(recipeByIdProvider(widget.recipeId));
-
-    if (cachedRecipe != null) {
-      return;
-    }
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -303,19 +297,6 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
           ),
         )
         .toList();
-
-    ref.read(groceryListProvider.notifier).addFromIngredients(
-          selected
-              .map(
-                (ing) => (
-                  name: ing.name,
-                  quantity: ing.quantity,
-                  storeName: ing.storeName ?? '',
-                  cost: ing.estimatedCost ?? 0.0,
-                ),
-              )
-              .toList(),
-        );
 
     context.push('/recipes/${recipe.id}/match');
   }

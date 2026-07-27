@@ -119,9 +119,7 @@ class RecipeListNotifier extends StateNotifier<List<RecipeModel>> {
   final Ref _ref;
   final RecipeService _recipeService;
 
-  RecipeListNotifier(this._ref, this._recipeService) : super(const []) {
-    loadRecipes();
-  }
+  RecipeListNotifier(this._ref, this._recipeService) : super([]);
 
   int? get _currentUserId {
     return _ref.read(authControllerProvider).currentUser?.id;
@@ -223,9 +221,11 @@ class RecipeListNotifier extends StateNotifier<List<RecipeModel>> {
 }
 
 final recipeListProvider =
-    StateNotifierProvider<RecipeListNotifier, List<RecipeModel>>(
-  (ref) => RecipeListNotifier(ref, ref.read(recipeServiceProvider)),
-);
+    StateNotifierProvider<RecipeListNotifier, List<RecipeModel>>((ref) {
+  final recipeService = ref.watch(recipeServiceProvider);
+
+  return RecipeListNotifier(ref, recipeService);
+});
 
 final filteredRecipesProvider = Provider<List<RecipeModel>>((ref) {
   final filterState = ref.watch(recipeFilterProvider);
