@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
@@ -207,9 +208,17 @@ class AppSettingsScreen extends ConsumerWidget {
 
   Widget _buildFooter() {
     return Center(
-      child: Text(
-        'Mapetite v1.0.0 · Build 42',
-        style: AppTypography.caption.copyWith(color: AppColors.neutral400),
+      child: FutureBuilder<PackageInfo>(
+        future: PackageInfo.fromPlatform(),
+        builder: (context, snapshot) {
+          final info = snapshot.data;
+          final label =
+              info == null ? '' : 'Mapetite v${info.version} · Build ${info.buildNumber}';
+          return Text(
+            label,
+            style: AppTypography.caption.copyWith(color: AppColors.neutral400),
+          );
+        },
       ),
     );
   }
