@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../features/auth/controllers/auth_controller.dart';
 import '../custom_button.dart';
 
 void showLogoutDialog(BuildContext context) {
@@ -13,11 +15,11 @@ void showLogoutDialog(BuildContext context) {
   );
 }
 
-class LogoutDialog extends StatelessWidget {
+class LogoutDialog extends ConsumerWidget {
   const LogoutDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Dialog(
       backgroundColor: AppColors.white,
       surfaceTintColor: Colors.transparent,
@@ -68,10 +70,12 @@ class LogoutDialog extends StatelessWidget {
                 Expanded(
                   child: AppButton(
                     label: 'Sign Out',
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.of(context).pop();
-                      // TODO: Clear auth token
-                      context.go('/login');
+                      await ref.read(authControllerProvider.notifier).logout();
+                      if (context.mounted) {
+                        context.go('/login');
+                      }
                     },
                   ),
                 ),
