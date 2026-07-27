@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/providers/location_provider.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/dialogs/logout_dialog.dart';
 
-class AppSettingsScreen extends StatelessWidget {
+class AppSettingsScreen extends ConsumerWidget {
   const AppSettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -47,7 +50,7 @@ class AppSettingsScreen extends StatelessWidget {
             children: [
               _buildProfileCard(context),
               const SizedBox(height: AppSpacing.xxl),
-              _buildPreferencesSection(context),
+              _buildPreferencesSection(context, ref),
               const SizedBox(height: AppSpacing.xxl),
               _buildAccountSection(context),
               const SizedBox(height: AppSpacing.xxl),
@@ -115,7 +118,10 @@ class AppSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPreferencesSection(BuildContext context) {
+  Widget _buildPreferencesSection(BuildContext context, WidgetRef ref) {
+    final locationPermission =
+        ref.watch(locationPermissionStatusProvider).valueOrNull;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -150,7 +156,7 @@ class AppSettingsScreen extends StatelessWidget {
               _SettingsRow(
                 icon: Icons.location_on_outlined,
                 label: 'Location',
-                value: 'Always allowed',
+                value: _locationPermissionLabel(locationPermission),
                 onTap: () {},
               ),
               const _RowDivider(),
@@ -206,6 +212,23 @@ class AppSettingsScreen extends StatelessWidget {
         style: AppTypography.caption.copyWith(color: AppColors.neutral400),
       ),
     );
+  }
+}
+
+String? _locationPermissionLabel(LocationPermission? permission) {
+  switch (permission) {
+    case LocationPermission.always:
+      return 'Always allowed';
+    case LocationPermission.whileInUse:
+      return 'While using app';
+    case LocationPermission.denied:
+      return 'Not allowed';
+    case LocationPermission.deniedForever:
+      return 'Denied';
+    case LocationPermission.unableToDetermine:
+      return 'Unknown';
+    case null:
+      return null;
   }
 }
 
