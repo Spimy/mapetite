@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import IntegrityError
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from .models import StoreProfile, StoreOperatingHour, StoreItem
+from apps.merchants.models import StoreProfile, StoreOperatingHour, StoreItem
 
 User = get_user_model()
 
@@ -111,10 +111,11 @@ class StoreItemModelTests(TestCase):
         item = StoreItem.objects.create(
             store=self.store,
             name="Fresh Spinach",
-            quantity="100",
+            quantity=Decimal("100"),
             unit=StoreItem.UnitChoices.G,
-            price="2.90",
+            price=Decimal("2.90"),
         )
+        item.refresh_from_db()
         self.assertEqual(item.name, "Fresh Spinach")
         self.assertEqual(item.quantity, Decimal("100"))
         self.assertEqual(item.unit, "g")
