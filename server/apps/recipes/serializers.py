@@ -36,6 +36,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
             "is_vegan",
             "is_vegetarian",
             "is_gluten_free",
+            "cuisine_type",
             "saves_count",
             "author",
         ]
@@ -74,6 +75,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             "is_vegan",
             "is_vegetarian",
             "is_gluten_free",
+            "cuisine_type",
             "ingredients",
             "steps",
         ]
@@ -155,6 +157,7 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
             "is_vegan",
             "is_vegetarian",
             "is_gluten_free",
+            "cuisine_type",
             "author",
             "ingredients",
             "saves_count",
