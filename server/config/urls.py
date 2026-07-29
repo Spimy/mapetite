@@ -43,6 +43,7 @@ urlpatterns = [
     path("", include("apps.merchants.urls", namespace="merchants")),
     path("", include("apps.recipes.urls", namespace="recipes")),
     path("", include("apps.budgets.urls", namespace="budgets")),
+    path("", include("apps.marketing.urls", namespace="marketing")),
     path(
         "api/schema/",
         staff_member_required(
