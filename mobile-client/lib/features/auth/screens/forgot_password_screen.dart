@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
@@ -31,17 +33,40 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
+  Uri _resetPasswordUri() {
+    final apiBase = Uri.parse(AppConfig.baseUrl);
+    return apiBase.replace(path: '/reset-password/');
+  }
+
+  Future<bool> _launchResetPage() async {
+    try {
+      return await launchUrl(
+        _resetPasswordUri(),
+        mode: LaunchMode.inAppBrowserView,
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> _onSendResetLink() async {
     setState(() => _errorMessage = null);
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    // TODO: Replace with real auth service
-    await Future.delayed(const Duration(milliseconds: 1000));
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
+
+    final launched = await _launchResetPage();
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+      if (launched) {
         _emailSent = true;
-      });
+      } else {
+        _errorMessage = 'Could not open the reset page. Please try again.';
+      }
+    });
+
+    if (launched) {
       _startResendCountdown();
     }
   }
