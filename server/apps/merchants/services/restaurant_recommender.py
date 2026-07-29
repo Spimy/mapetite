@@ -1,9 +1,11 @@
 """
-Rule-based restaurant recommendation engine.
+Restaurant recommendation system
 
 Ranks nearby RESTAURANT stores against a user's dietary prefs, cuisine prefs,
-budget, and health goals. Ranking is deterministic; Gemini is only used
-optionally for a top-pick caption.
+budget, and health goals. Hard filters and most soft weights are rule-based;
+the cuisine soft weight is hybrid (enum match + optional pgvector similarity
+against StoreItem embeddings). Gemini is used for cuisine preference embeddings
+and optionally for a top-pick caption.
 """
 
 from __future__ import annotations
@@ -15,7 +17,10 @@ from decimal import Decimal
 from typing import Iterable, Sequence
 
 from django.contrib.gis.geos import Point
+from django.db.models import Min
 from django.utils import timezone
+from google.genai import types
+from pgvector.django import CosineDistance
 
 from apps.core.services import GeminiService
 from apps.merchants.models import StoreItem, StoreOperatingHour, StoreProfile
@@ -33,6 +38,8 @@ WEIGHT_HEALTH = 15
 WEIGHT_OPEN_NOW = 5
 
 DEFAULT_MEAL_CALORIES = 600
+# Cosine distances above this contribute 0 to the vector cuisine score.
+VECTOR_CUISINE_MAX_DISTANCE = 0.5
 REASON_THRESHOLD = {
     "cuisine_match": 12,
     "nearby": 10,
@@ -44,6 +51,9 @@ REASON_THRESHOLD = {
 # Allergies with item-level flags on StoreItem. shellfish/eggs/soy have no
 # item fields yet — documented data gap; those are not hard-filtered.
 TRACKABLE_ALLERGIES = frozenset({"nuts", "dairy", "gluten"})
+
+# In-memory cache: (user_id, prefs_fingerprint) -> 768-dim embedding.
+_USER_CUISINE_EMBED_CACHE: dict[tuple[int, str], list[float]] = {}
 
 
 @dataclass
@@ -228,7 +238,81 @@ def passes_hard_filters(
     return True
 
 
-def _cuisine_score(store: StoreProfile, preferred: Sequence[str]) -> float:
+def clear_user_cuisine_embed_cache() -> None:
+    """Clear the in-memory cuisine preference embedding cache (tests / admin)."""
+    _USER_CUISINE_EMBED_CACHE.clear()
+
+
+def _cuisine_prefs_fingerprint(preferred: Sequence[str]) -> str:
+    return ",".join(sorted(c.lower().strip() for c in preferred if c))
+
+
+def get_or_embed_user_cuisine_vector(
+    user_id: int,
+    preferred_cuisines: Sequence[str],
+) -> list[float] | None:
+    """
+    Embed the user's preferred cuisines (cuisine-only text).
+
+    Returns None when prefs are empty or Gemini embedding fails so callers
+    fall back to rule-based cuisine scoring.
+    """
+    fingerprint = _cuisine_prefs_fingerprint(preferred_cuisines)
+    if not fingerprint:
+        return None
+
+    cache_key = (user_id, fingerprint)
+    cached = _USER_CUISINE_EMBED_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
+    text = f"Preferred cuisines: {fingerprint.replace(',', ', ')}"
+    try:
+        client = GeminiService.get_client()
+        response = client.models.embed_content(
+            model=GeminiService.get_model("embedding"),
+            contents=text,
+            config=types.EmbedContentConfig(output_dimensionality=768),
+        )
+        if not response.embeddings:
+            return None
+        vector = list(response.embeddings[0].values)
+        _USER_CUISINE_EMBED_CACHE[cache_key] = vector
+        return vector
+    except Exception as exc:
+        logger.info("Cuisine preference embedding skipped: %s", exc)
+        return None
+
+
+def batch_best_item_distances(
+    store_ids: Sequence[int],
+    user_vector: list[float],
+) -> dict[int, float]:
+    """
+    One CosineDistance query: best (min) distance from user_vector to any
+    active embedded item per store. Avoids N+1 per-store queries.
+    """
+    if not store_ids:
+        return {}
+
+    rows = (
+        StoreItem.objects.filter(
+            store_id__in=list(store_ids),
+            is_active=True,
+            embedding__isnull=False,
+        )
+        .annotate(distance=CosineDistance("embedding", user_vector))
+        .values("store_id")
+        .annotate(best_distance=Min("distance"))
+    )
+    return {
+        int(row["store_id"]): float(row["best_distance"])
+        for row in rows
+        if row["best_distance"] is not None
+    }
+
+
+def _rule_cuisine_score(store: StoreProfile, preferred: Sequence[str]) -> float:
     if not preferred:
         return 0.0
     preferred_set = {c.lower() for c in preferred}
@@ -243,6 +327,29 @@ def _cuisine_score(store: StoreProfile, preferred: Sequence[str]) -> float:
     if "healthy" in preferred_set and category == "vegetarian":
         return float(WEIGHT_CUISINE) * 0.6
     return 0.0
+
+
+def _vector_cuisine_score(best_distance: float | None) -> float:
+    if best_distance is None or best_distance > VECTOR_CUISINE_MAX_DISTANCE:
+        return 0.0
+    similarity = max(0.0, 1.0 - best_distance)
+    return float(WEIGHT_CUISINE) * similarity
+
+
+def _hybrid_cuisine_score(
+    store: StoreProfile,
+    preferred: Sequence[str],
+    best_distance: float | None = None,
+) -> float:
+    """Enum match and vector similarity; take the better of the two."""
+    rule = _rule_cuisine_score(store, preferred)
+    vector = _vector_cuisine_score(best_distance)
+    return max(rule, vector)
+
+
+# Backwards-compatible alias used by older call sites / tests
+def _cuisine_score(store: StoreProfile, preferred: Sequence[str]) -> float:
+    return _rule_cuisine_score(store, preferred)
 
 
 def _proximity_score(distance_km: float, radius_km: float) -> float:
@@ -460,12 +567,22 @@ class RestaurantRecommender:
             .prefetch_related("operating_hours", "items")
         )
 
+        preferred = list(profile.preferred_cuisines or [])
+        user_vector = get_or_embed_user_cuisine_vector(user.pk, preferred)
+        best_distances: dict[int, float] = {}
+        if user_vector is not None:
+            best_distances = batch_best_item_distances(
+                [s.pk for s in candidates],
+                user_vector,
+            )
+
         scored = self._score_candidates(
             candidates,
             profile,
             radius_km=radius_km,
             require_open=open_now,
             now=now,
+            best_distances=best_distances,
         )
 
         if not scored and not strict:
@@ -477,6 +594,7 @@ class RestaurantRecommender:
                 require_open=open_now,
                 now=now,
                 apply_hard_filters=False,
+                best_distances=best_distances,
             )
 
         scored.sort(key=lambda s: (-s.match_score, s.distance_km))
@@ -501,9 +619,12 @@ class RestaurantRecommender:
         require_open: bool,
         now: datetime | None,
         apply_hard_filters: bool = True,
+        best_distances: dict[int, float] | None = None,
     ) -> list[ScoredRestaurant]:
         results: list[ScoredRestaurant] = []
         allergies = list(profile.allergies or [])
+        preferred = list(profile.preferred_cuisines or [])
+        distances = best_distances or {}
 
         for store in candidates:
             aggregates = compute_menu_aggregates(store, allergies)
@@ -519,7 +640,11 @@ class RestaurantRecommender:
             distance_km = _distance_km(store)
             is_open = is_store_open_at(store, now)
 
-            cuisine = _cuisine_score(store, profile.preferred_cuisines or [])
+            cuisine = _hybrid_cuisine_score(
+                store,
+                preferred,
+                best_distance=distances.get(store.pk),
+            )
             proximity = _proximity_score(distance_km, radius_km)
             diet = _diet_score(store, profile, aggregates)
             budget = _budget_score(aggregates.avg_price, profile.dine_in_budget)

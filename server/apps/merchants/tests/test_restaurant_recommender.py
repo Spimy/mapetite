@@ -14,7 +14,15 @@ from rest_framework.test import APIClient
 from apps.merchants.models import ItemCategory, StoreItem, StoreOperatingHour, StoreProfile
 from apps.merchants.services.restaurant_recommender import (
     RestaurantRecommender,
+    WEIGHT_CUISINE,
+    VECTOR_CUISINE_MAX_DISTANCE,
+    _hybrid_cuisine_score,
+    _rule_cuisine_score,
+    _vector_cuisine_score,
+    batch_best_item_distances,
+    clear_user_cuisine_embed_cache,
     compute_menu_aggregates,
+    get_or_embed_user_cuisine_vector,
     is_store_open_at,
     passes_hard_filters,
     pricing_bracket_from_avg,
@@ -507,3 +515,175 @@ class RestaurantRecommendationAPITests(TestCase):
         self.assertEqual(
             response.data["recommendation_reason"], "Gemini says try this place."
         )
+
+
+def _unit_vector(seed: float = 1.0) -> list[float]:
+    """Deterministic 768-d vector for tests (avoids live Gemini)."""
+    return [seed] + [0.0] * 767
+
+
+class HybridCuisineScoreTests(TestCase):
+    def setUp(self):
+        clear_user_cuisine_embed_cache()
+        self.user = User.objects.create_user(
+            username="hybrid_user",
+            email="hybrid@example.com",
+            password="password123",
+        )
+        self.profile = self.user.user_profile
+        self.recommender = RestaurantRecommender()
+
+        self.fusion = StoreProfile.objects.create(
+            business_name="Fusion Bowl",
+            merchant_type=StoreProfile.MerchantType.RESTAURANT,
+            category=StoreProfile.Category.FUSION,
+            halal=True,
+            vegan=False,
+            location=ORIGIN,
+        )
+        self.mamak = StoreProfile.objects.create(
+            business_name="Mamak Spot",
+            merchant_type=StoreProfile.MerchantType.RESTAURANT,
+            category=StoreProfile.Category.MAMAK,
+            halal=True,
+            vegan=False,
+            location=Point(101.6025, 3.0679, srid=WGS84_SRID),
+        )
+        for store, name in ((self.fusion, "Fusion Salad"), (self.mamak, "Roti Canai")):
+            cat = ItemCategory.objects.create(store=store, name="Mains", display_order=1)
+            StoreItem.objects.create(
+                store=store,
+                category=cat,
+                name=name,
+                price=Decimal("10.00"),
+                calories=500,
+                vegetarian=True,
+                dairy_free=True,
+                gluten_free=True,
+                contains_nuts=False,
+            )
+            for day in range(7):
+                StoreOperatingHour.objects.create(
+                    store=store,
+                    day_of_week=day,
+                    open_time=time(0, 0),
+                    close_time=time(23, 59),
+                )
+
+    def tearDown(self):
+        clear_user_cuisine_embed_cache()
+
+    def test_vector_score_zero_when_distance_none_or_too_far(self):
+        self.assertEqual(_vector_cuisine_score(None), 0.0)
+        self.assertEqual(
+            _vector_cuisine_score(VECTOR_CUISINE_MAX_DISTANCE + 0.01), 0.0
+        )
+
+    def test_vector_score_scales_with_similarity(self):
+        # distance 0.2 → similarity 0.8 → 20 pts
+        self.assertAlmostEqual(_vector_cuisine_score(0.2), WEIGHT_CUISINE * 0.8)
+
+    def test_hybrid_max_preserves_exact_enum_match(self):
+        # Rule gives full 25 for mamak; middling vector must not reduce it
+        score = _hybrid_cuisine_score(
+            self.mamak, ["mamak"], best_distance=0.4
+        )
+        self.assertEqual(score, float(WEIGHT_CUISINE))
+        self.assertEqual(_rule_cuisine_score(self.mamak, ["mamak"]), float(WEIGHT_CUISINE))
+        self.assertLess(_vector_cuisine_score(0.4), float(WEIGHT_CUISINE))
+
+    def test_hybrid_vector_boosts_non_matching_category(self):
+        rule = _rule_cuisine_score(self.fusion, ["mamak"])
+        self.assertEqual(rule, 0.0)
+        hybrid = _hybrid_cuisine_score(self.fusion, ["mamak"], best_distance=0.1)
+        self.assertGreater(hybrid, rule)
+        self.assertAlmostEqual(hybrid, WEIGHT_CUISINE * 0.9)
+
+    def test_fallback_when_embedding_unavailable(self):
+        self.profile.is_halal = True
+        self.profile.preferred_cuisines = ["mamak"]
+        self.profile.save()
+
+        with patch(
+            "apps.merchants.services.restaurant_recommender.get_or_embed_user_cuisine_vector",
+            return_value=None,
+        ):
+            results = self.recommender.recommend(
+                self.user, ORIGIN, radius_km=5, open_now=False, limit=10
+            )
+        mamak = next(r for r in results if r.store.id == self.mamak.id)
+        self.assertEqual(mamak.score_parts["cuisine"], float(WEIGHT_CUISINE))
+
+    @patch(
+        "apps.merchants.services.restaurant_recommender.batch_best_item_distances",
+        return_value={},
+    )
+    @patch(
+        "apps.merchants.services.restaurant_recommender.get_or_embed_user_cuisine_vector",
+    )
+    def test_recommend_uses_vector_distances_for_cuisine(
+        self, mock_embed, mock_batch
+    ):
+        self.profile.is_halal = True
+        self.profile.preferred_cuisines = ["mamak"]
+        self.profile.save()
+
+        mock_embed.return_value = _unit_vector(1.0)
+        # Fusion menu looks "mamak-like" to the vector path; mamak also exact enum
+        mock_batch.return_value = {
+            self.fusion.id: 0.05,
+            self.mamak.id: 0.3,
+        }
+
+        results = self.recommender.recommend(
+            self.user, ORIGIN, radius_km=5, open_now=False, limit=10
+        )
+        fusion = next(r for r in results if r.store.id == self.fusion.id)
+        mamak = next(r for r in results if r.store.id == self.mamak.id)
+
+        # Fusion: rule 0, vector ~23.75
+        self.assertAlmostEqual(fusion.score_parts["cuisine"], WEIGHT_CUISINE * 0.95)
+        # Mamak: max(25, 25*0.7) = 25
+        self.assertEqual(mamak.score_parts["cuisine"], float(WEIGHT_CUISINE))
+        mock_batch.assert_called_once()
+
+    def test_cuisine_embed_cache_hits_on_second_call(self):
+        fake_vector = _unit_vector(0.5)
+        mock_embedding = type("E", (), {"values": fake_vector})()
+        mock_response = type("R", (), {"embeddings": [mock_embedding]})()
+        mock_models = type("M", (), {"embed_content": lambda *a, **k: mock_response})()
+        mock_client = type("C", (), {"models": mock_models})()
+
+        with patch(
+            "apps.merchants.services.restaurant_recommender.GeminiService.get_client",
+            return_value=mock_client,
+        ) as get_client:
+            # Make embed_content a MagicMock so we can count calls
+            from unittest.mock import MagicMock
+
+            embed_mock = MagicMock(return_value=mock_response)
+            mock_client.models.embed_content = embed_mock
+
+            first = get_or_embed_user_cuisine_vector(self.user.pk, ["mamak", "healthy"])
+            second = get_or_embed_user_cuisine_vector(self.user.pk, ["healthy", "mamak"])
+
+        self.assertEqual(first, fake_vector)
+        self.assertEqual(second, fake_vector)
+        self.assertEqual(embed_mock.call_count, 1)
+        get_client.assert_called()
+
+    def test_batch_best_item_distances_returns_min_per_store(self):
+        close = _unit_vector(1.0)
+        far = [0.0] * 384 + [1.0] + [0.0] * 383
+        # Bypass StoreItem.save Gemini hook
+        StoreItem.objects.filter(store=self.fusion).update(embedding=close)
+        StoreItem.objects.filter(store=self.mamak).update(embedding=far)
+
+        distances = batch_best_item_distances(
+            [self.fusion.id, self.mamak.id],
+            close,
+        )
+        self.assertIn(self.fusion.id, distances)
+        self.assertIn(self.mamak.id, distances)
+        # Identical vector should be closer (lower distance) than orthogonal
+        self.assertLess(distances[self.fusion.id], distances[self.mamak.id])
