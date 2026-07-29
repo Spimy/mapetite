@@ -11,10 +11,10 @@ createsuperuser:
 	docker compose exec web python manage.py createsuperuser
 
 seed-merchants:
-	docker compose exec web python manage.py loaddata server/fixtures/merchants.json
+	docker compose exec web python manage.py loaddata fixtures/merchants.json
 
 seed-recipes:
-	docker compose exec web python manage.py loaddata server/fixtures/recipes.json
+	docker compose exec web python manage.py loaddata fixtures/recipes.json
 
 seed: seed-merchants seed-recipes
 

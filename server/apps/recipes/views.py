@@ -64,13 +64,45 @@ class RecipeCreateListAPIView(ListCreateAPIView):
         )
 
         query = self.request.GET.get("q", None)
+        halal = self.request.GET.get("halal", None)
+        vegan = self.request.GET.get("vegan", None)
+        vegetarian = self.request.GET.get("vegetarian", None)
+        gluten_free = self.request.GET.get("gluten_free", None)
+        cuisine = self.request.GET.get("cuisine", None)
 
         if query:
             queryset = trigram_fuzzy_search(
                 queryset=queryset, search_field="title", query=query
             )
-        else:
-            queryset = queryset.order_by("-created_at")
+
+        if halal:
+            if halal.lower() == "true" or halal.lower() == "1":
+                queryset = queryset.filter(halal=True)
+            elif halal.lower() == "false" or halal.lower() == "0":
+                queryset = queryset.filter(halal=False)
+
+        if vegan:
+            if vegan.lower() == "true" or vegan.lower() == "1":
+                queryset = queryset.filter(vegan=True)
+            elif vegan.lower() == "false" or vegan.lower() == "0":
+                queryset = queryset.filter(vegan=False)
+
+        if vegetarian:
+            if vegetarian.lower() == "true" or vegetarian.lower() == "1":
+                queryset = queryset.filter(items__vegetarian=True).distinct()
+            elif vegetarian.lower() == "false" or vegetarian.lower() == "0":
+                queryset = queryset.exclude(items__vegetarian=True).distinct()
+
+        if gluten_free:
+            if gluten_free.lower() == "true" or gluten_free.lower() == "1":
+                queryset = queryset.filter(items__gluten_free=True).distinct()
+            elif gluten_free.lower() == "false" or gluten_free.lower() == "0":
+                queryset = queryset.exclude(items__gluten_free=True).distinct()
+
+        if cuisine:
+            queryset = queryset.filter(cuisine_type__iexact=cuisine)
+
+        queryset = queryset.order_by("-created_at")
 
         return queryset
 
