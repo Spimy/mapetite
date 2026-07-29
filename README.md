@@ -37,8 +37,8 @@ The entire backend (Database + Django Server) runs inside Docker. You do not nee
 4. You should seed the database:
 
    ```bash
-   docker compose exec web python manage.py loaddata server/fixtures/merchants.json
-   docker compose exec web python manage.py loaddata server/fixtures/recipes.json
+   docker compose exec web python manage.py loaddata fixtures/merchants.json
+   docker compose exec web python manage.py loaddata fixtures/recipes.json
    # or
    make seed
    ```
