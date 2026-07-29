@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/services/profile_service.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../budget/providers/budget_provider.dart';
 import '../models/user_profile.dart';
 
 class ProfileNotifier extends AsyncNotifier<UserProfile> {
@@ -83,14 +84,19 @@ class ProfileNotifier extends AsyncNotifier<UserProfile> {
 
   /// PATCHes the currently staged profile in one call, then refreshes
   /// [authControllerProvider] so the drawer picks up a changed username
-  /// immediately. Deliberately does not roll back local state on failure —
-  /// unlike an instant optimistic mutation, this is a staged, explicit-save
-  /// form; reverting would discard the user's edits out from under them
-  /// right as they need to retry.
+  /// immediately, and invalidates [budgetProvider] so Budget
+  /// Analytics/Overview refetch instead of showing stale numbers — budget
+  /// edits made via this screen no longer self-save through
+  /// [budgetProvider] directly (that used to double-PATCH; see
+  /// BudgetSetupScreen's edit-mode Done button). Deliberately does not roll
+  /// back local state on failure — unlike an instant optimistic mutation,
+  /// this is a staged, explicit-save form; reverting would discard the
+  /// user's edits out from under them right as they need to retry.
   Future<void> saveChanges() async {
     final current = state.requireValue;
     await _profileService.updateProfile(current.toUpdatePayload());
     await ref.read(authControllerProvider.notifier).loadCurrentUser();
+    ref.invalidate(budgetProvider);
   }
 }
 
