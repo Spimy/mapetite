@@ -4,6 +4,21 @@ from config import settings
 
 # Create your models here.
 class Recipe(models.Model):
+    class CuisineType(models.TextChoices):
+        # Restaurant cuisines
+        MAMAK = "MAMAK", "Mamak"
+        NASI_KANDAR = "NASI_KANDAR", "Nasi Kandar"
+        MALAYSIAN = "MALAYSIAN", "Malaysian"
+        KOPITIAM = "KOPITIAM", "Kopitiam"
+        CHINESE = "CHINESE", "Chinese"
+        JAPANESE = "JAPANESE", "Japanese"
+        KOREAN = "KOREAN", "Korean"
+        FUSION = "FUSION", "Fusion"
+        INDONESIAN = "INDONESIAN", "Indonesian"
+        MEXICAN = "MEXICAN", "Mexican"
+        MEDITERRANEAN = "MEDITERRANEAN", "Mediterranean"
+        HEALTHY = "HEALTHY", "Healthy"
+
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="recipes"
     )
@@ -14,6 +29,9 @@ class Recipe(models.Model):
     prep_time = models.PositiveIntegerField(help_text="Prep time in minutes")
     servings = models.PositiveIntegerField()
     calories = models.PositiveIntegerField(null=True, blank=True)
+    cuisine_type = models.CharField(
+        max_length=20, choices=CuisineType.choices, blank=True, default=""
+    )
 
     is_halal = models.BooleanField(default=False)
     is_vegan = models.BooleanField(default=False)
