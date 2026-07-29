@@ -1,3 +1,4 @@
+from django.utils.text import slugify
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
 from allauth.account.models import EmailAddress
@@ -94,6 +95,10 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class UserProfileUpdateSerializer(serializers.Serializer):
+    username = serializers.CharField(required=False)
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+
     onboarding_completed = serializers.BooleanField(required=False)
 
     avatar = serializers.ImageField(required=False, allow_null=True)
@@ -143,7 +148,42 @@ class UserProfileUpdateSerializer(serializers.Serializer):
         required=False,
     )
 
+    def validate_username(self, value):
+        if (
+            User.objects.filter(username__iexact=value)
+            .exclude(pk=self.instance.pk)  # type: ignore
+            .exists()
+        ):
+            raise serializers.ValidationError(
+                "A user with that username already exists."
+            )
+
+        new_slug = slugify(value)
+        if User.objects.filter(slug=new_slug).exclude(pk=self.instance.pk).exists():  # type: ignore
+            raise serializers.ValidationError(
+                "A user with a very similar username already exists. Please try another."
+            )
+
+        return value
+
     def update(self, instance, validated_data):
+        user_changed = False
+
+        if "username" in validated_data:
+            instance.username = validated_data.pop("username")
+            user_changed = True
+
+        if "first_name" in validated_data:
+            instance.first_name = validated_data.pop("first_name")
+            user_changed = True
+
+        if "last_name" in validated_data:
+            instance.last_name = validated_data.pop("last_name")
+            user_changed = True
+
+        if user_changed:
+            instance.save()
+
         profile = getattr(instance, "user_profile", None)
         if profile is None:
             profile = UserProfile.objects.create(user=instance)
@@ -152,4 +192,5 @@ class UserProfileUpdateSerializer(serializers.Serializer):
             setattr(profile, field_name, value)
 
         profile.save()
+
         return instance
