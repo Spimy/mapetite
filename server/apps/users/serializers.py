@@ -1,4 +1,5 @@
 from django.utils.text import slugify
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
 from allauth.account.models import EmailAddress
@@ -95,9 +96,14 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class UserProfileUpdateSerializer(serializers.Serializer):
-    username = serializers.CharField(required=False)
-    first_name = serializers.CharField(required=False, allow_blank=True)
-    last_name = serializers.CharField(required=False, allow_blank=True)
+    username = serializers.CharField(
+        required=False,
+        max_length=150,
+        validators=[UnicodeUsernameValidator()],
+    )
+
+    first_name = serializers.CharField(required=False, max_length=150, allow_blank=True)
+    last_name = serializers.CharField(required=False, max_length=150, allow_blank=True)
 
     onboarding_completed = serializers.BooleanField(required=False)
 
