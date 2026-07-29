@@ -9,8 +9,10 @@ import 'package:url_launcher_platform_interface/link.dart';
 class _MockUrlLauncherPlatform extends UrlLauncherPlatform {
   _MockUrlLauncherPlatform(this._result);
 
-  final bool _result;
+  bool _result;
   String? lastLaunchedUrl;
+
+  void setResult(bool result) => _result = result;
 
   @override
   LinkDelegate? get linkDelegate => null;
@@ -128,5 +130,36 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Resend in'), findsOneWidget);
+  });
+
+  testWidgets('resend shows a snackbar when the reset page fails to launch', (tester) async {
+    final mock = _MockUrlLauncherPlatform(true);
+    UrlLauncherPlatform.instance = mock;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp.router(routerConfig: _testRouter()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email address'),
+      'test@example.com',
+    );
+    await tester.tap(find.text('Send Reset Link'));
+    await tester.pumpAndSettle();
+
+    mock.setResult(false);
+    await tester.pump(const Duration(seconds: 61));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Resend email'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.text('Could not open the reset page. Please try again.'),
+      findsOneWidget,
+    );
   });
 }

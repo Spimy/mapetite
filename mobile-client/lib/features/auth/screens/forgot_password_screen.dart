@@ -85,8 +85,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _onResendEmail() async {
-    _startResendCountdown();
-    // TODO: Replace with real resend call
+    final launched = await _launchResetPage();
+    if (!mounted) return;
+
+    if (launched) {
+      _startResendCountdown();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not open the reset page. Please try again.'),
+        ),
+      );
+    }
   }
 
   @override
