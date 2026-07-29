@@ -170,7 +170,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 Icons.location_on_outlined,
                 color: AppColors.neutral400,
               ),
-              // TODO: Replace with Google Places autocomplete
             ),
             const SizedBox(height: AppSpacing.lg),
             _buildTermsRow(isLoading),
