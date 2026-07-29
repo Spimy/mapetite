@@ -250,26 +250,79 @@ class RecipeModel {
 }
 
 ({String quantity, String unit}) _parseQuantityAndUnit(
-  String rawQuantity,
-  String? fallbackUnit,
-) {
-  final trimmed = rawQuantity.trim();
+  String value, [
+  String? selectedUnit,
+]) {
+  final trimmed = value.trim();
+  final explicitUnit = selectedUnit?.trim();
+
+  String resolveUnit(String parsedUnit) {
+    if (explicitUnit != null && explicitUnit.isNotEmpty) {
+      return _normaliseUnit(explicitUnit);
+    }
+
+    return _normaliseUnit(parsedUnit);
+  }
 
   if (trimmed.isEmpty) {
-    return (quantity: '1', unit: fallbackUnit ?? 'pcs');
+    return (quantity: '1', unit: resolveUnit(''));
   }
 
-  final match = RegExp(r'^([0-9]+(?:\.[0-9]+)?)\s*([a-zA-Z]+)?$')
-      .firstMatch(trimmed);
+  final mixedFractionMatch =
+      RegExp(r'^(\d+)\s+(\d+)\/(\d+)(?:\s+(.+))?$').firstMatch(trimmed);
 
-  if (match == null) {
-    return (quantity: '1', unit: fallbackUnit ?? 'pcs');
+  if (mixedFractionMatch != null) {
+    final whole = double.tryParse(mixedFractionMatch.group(1)!);
+    final numerator = double.tryParse(mixedFractionMatch.group(2)!);
+    final denominator = double.tryParse(mixedFractionMatch.group(3)!);
+    final parsedUnit = mixedFractionMatch.group(4) ?? '';
+
+    if (whole != null &&
+        numerator != null &&
+        denominator != null &&
+        denominator != 0) {
+      return (
+        quantity: _formatQuantityNumber(whole + (numerator / denominator)),
+        unit: resolveUnit(parsedUnit),
+      );
+    }
   }
 
-  final quantity = match.group(1) ?? '1';
-  final unit = match.group(2) ?? fallbackUnit ?? 'pcs';
+  final fractionMatch =
+      RegExp(r'^(\d+)\/(\d+)(?:\s+(.+))?$').firstMatch(trimmed);
 
-  return (quantity: quantity, unit: _normaliseUnit(unit));
+  if (fractionMatch != null) {
+    final numerator = double.tryParse(fractionMatch.group(1)!);
+    final denominator = double.tryParse(fractionMatch.group(2)!);
+    final parsedUnit = fractionMatch.group(3) ?? '';
+
+    if (numerator != null && denominator != null && denominator != 0) {
+      return (
+        quantity: _formatQuantityNumber(numerator / denominator),
+        unit: resolveUnit(parsedUnit),
+      );
+    }
+  }
+
+  final decimalMatch =
+      RegExp(r'^(\d+(?:\.\d+)?)(?:\s+(.+))?$').firstMatch(trimmed);
+
+  if (decimalMatch != null) {
+    return (
+      quantity: decimalMatch.group(1)!,
+      unit: resolveUnit(decimalMatch.group(2) ?? ''),
+    );
+  }
+
+  return (quantity: '1', unit: resolveUnit(trimmed));
+}
+
+String _formatQuantityNumber(double value) {
+  final rounded = value.toStringAsFixed(4);
+  final withoutTrailingZeros =
+      rounded.replaceFirst(RegExp(r'\.?0+$'), '');
+
+  return withoutTrailingZeros.isEmpty ? '0' : withoutTrailingZeros;
 }
 
 String _normaliseUnit(String unit) {
