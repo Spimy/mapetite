@@ -32,7 +32,7 @@ void main() {
           'is_vegan': false,
           'is_vegetarian': false,
           'allergies': ['nuts', 'gluten'],
-          'preferred_cuisines': ['malaysian', 'middle_eastern'],
+          'preferred_cuisines': ['malaysian', 'nasi_kandar'],
         },
       );
 
@@ -48,7 +48,7 @@ void main() {
       expect(profile.weightKg, 70.5);
       expect(profile.isHalal, isTrue);
       expect(profile.allergens, ['Nuts', 'Gluten']);
-      expect(profile.cuisinePreferences, ['Malaysian', 'Middle Eastern']);
+      expect(profile.cuisinePreferences, ['Malaysian', 'Nasi Kandar']);
     });
 
     test('drops unrecognized allergen/cuisine values instead of crashing', () {
@@ -76,7 +76,7 @@ void main() {
         isVegan: false,
         allergens: ['Nuts'],
         dailyCalorieTarget: 2000,
-        cuisinePreferences: ['Malaysian', 'Middle Eastern'],
+        cuisinePreferences: ['Malaysian', 'Nasi Kandar'],
         dineInBudget: 300.0,
         groceryBudget: 300.0,
         alertThresholdPercent: 80,
@@ -101,7 +101,7 @@ void main() {
       expect(payload['is_vegetarian'], false);
       expect(payload['allergies'], ['nuts']);
       expect(payload.containsKey('cuisine_preferences'), isFalse);
-      expect(payload['preferred_cuisines'], ['malaysian', 'middle_eastern']);
+      expect(payload['preferred_cuisines'], ['malaysian', 'nasi_kandar']);
     });
   });
 }

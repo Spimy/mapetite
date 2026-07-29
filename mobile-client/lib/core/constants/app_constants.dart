@@ -23,10 +23,14 @@ abstract class AppConstants {
   // Image cache
   static const int imageCacheDurationHours = 24;
 
-  // Cuisine categories
+  // Cuisine categories — must match the backend's cuisine choices exactly
+  // (server/apps/users/models.py UserProfile.PreferredCuisineChoices and
+  // server/apps/merchants/models.py StoreProfile.Category): a label here
+  // that doesn't exist on the backend causes a 400 on save (see #113).
   static const List<String> cuisineCategories = [
-    'Malaysian', 'Chinese', 'Indian', 'Japanese',
-    'Western', 'Thai', 'Korean', 'Middle Eastern',
+    'Mamak', 'Nasi Kandar', 'Malaysian', 'Kopitiam',
+    'Chinese', 'Japanese', 'Korean', 'Fusion',
+    'Indonesian', 'Mexican', 'Mediterranean', 'Healthy', 'Vegetarian',
   ];
 
   // Dietary options
@@ -41,13 +45,18 @@ abstract class AppConstants {
 
   // Cuisine icons
   static const Map<String, IconData> cuisineIcons = {
-    'Malaysian':      Icons.rice_bowl,
-    'Chinese':        Icons.ramen_dining,
-    'Indian':         Icons.soup_kitchen,
-    'Japanese':       Icons.set_meal,
-    'Western':        Icons.lunch_dining,
-    'Thai':           Icons.local_fire_department,
-    'Korean':         Icons.outdoor_grill,
-    'Middle Eastern': Icons.kebab_dining,
+    'Mamak':         Icons.local_cafe,
+    'Nasi Kandar':   Icons.dinner_dining,
+    'Malaysian':     Icons.rice_bowl,
+    'Kopitiam':      Icons.coffee,
+    'Chinese':       Icons.ramen_dining,
+    'Japanese':      Icons.set_meal,
+    'Korean':        Icons.outdoor_grill,
+    'Fusion':        Icons.auto_awesome,
+    'Indonesian':    Icons.soup_kitchen,
+    'Mexican':       Icons.local_fire_department,
+    'Mediterranean': Icons.kebab_dining,
+    'Healthy':       Icons.eco,
+    'Vegetarian':    Icons.grass,
   };
 }
