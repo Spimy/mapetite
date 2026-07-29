@@ -168,7 +168,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Widget _buildSuccessState() {
-    final String email = _emailController.text.trim();
     final bool canResend = _resendCountdown == 0;
 
     return SingleChildScrollView(
@@ -202,7 +201,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
-            'We sent a reset link to $email. It expires in 30 minutes.',
+            'We\'ve opened the reset page in your browser.',
             style: AppTypography.body1.copyWith(color: AppColors.neutral600),
             textAlign: TextAlign.center,
           ),
