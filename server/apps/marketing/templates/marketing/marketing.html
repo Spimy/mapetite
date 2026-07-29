@@ -1,0 +1,98 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'marketing/css/marketing.css' %}" />
+{% endblock styles %}
+
+{% block content %}
+  <main class="marketing">
+    <header class="marketing__header">
+      <nav class="marketing__header__nav">
+        <ul role="list" class="marketing__header__nav__list">
+          <li>
+            <a href="#">
+              <img src="{% static 'img/logo-large.svg' %}"
+                   alt="Mapetite Logo"
+                   width="100"
+                   height="100" />
+            </a>
+          </li>
+          <li>
+            <a href="#">Solutions</a>
+          </li>
+          <li>
+            <a href="#">Pricing</a>
+          </li>
+          <li>
+            <a href="#">Resources</a>
+          </li>
+          <li>
+            <a href="#">Testimonials</a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="marketing__header__cta">
+        <a href="{% url 'users:sign_in' %}">Merchant Login</a>
+        <a href="#" class="btn btn-primary">Become a Partner</a>
+      </div>
+
+      <div class="marketing__header__mobile-menu">
+        <input type="checkbox" id="menu-toggle" />
+        <label for="menu-toggle" class="menu-icon">☰</label>
+      </div>
+    </header>
+
+    {% block marketing_content %}
+    {% endblock marketing_content %}
+
+    <footer class="marketing__footer">
+      <div class="marketing__footer__copyright">
+        <img src="{% static 'img/logo-large.svg' %}"
+             alt="Mapetite Logo"
+             width="100"
+             height="100" />
+        <p>© 2026 Mapetite Smart City Solutions. All rights reserved.</p>
+      </div>
+
+      <nav class="marketing__footer__nav">
+        <div class="marketing__footer__nav--legal">
+          <h3>Legal</h3>
+          <ul role="list" class="marketing__footer__nav__list">
+            <li>
+              <a href="#">Privacy Policy</a>
+            </li>
+            <li>
+              <a href="#">Terms of Service</a>
+            </li>
+            <li>
+              <a href="#">Cookie Policy</a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="marketing__footer__nav--support">
+          <h3>Support</h3>
+          <ul role="list" class="marketing__footer__nav__list">
+            <li>
+              <a href="#">Help Center</a>
+            </li>
+            <li>
+              <a href="#">Contact Sales</a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="marketing__footer__nav--developers">
+          <h3>Developers</h3>
+          <ul role="list" class="marketing__footer__nav__list">
+            <li>
+              <a href="{% url 'swagger-ui' %}">API Documentation</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </footer>
+  </main>
+{% endblock content %}
