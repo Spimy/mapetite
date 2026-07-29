@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "apps.merchants",
     "apps.recipes",
     "apps.budgets",
+    "apps.marketing",
 ]
 
 SITE_ID = 1
