@@ -20,6 +20,7 @@ from django.urls import include, path, reverse_lazy
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.generic import RedirectView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -32,6 +33,10 @@ admin.site.site_title = "Mapetite Admin Portal"
 admin.site.index_title = "Welcome to the Mapetite Admin Portal"
 
 urlpatterns = [
+    path(
+        "favicon.ico",
+        RedirectView.as_view(url=f"{settings.STATIC_URL}favicon.ico", permanent=True),
+    ),
     path("admin/", admin.site.urls),
     path("", include("apps.core.urls", namespace="core")),
     path("", include("apps.users.urls", namespace="users")),
