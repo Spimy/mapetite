@@ -178,7 +178,7 @@
 
   .marketing__header__cta {
     display: none;
-    flex-direction: column;
+    justify-content: flex-end;
     width: 100%;
     padding-top: 1.5rem;
     padding-bottom: 0.5rem;
