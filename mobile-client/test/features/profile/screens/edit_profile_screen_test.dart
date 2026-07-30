@@ -22,10 +22,16 @@ UserProfile _profile() => const UserProfile(
 class _FakeProfileNotifier extends ProfileNotifier {
   final UserProfile? _initial;
   final Object? _error;
+  final Object? _saveError;
   final Completer<void>? _gate;
-  _FakeProfileNotifier({UserProfile? initial, Object? error, Completer<void>? gate})
-      : _initial = initial,
+  _FakeProfileNotifier({
+    UserProfile? initial,
+    Object? error,
+    Object? saveError,
+    Completer<void>? gate,
+  })  : _initial = initial,
         _error = error,
+        _saveError = saveError,
         _gate = gate;
 
   @override
@@ -33,6 +39,11 @@ class _FakeProfileNotifier extends ProfileNotifier {
     if (_gate != null) await _gate.future;
     if (_error != null) throw _error;
     return _initial!;
+  }
+
+  @override
+  Future<void> saveChanges() async {
+    if (_saveError != null) throw _saveError;
   }
 }
 
@@ -131,6 +142,40 @@ void main() {
       // profileProvider must reflect the original fetched profile again,
       // not the discarded staged edit.
       expect(container.read(profileProvider).value!.isHalal, isTrue);
+    },
+  );
+
+  testWidgets(
+    "shows the backend's specific validation message instead of a generic one",
+    (tester) async {
+      await tester.pumpWidget(_app(
+        () => _FakeProfileNotifier(
+          initial: _profile(),
+          saveError: const AppException(
+            message: 'A user with that username already exists.',
+            statusCode: 400,
+          ),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Username'),
+        'newname',
+      );
+      await tester.pump();
+
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('A user with that username already exists.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Could not save your changes. Please try again.'),
+        findsNothing,
+      );
     },
   );
 }

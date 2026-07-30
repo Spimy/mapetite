@@ -180,11 +180,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ),
       );
       context.pop();
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not save your changes. Please try again.'),
+        SnackBar(
+          content: Text(
+            e is AppException
+                ? e.message
+                : 'Could not save your changes. Please try again.',
+          ),
           backgroundColor: Colors.red,
         ),
       );
