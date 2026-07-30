@@ -12,3 +12,7 @@ class SolutionsPageView(TemplateView):
 
 class PricingPageView(TemplateView):
     template_name = "marketing/pages/pricing.html"
+
+
+class TestimonialsPageView(TemplateView):
+    template_name = "marketing/pages/testimonials.html"
