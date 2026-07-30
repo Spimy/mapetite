@@ -85,7 +85,7 @@
   display: flex;
   justify-content: space-between;
   padding: 4rem 5%;
-  background-color: var(--color-grey-100);
+  background-color: color-mix(var(--color-highlight-bg) 80%, var(--color-white) 20%);
   border-top: 2px solid var(--color-border);
   gap: 2rem;
   flex-wrap: wrap;
