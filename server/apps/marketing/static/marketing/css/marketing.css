@@ -198,14 +198,20 @@
 
 .marketing__text-block {
   text-align: center;
-  max-width: 60ch;
-  margin: 0 auto;
   margin-block: 4rem;
+  display: grid;
+  gap: 1rem;
 }
 
 .marketing__text-block h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
+  max-width: 60ch;
+  margin: 0 auto;
+}
+
+.marketing__text-block--full-heading h2 {
+  max-width: 100%;
 }
 
 .marketing__text-block--primary h2 {
@@ -216,6 +222,10 @@
   font-size: 1rem;
   line-height: 1.5;
   margin-bottom: 2rem;
+  max-width: 60ch;
+  margin: 0 auto;
+  font-weight: var(--font-weight-label);
+  color: color-mix(var(--color-grey-600) 50%, var(--color-neutral) 50%);
 }
 
 .marketing__text-block--bold p {
