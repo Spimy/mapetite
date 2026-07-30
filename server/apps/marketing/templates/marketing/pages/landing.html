@@ -1,4 +1,12 @@
 {% extends "marketing/marketing.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'marketing/css/marketing.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'marketing/css/pages/landing.css' %}" />
+{% endblock styles %}
+
 
 {% comment %} Page Meta {% endcomment %}
 {% block title %}
@@ -16,7 +24,50 @@
 
 {% block marketing_content %}
   <section class="marketing__hero">
-    <h1>Welcome to Mapetite</h1>
-    <p>Your gateway to smart city solutions.</p>
+    <h1>Bridging the gap between healthy living and local businesses.</h1>
+    <p>Discover vibrant, nourishing meals tailored to your dietary needs, while supporting the local urban food scene.</p>
+    <div class="marketing__hero__cta">
+      <a href="#" class="btn">Start Exploring</a>
+      <a href="#" class="btn btn--neutral">Partner With Us</a>
+    </div>
+    <img src="{% static 'marketing/img/landing_page.png' %}"
+         alt="Hero Image"
+         width="100%"
+         height="100%" />
+  </section>
+
+  <section class="marketing__text-block marketing__text-block--primary">
+    <h2>Empowring Your Smart City Life</h2>
+    <p>Navigate your dietary journey with confidence and discover culinary gems in your neighbourhood.</p>
+  </section>
+
+  <section class="marketing__features">
+    <article class="marketing__card marketing__features__personalise">
+      <span class="marketing__card__icon">{% include "icons/shield.html" %}</span>
+      <h2>Personalised Dietary Tracking</h2>
+      <p>
+        Filter restaurants by strictly verified deitary tags like Halal, Vegan and Allergen-friendly. Your health is our priority.
+      </p>
+      <div class="marketing__card__tags">
+        <span class="marketing__card__tag marketing__card__tag--halal">Halal</span>
+        <span class="marketing__card__tag marketing__card__tag--vegan">Vegan</span>
+        <span class="marketing__card__tag marketing__card__tag--vegetarian">Vegetarian</span>
+      </div>
+
+      <img src="{% static 'marketing/img/personalised_dietary_tracking.jpg' %}"
+           alt="Personalised Dietary Tracking"
+           width="100%"
+           height="100%" />
+    </article>
+
+    <article class="marketing__card marketing__features__support">
+      <span class="marketing__card__icon">{% include "icons/store.html" %}</span>
+      <h2>Support Local</h2>
+      <p>Connect directly with neighbourhood cafes, healthy food stores, and sustainable eateries.</p>
+      <img src="{% static 'marketing/img/support_local.jpg' %}"
+           alt="Support Local"
+           width="100%"
+           height="100%" />
+    </article>
   </section>
 {% endblock marketing_content %}
