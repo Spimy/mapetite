@@ -3,6 +3,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mapetite/features/auth/screens/forgot_password_screen.dart';
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
+import 'package:url_launcher_platform_interface/link.dart';
+
+class _MockUrlLauncherPlatform extends UrlLauncherPlatform {
+  _MockUrlLauncherPlatform(this._result);
+
+  bool _result;
+  String? lastLaunchedUrl;
+
+  void setResult(bool result) => _result = result;
+
+  @override
+  LinkDelegate? get linkDelegate => null;
+
+  @override
+  Future<bool> canLaunch(String url) async => true;
+
+  @override
+  Future<bool> launchUrl(String url, LaunchOptions options) async {
+    lastLaunchedUrl = url;
+    return _result;
+  }
+}
 
 GoRouter _testRouter() => GoRouter(
       routes: [
@@ -15,7 +38,8 @@ GoRouter _testRouter() => GoRouter(
     );
 
 void main() {
-  testWidgets('renders input state initially', (tester) async {
+  testWidgets('renders heading, explanation, and a single Reset Password button', (tester) async {
+    UrlLauncherPlatform.instance = _MockUrlLauncherPlatform(true);
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp.router(routerConfig: _testRouter()),
@@ -24,11 +48,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Reset your password'), findsOneWidget);
-    expect(find.text('Send Reset Link'), findsOneWidget);
-    expect(find.widgetWithText(TextFormField, 'Email address'), findsOneWidget);
+    expect(find.text('Reset Password'), findsOneWidget);
+    expect(find.byType(TextFormField), findsNothing);
   });
 
-  testWidgets('shows validation error on empty email submit', (tester) async {
+  testWidgets('tapping Reset Password opens the web reset page', (tester) async {
+    final mock = _MockUrlLauncherPlatform(true);
+    UrlLauncherPlatform.instance = mock;
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp.router(routerConfig: _testRouter()),
@@ -36,13 +62,16 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Send Reset Link'));
+    await tester.tap(find.text('Reset Password'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Email is required.'), findsOneWidget);
+    expect(mock.lastLaunchedUrl, contains('/reset-password/'));
+    expect(find.text('Reset your password'), findsOneWidget);
   });
 
-  testWidgets('shows success state after valid email submit', (tester) async {
+  testWidgets('shows an inline error when the reset page fails to launch, and allows retry', (tester) async {
+    final mock = _MockUrlLauncherPlatform(false);
+    UrlLauncherPlatform.instance = mock;
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp.router(routerConfig: _testRouter()),
@@ -50,39 +79,22 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email address'),
-      'test@example.com',
-    );
-    await tester.tap(find.text('Send Reset Link'));
-
-    // Wait for the mock 1s delay
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.text('Reset Password'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Check your email'), findsOneWidget);
-    expect(find.byIcon(Icons.email_outlined), findsOneWidget);
-    expect(find.text('Back to Sign In'), findsOneWidget);
-  });
-
-  testWidgets('resend button shows countdown after success', (tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp.router(routerConfig: _testRouter()),
-      ),
+    expect(
+      find.text('Could not open the reset page. Please try again.'),
+      findsOneWidget,
     );
+
+    mock.setResult(true);
+    await tester.tap(find.text('Reset Password'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Email address'),
-      'test@example.com',
+    expect(
+      find.text('Could not open the reset page. Please try again.'),
+      findsNothing,
     );
-    await tester.tap(find.text('Send Reset Link'));
-    await tester.pump(const Duration(milliseconds: 1100));
-    await tester.pumpAndSettle();
-
-    // Countdown should be active — button text contains 'Resend in'
-    expect(find.textContaining('Resend in'), findsOneWidget);
+    expect(mock.lastLaunchedUrl, contains('/reset-password/'));
   });
 }

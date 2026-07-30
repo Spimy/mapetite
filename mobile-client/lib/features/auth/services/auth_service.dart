@@ -139,8 +139,4 @@ class AuthService {
     }
   }
 
-  Future<void> sendPasswordReset(String email) async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    // TODO: Call password reset endpoint when available.
-  }
 }
