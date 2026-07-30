@@ -1,0 +1,216 @@
+.marketing__hero span {
+  border-radius: 10rem;
+  background-color: var(--color-primary-light);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  color: var(--color-primary);
+  font-weight: var(--font-weight-label);
+}
+
+.marketing__hero span svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.marketing__capabilities {
+  margin-top: 10rem;
+}
+
+.marketing__capabilities h2 {
+  margin-bottom: 1rem;
+}
+
+.marketing__capabilities p {
+  margin-bottom: 2rem;
+  max-width: 65ch;
+  color: color-mix(var(--color-grey-600) 50%, var(--color-neutral) 50%);
+}
+
+.marketing__capabilities__grid {
+  margin-top: 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "discovery"
+    "ai-driven"
+    "merchant-growth"
+    "api";
+  gap: 1rem;
+}
+
+.marketing__capability,
+.marketing__capability__content {
+  display: grid;
+  gap: 1rem;
+}
+
+.marketing__capability--discovery {
+  grid-area: discovery;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.marketing__capability--ai-driven {
+  grid-area: ai-driven;
+}
+
+.marketing__capability--merchant-growth {
+  grid-area: merchant-growth;
+}
+
+.marketing__capability--api {
+  grid-area: api;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: color-mix(in srgb, var(--color-primary) 70%, black);
+  background-image: radial-gradient(
+      /* 75% to the left of the card and 50% from the top so that it's centered horizontally */
+      circle at 75% 50%,
+      /* Go from the center of the circle to the edge to fade from the primary light to transparent */
+      color-mix(in srgb, var(--color-primary-light) 15%, transparent) 0%,
+      /* Radius of the glow */
+      transparent 14rem);
+}
+
+.marketing__capability--discovery .marketing__capability__content {
+  padding: 2rem;
+}
+
+.marketing__capability .marketing__card__icon svg {
+  background-color: var(--color-highlight-bg);
+  color: var(--color-primary);
+  border-radius: 0.75rem;
+}
+
+.marketing__capability__list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: color-mix(var(--color-grey-600) 50%, var(--color-neutral) 50%);
+  margin-top: 0.5rem;
+}
+
+.marketing__capability__list li span {
+  display: flex;
+  align-self: center;
+}
+
+.marketing__capability__list li svg {
+  color: color-mix(var(--color-success) 80%, var(--color-neutral) 20%);
+  background-color: transparent;
+  border: 2px solid color-mix(var(--color-success) 80%, var(--color-neutral) 20%);
+  stroke-width: 4;
+  border-radius: 100%;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0.1rem;
+}
+
+.marketing__capability--discovery .marketing__capability__image {
+  order: -1;
+  min-height: 250px;
+  position: relative;
+}
+
+.marketing__capability--discovery .marketing__capability__image img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.marketing__capability--ai-driven .marketing__capability__example {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-marketing-bg);
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid var(--color-border);
+}
+
+.marketing__capability--ai-driven .marketing__capability__example dt {
+  font-weight: var(--font-weight-label);
+  font-size: 0.875rem;
+  color: color-mix(var(--color-grey-600) 50%, var(--color-neutral) 50%);
+}
+
+.marketing__capability--ai-driven .marketing__capability__example dd {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-label);
+  color: var(--color-primary);
+}
+
+.marketing__capability--merchant-growth img {
+  width: 100%;
+  max-height: 10rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--color-border);
+  object-fit: cover;
+  object-position: bottom;
+}
+
+.marketing__capability--api h3 {
+  color: var(--color-white);
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-label);
+}
+
+.marketing__capability--api p {
+  color: var(--color-primary-light);
+}
+
+.marketing__capability--api a {
+  color: color-mix(var(--color-success) 50%, var(--color-white) 50%);
+  font-weight: var(--font-weight-heading);
+}
+
+.marketing__capability--api a span {
+  margin-left: 0.25rem;
+  vertical-align: middle;
+}
+
+.marketing__capability--api a svg {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 100%;
+  transition: all 0.3s ease-in-out;
+}
+
+.marketing__capability--api a:hover {
+  text-decoration: underline;
+}
+
+.marketing__capability--api a:hover svg {
+  transform: translateX(0.25rem);
+}
+
+@media (min-width: 768px) {
+  .marketing__capabilities__grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-areas:
+      "discovery discovery ai-driven"
+      "merchant-growth api api";
+  }
+
+  .marketing__capability--discovery {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+
+  .marketing__capability--discovery .marketing__capability__image {
+    order: 0;
+    min-height: 0;
+  }
+}

@@ -1,0 +1,109 @@
+{% extends "marketing/marketing.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'marketing/css/marketing.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'marketing/css/pages/solutions.css' %}" />
+{% endblock styles %}
+
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Capabilities
+{% endblock title %}
+
+{% block description %}
+  Discover Mapetite's innovative smart city solutions, designed to enhance urban living through technology and sustainability. Explore our offerings and join the movement towards smarter cities.
+{% endblock description %}
+
+{% block keywords %}
+  smart city solutions, urban technology, sustainable living, Mapetite innovations, smart city development
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block marketing_content %}
+  <section class="marketing__hero marketing__text-block">
+    <span>
+      {% include "icons/verified.html" %}
+      Trusted by 5,000+ Merchants
+    </span>
+    <h1>Smart City Solutions for Modern Dining Experiences</h1>
+    <p>
+      Discover Mapetite's innovative smart city solutions, designed to enhance urban living through technology and sustainability.
+    </p>
+    <div class="marketing__hero__cta">
+      <a href="#core-capabilities" class="btn">Explore Solutions</a>
+    </div>
+  </section>
+
+  <section class="marketing__capabilities" id="core-capabilities">
+    <h2>Core Capabilities</h2>
+    <p>A unified platform designed to enhance urban wellness and drive local economic growth.</p>
+
+    <div class="marketing__capabilities__grid">
+      <article class="marketing__card marketing__capability marketing__capability--discovery">
+        <div class="marketing__capability__content">
+          <span class="marketing__card__icon">{% include "icons/location.html" %}</span>
+          <h3>Hyper-local Discovery</h3>
+          <p>
+            Connect users with highly specific dietary needs (Halal, Vegan, Allergen-free) to verified local merchants instantly using our advanced spatial algorithms.
+          </p>
+          <ul role="list" class="marketing__capability__list">
+            <li>
+              <span>{% include "icons/check.html" %}</span>
+              Real-time merchant availability
+            </li>
+            <li>
+              <span>{% include "icons/check.html" %}</span>
+              Granular dietary tagging
+            </li>
+          </ul>
+        </div>
+
+        <div class="marketing__capability__image">
+          <img src="{% static 'marketing/img/hyper_local_discovery.png' %}"
+               alt="Hyper-local Discovery"
+               width="100%"
+               height="100%" />
+        </div>
+      </article>
+
+      <article class="marketing__card marketing__capability marketing__capability--ai-driven">
+        <span class="marketing__card__icon">{% include "icons/shield.html" %}</span>
+        <h3>AI-Driven Budget Matching</h3>
+        <p>
+          Predictive pricing models help users find the best meals within their daily RM budget, while optimising merchant foot traffic.
+        </p>
+
+        <dl class="marketing__capability__example">
+          <dt>Daily Budget</dt>
+          <dd>
+            RM 45.00
+          </dd>
+        </dl>
+      </article>
+
+      <article class="marketing__card marketing__capability marketing__capability--merchant-growth">
+        <span class="marketing__card__icon">{% include "icons/shield.html" %}</span>
+        <h3>Merchant Growth Tools</h3>
+        <p>
+          Actionable analytics, dynamic promotions, and inventory insights to maximise operational efficiency and customer retention.
+        </p>
+
+        <img src="{% static 'marketing/img/merchant_growth.png' %}"
+             alt="Merchant Growth Tools"
+             width="100%"
+             height="100%" />
+      </article>
+
+      <article class="marketing__card marketing__capability marketing__capability--api">
+        <h3>Seamless Ecosystem Integration</h3>
+        <p>
+          Deploy our smart city APIs directly into your existing infrastructure. Build healthier, more connected communities with zero friction.
+        </p>
+        <a href="{% url 'swagger-ui' %}">View API Documentation <span>{% include "icons/right-arrow.html" %}</span></a>
+      </article>
+    </div>
+  </section>
+{% endblock marketing_content %}
