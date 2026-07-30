@@ -51,16 +51,23 @@ void main() {
       }
     });
 
-    testWidgets('renders all eight cuisine chips', (tester) async {
+    testWidgets('renders all thirteen cuisine chips', (tester) async {
       await tester.pumpWidget(buildApp());
       await tester.pumpAndSettle();
       for (final cuisine in [
-        'Malaysian', 'Chinese', 'Indian', 'Japanese',
-        'Western', 'Thai', 'Korean', 'Middle Eastern',
+        'Mamak', 'Nasi Kandar', 'Malaysian', 'Kopitiam',
+        'Chinese', 'Japanese', 'Korean', 'Fusion',
+        'Indonesian', 'Mexican', 'Mediterranean', 'Healthy',
       ]) {
         expect(find.text(cuisine), findsOneWidget,
             reason: '$cuisine chip should be present');
       }
+      // 'Vegetarian' is also a dietary-requirement toggle label on this same
+      // screen (different concept, same word — the backend's cuisine choice
+      // means "vegetarian-style food," the toggle means "I am vegetarian"),
+      // so it legitimately appears twice: once per section.
+      expect(find.text('Vegetarian'), findsNWidgets(2),
+          reason: 'Vegetarian appears both as a dietary toggle and a cuisine chip');
     });
 
     testWidgets('allergen chip can be tapped without crashing', (tester) async {

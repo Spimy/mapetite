@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mapetite/core/errors/app_exception.dart';
 import 'package:mapetite/core/network/api_client.dart';
 import 'package:mapetite/core/network/api_endpoints.dart';
 import 'package:mapetite/features/auth/models/auth_tokens.dart';
@@ -61,6 +62,29 @@ void main() {
           'spending_alert_percent': 80,
         });
       }
+    });
+
+    test('updateProfile surfaces the backend\'s specific validation message '
+        'instead of a generic one', () async {
+      // spending_alert_percent is validated server-side with max_value=100
+      // (server/apps/users/serializers.py) — sending 999 forces a real 400
+      // whose body is the plain field-error shape
+      // {"spending_alert_percent": ["Ensure this value is less than or
+      // equal to 100."]}, the same shape a duplicate-username rejection
+      // uses for the "username" field.
+      await expectLater(
+        service.updateProfile({'spending_alert_percent': 999}),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              isNot('Something went wrong.'),
+              contains('100'),
+            ),
+          ),
+        ),
+      );
     });
   });
 }

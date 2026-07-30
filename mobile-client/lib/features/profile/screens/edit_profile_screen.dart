@@ -4,12 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/errors/app_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/custom_button.dart';
-import '../controllers/edit_profile_controller.dart';
+import '../../../shared/widgets/network_error_state.dart';
 import '../controllers/profile_setup_controller.dart';
 import '../models/user_profile.dart';
+import '../providers/profile_provider.dart';
 import '../widgets/delete_account_dialog.dart';
 import '../widgets/photo_picker_sheet.dart';
 import '../widgets/unsaved_changes_dialog.dart';
@@ -23,38 +26,36 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController;
-  late TextEditingController _emailController;
-  late TextEditingController _cityController;
-  late UserProfile _initialProfile;
+  TextEditingController? _usernameController;
+  TextEditingController? _emailController;
+  TextEditingController? _cityController;
+  UserProfile? _initialProfile;
   bool _isSaving = false;
 
-  @override
-  void initState() {
-    super.initState();
-    final profile = ref.read(editProfileControllerProvider);
+  void _ensureControllersInitialized(UserProfile profile) {
+    if (_initialProfile != null) return;
     _initialProfile = profile;
-    _nameController = TextEditingController(text: profile.displayName);
+    _usernameController = TextEditingController(text: profile.username)
+      ..addListener(_onFieldChanged);
     _emailController = TextEditingController(text: profile.email);
-    _cityController = TextEditingController(text: profile.city ?? '');
-    _nameController.addListener(_onFieldChanged);
-    _cityController.addListener(_onFieldChanged);
+    _cityController = TextEditingController(text: profile.city ?? '')
+      ..addListener(_onFieldChanged);
   }
 
   void _onFieldChanged() => setState(() {});
 
   @override
   void dispose() {
-    _nameController.removeListener(_onFieldChanged);
-    _cityController.removeListener(_onFieldChanged);
-    _nameController.dispose();
-    _emailController.dispose();
-    _cityController.dispose();
+    _usernameController?.removeListener(_onFieldChanged);
+    _cityController?.removeListener(_onFieldChanged);
+    _usernameController?.dispose();
+    _emailController?.dispose();
+    _cityController?.dispose();
     super.dispose();
   }
 
-  String _initials(String displayName) {
-    final parts = displayName.trim().split(' ');
+  String _initials(String username) {
+    final parts = username.trim().split(' ');
     if (parts.length >= 2) {
       return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
     }
@@ -85,7 +86,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _navigateToDietary() async {
-    final profile = ref.read(editProfileControllerProvider);
+    final profile = ref.read(profileProvider).requireValue;
     ref.read(profileSetupControllerProvider.notifier).updateDietary(
       isHalal: profile.isHalal,
       isVegetarian: profile.isVegetarian,
@@ -97,7 +98,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     await context.push('/profile/dietary?mode=edit');
     if (!mounted) return;
     final setup = ref.read(profileSetupControllerProvider);
-    ref.read(editProfileControllerProvider.notifier).updateDietary(
+    ref.read(profileProvider.notifier).updateDietary(
       isHalal: setup.isHalal,
       isVegetarian: setup.isVegetarian,
       isVegan: setup.isVegan,
@@ -108,7 +109,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _navigateToBudget() async {
-    final profile = ref.read(editProfileControllerProvider);
+    final profile = ref.read(profileProvider).requireValue;
     ref.read(profileSetupControllerProvider.notifier).updateBudget(
       dineIn: profile.dineInBudget,
       grocery: profile.groceryBudget,
@@ -117,7 +118,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     await context.push('/profile/budget-setup?mode=edit');
     if (!mounted) return;
     final setup = ref.read(profileSetupControllerProvider);
-    ref.read(editProfileControllerProvider.notifier).updateBudget(
+    ref.read(profileProvider.notifier).updateBudget(
       dineIn: setup.dineInBudget,
       grocery: setup.groceryBudget,
       alertThreshold: setup.alertThresholdPercent,
@@ -125,7 +126,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _navigateToHealth() async {
-    final profile = ref.read(editProfileControllerProvider);
+    final profile = ref.read(profileProvider).requireValue;
     ref.read(profileSetupControllerProvider.notifier).updateHealthGoals(
       healthGoal: profile.healthGoal,
       activityLevel: profile.activityLevel,
@@ -134,7 +135,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     await context.push('/profile/health-goals?mode=edit');
     if (!mounted) return;
     final setup = ref.read(profileSetupControllerProvider);
-    ref.read(editProfileControllerProvider.notifier).updateHealthGoals(
+    ref.read(profileProvider.notifier).updateHealthGoals(
       healthGoal: setup.healthGoal,
       activityLevel: setup.activityLevel,
       weightKg: setup.weightKg,
@@ -143,15 +144,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    ref.read(editProfileControllerProvider.notifier)
-      ..updateDisplayName(_nameController.text.trim())
-      ..updateCity(_cityController.text.trim());
+    ref.read(profileProvider.notifier)
+      ..updateUsername(_usernameController!.text.trim())
+      ..updateCity(_cityController!.text.trim());
     setState(() => _isSaving = true);
-    final success =
-        await ref.read(editProfileControllerProvider.notifier).saveChanges();
-    if (!mounted) return;
-    setState(() => _isSaving = false);
-    if (success) {
+    try {
+      await ref.read(profileProvider.notifier).saveChanges();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -181,50 +180,54 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ),
       );
       context.pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e is AppException
+                ? e.message
+                : 'Could not save your changes. Please try again.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
   bool _hasUnsavedChanges(UserProfile current) {
-    return _nameController.text.trim() != _initialProfile.displayName ||
-        _cityController.text.trim() != (_initialProfile.city ?? '') ||
-        current.isHalal != _initialProfile.isHalal ||
-        current.isVegetarian != _initialProfile.isVegetarian ||
-        current.isVegan != _initialProfile.isVegan ||
-        !listEquals(current.allergens, _initialProfile.allergens) ||
-        current.dailyCalorieTarget != _initialProfile.dailyCalorieTarget ||
-        !listEquals(current.cuisinePreferences, _initialProfile.cuisinePreferences) ||
-        current.dineInBudget != _initialProfile.dineInBudget ||
-        current.groceryBudget != _initialProfile.groceryBudget ||
-        current.alertThresholdPercent != _initialProfile.alertThresholdPercent ||
-        current.healthGoal != _initialProfile.healthGoal ||
-        current.activityLevel != _initialProfile.activityLevel ||
-        current.weightKg != _initialProfile.weightKg;
+    final initial = _initialProfile;
+    if (initial == null) return false;
+    return _usernameController!.text.trim() != initial.username ||
+        _cityController!.text.trim() != (initial.city ?? '') ||
+        current.isHalal != initial.isHalal ||
+        current.isVegetarian != initial.isVegetarian ||
+        current.isVegan != initial.isVegan ||
+        !listEquals(current.allergens, initial.allergens) ||
+        current.dailyCalorieTarget != initial.dailyCalorieTarget ||
+        !listEquals(current.cuisinePreferences, initial.cuisinePreferences) ||
+        current.dineInBudget != initial.dineInBudget ||
+        current.groceryBudget != initial.groceryBudget ||
+        current.alertThresholdPercent != initial.alertThresholdPercent ||
+        current.healthGoal != initial.healthGoal ||
+        current.activityLevel != initial.activityLevel ||
+        current.weightKg != initial.weightKg;
   }
 
   void _handlePopAttempt() async {
     final discard = await showUnsavedChangesDialog(context);
-    if (discard && mounted) context.pop();
-  }
-
-  void _onBackPressed(bool hasUnsaved) {
-    if (hasUnsaved) {
-      _handlePopAttempt();
-    } else {
-      context.pop();
-    }
+    if (!discard || !mounted) return;
+    ref.invalidate(profileProvider);
+    context.pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final profile = ref.watch(editProfileControllerProvider);
-    final hasUnsaved = _hasUnsavedChanges(profile);
+    final profileAsync = ref.watch(profileProvider);
 
-    return PopScope(
-      canPop: !hasUnsaved,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _handlePopAttempt();
-      },
-      child: Scaffold(
+    return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.white,
@@ -235,42 +238,64 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         titleTextStyle: AppTypography.headline2.copyWith(color: AppColors.primary),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => _onBackPressed(hasUnsaved),
+          onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: const Text('Account & Preferences'),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: AppSpacing.xxl),
-                    _buildAvatarSection(profile),
-                    const SizedBox(height: AppSpacing.xxl),
-                    _buildPersonalInfoSection(profile),
-                    const SizedBox(height: AppSpacing.xxl),
-                    const Divider(color: AppColors.border),
-                    const SizedBox(height: AppSpacing.xxl),
-                    _buildPreferencesSection(profile),
-                    const SizedBox(height: AppSpacing.xxxl),
-                    _buildDeleteButton(),
-                    const SizedBox(height: AppSpacing.xxl),
-                  ],
-                ),
+      body: profileAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => error is AppException && error.isNetworkError
+            ? NetworkErrorState(onRetry: () => ref.invalidate(profileProvider))
+            : AppEmptyState(
+                icon: Icons.error_outline,
+                title: 'Something went wrong',
+                description: 'Unable to load your profile. Please try again.',
+                ctaLabel: 'Retry',
+                onCta: () => ref.invalidate(profileProvider),
               ),
+        data: (profile) {
+          _ensureControllersInitialized(profile);
+          final hasUnsaved = _hasUnsavedChanges(profile);
+
+          return PopScope(
+            canPop: !hasUnsaved,
+            onPopInvokedWithResult: (didPop, _) {
+              if (!didPop) _handlePopAttempt();
+            },
+            child: Column(
+              children: [
+                Expanded(
+                  child: Form(
+                    key: _formKey,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: AppSpacing.xxl),
+                          _buildAvatarSection(profile),
+                          const SizedBox(height: AppSpacing.xxl),
+                          _buildPersonalInfoSection(),
+                          const SizedBox(height: AppSpacing.xxl),
+                          const Divider(color: AppColors.border),
+                          const SizedBox(height: AppSpacing.xxl),
+                          _buildPreferencesSection(profile),
+                          const SizedBox(height: AppSpacing.xxxl),
+                          _buildDeleteButton(),
+                          const SizedBox(height: AppSpacing.xxl),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                _buildStickyFooter(hasUnsaved),
+              ],
             ),
-          ),
-          _buildStickyFooter(hasUnsaved),
-        ],
-      ),
+          );
+        },
       ),
     );
   }
@@ -291,7 +316,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    _initials(profile.displayName),
+                    _initials(profile.username),
                     style: AppTypography.headline1.copyWith(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w700,
@@ -345,15 +370,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildPersonalInfoSection(UserProfile profile) {
+  Widget _buildPersonalInfoSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppTextField(
-          label: 'Display Name',
-          controller: _nameController,
+          label: 'Username',
+          controller: _usernameController,
           validator: (v) =>
-              (v == null || v.trim().isEmpty) ? 'Name cannot be empty' : null,
+              (v == null || v.trim().isEmpty) ? 'Username cannot be empty' : null,
           textInputAction: TextInputAction.next,
         ),
         const SizedBox(height: AppSpacing.lg),

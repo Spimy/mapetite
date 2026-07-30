@@ -12,7 +12,6 @@ import '../models/profile_setup_data.dart';
 import '../widgets/selectable_chip.dart';
 import '../widgets/unsaved_changes_dialog.dart';
 import '../widgets/wizard_scaffold.dart';
-import '../../budget/providers/budget_provider.dart';
 
 class BudgetSetupScreen extends ConsumerStatefulWidget {
   final bool isEditMode;
@@ -322,33 +321,7 @@ class _BudgetSetupScreenState extends ConsumerState<BudgetSetupScreen> {
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 child: AppButton(
                   label: 'Done',
-                  onPressed: () async {
-                    final d = ref.read(profileSetupControllerProvider);
-                    try {
-                      await ref.read(budgetProvider.notifier).adjustBudget(
-                            dineIn: d.dineInBudget,
-                            grocery: d.groceryBudget,
-                            alertPercent: d.alertThresholdPercent,
-                          );
-                      if (context.mounted) context.pop();
-                    } catch (_) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                'Could not save your budget. Please try again.',
-                                style: AppTypography.body1
-                                    .copyWith(color: AppColors.white)),
-                            backgroundColor: AppColors.error,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(AppSpacing.radiusMd)),
-                          ),
-                        );
-                      }
-                    }
-                  },
+                  onPressed: () => context.pop(),
                 ),
               ),
             ),

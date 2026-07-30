@@ -95,7 +95,7 @@ class ProfileSetupData {
       'allergies': allergens
           .map((allergen) => allergen.toLowerCase().replaceAll(' ', '_'))
           .toList(),
-      'cuisine_preferences': cuisinePreferences
+      'preferred_cuisines': cuisinePreferences
           .map((cuisine) => cuisine.toLowerCase().replaceAll(' ', '_'))
           .toList(),
     };

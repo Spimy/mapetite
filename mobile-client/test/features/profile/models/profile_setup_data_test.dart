@@ -13,4 +13,13 @@ void main() {
     expect(updated.dineInBudget, 350);
     expect(updated.groceryBudget, 200);
   });
+
+  test('toProfileJson sends preferred_cuisines, not cuisine_preferences', () {
+    const data = ProfileSetupData(cuisinePreferences: ['Malaysian']);
+
+    final json = data.toProfileJson();
+
+    expect(json.containsKey('cuisine_preferences'), isFalse);
+    expect(json['preferred_cuisines'], ['malaysian']);
+  });
 }
