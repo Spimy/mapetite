@@ -151,6 +151,9 @@ class RecipeModel {
       isVegan: json['is_vegan'] as bool? ?? false,
       isVegetarian: json['is_vegetarian'] as bool? ?? false,
       isGlutenFree: json['is_gluten_free'] as bool? ?? false,
+      cuisine: _normaliseCuisineType(
+        json['cuisine_type']?.toString() ?? json['cuisine']?.toString(),
+      ),
       ingredients: ingredients,
       steps: steps,
       saves: (json['saves_count'] as num?)?.toInt() ?? 0,
@@ -213,7 +216,9 @@ class RecipeModel {
   }
 
   Map<String, dynamic> toRequestJson() {
-    return {
+    final normalisedCuisine = _normaliseCuisineType(cuisine);
+
+    final request = <String, dynamic>{
       'title': title.trim(),
       'prep_time': cookMinutes,
       'servings': servings,
@@ -225,6 +230,12 @@ class RecipeModel {
       'ingredients': ingredients.map((item) => item.toRequestJson()).toList(),
       'steps': steps.map((step) => step.toRequestJson()).toList(),
     };
+
+    if (normalisedCuisine != null) {
+      request['cuisine_type'] = normalisedCuisine;
+    }
+
+    return request;
   }
 
   String get timeAgo {
@@ -235,13 +246,16 @@ class RecipeModel {
     if (diff.inMinutes < 60) {
       return '${diff.inMinutes} min${diff.inMinutes > 1 ? 's' : ''} ago';
     }
+
     if (diff.inHours < 24) {
       return '${diff.inHours} hour${diff.inHours > 1 ? 's' : ''} ago';
     }
+
     if (diff.inDays == 1) return 'Yesterday';
     if (diff.inDays < 7) {
       return '${diff.inDays} day${diff.inDays > 1 ? 's' : ''} ago';
     }
+
     if (diff.inDays < 14) return '1 week ago';
 
     final weeks = (diff.inDays / 7).floor();
@@ -323,6 +337,57 @@ String _formatQuantityNumber(double value) {
       rounded.replaceFirst(RegExp(r'\.?0+$'), '');
 
   return withoutTrailingZeros.isEmpty ? '0' : withoutTrailingZeros;
+}
+
+String? _normaliseCuisineType(String? value) {
+  final raw = value?.trim();
+
+  if (raw == null || raw.isEmpty) {
+    return null;
+  }
+
+  var cleaned = raw
+      .replaceAll(r'\"', '"')
+      .replaceAll(r"\'", "'")
+      .replaceAll('\\', '')
+      .trim();
+
+  while (cleaned.length >= 2 &&
+      ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+          (cleaned.startsWith("'") && cleaned.endsWith("'")))) {
+    cleaned = cleaned.substring(1, cleaned.length - 1).trim();
+  }
+
+  while (cleaned.startsWith('"') || cleaned.startsWith("'")) {
+    cleaned = cleaned.substring(1).trim();
+  }
+
+  while (cleaned.endsWith('"') || cleaned.endsWith("'")) {
+    cleaned = cleaned.substring(0, cleaned.length - 1).trim();
+  }
+
+  final normalised = cleaned.toUpperCase().replaceAll(' ', '_');
+
+  const allowedCuisineTypes = {
+    'MAMAK',
+    'NASI_KANDAR',
+    'MALAYSIAN',
+    'KOPITIAM',
+    'CHINESE',
+    'JAPANESE',
+    'KOREAN',
+    'FUSION',
+    'INDONESIAN',
+    'MEXICAN',
+    'MEDITERRANEAN',
+    'HEALTHY',
+  };
+
+  if (allowedCuisineTypes.contains(normalised)) {
+    return normalised;
+  }
+
+  return null;
 }
 
 String _normaliseUnit(String unit) {

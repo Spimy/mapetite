@@ -9,6 +9,7 @@ import '../../../core/network/api_endpoints.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../recipes/providers/selected_ingredients_provider.dart';
+import '../../../shared/providers/location_provider.dart';
 
 class GroceryMatchScreen extends ConsumerStatefulWidget {
   final String recipeId;
@@ -23,8 +24,6 @@ class GroceryMatchScreen extends ConsumerStatefulWidget {
 }
 
 class _GroceryMatchScreenState extends ConsumerState<GroceryMatchScreen> {
-  static const double _defaultLatitude = 3.0731;
-  static const double _defaultLongitude = 101.6069;
   static const double _defaultRadiusKm = 5.0;
 
   bool _isLoading = false;
@@ -42,6 +41,9 @@ class _GroceryMatchScreenState extends ConsumerState<GroceryMatchScreen> {
   }
 
   Future<void> _loadStoreMatches() async {
+    final location = ref.read(locationProvider).valueOrNull;
+    final latitude = location?.latitude ?? 3.0731;
+    final longitude = location?.longitude ?? 101.6069;
     final selectedItems = ref.read(selectedIngredientsProvider);
     final ingredientNames = selectedItems
         .map((item) => item.name.trim())
@@ -68,8 +70,8 @@ class _GroceryMatchScreenState extends ConsumerState<GroceryMatchScreen> {
         ApiEndpoints.ingredientSearchNearbyStores,
         data: {
           'ingredients': ingredientNames,
-          'latitude': _defaultLatitude,
-          'longitude': _defaultLongitude,
+          'latitude': latitude,
+          'longitude': longitude,
           'radius_km': _defaultRadiusKm,
         },
       );

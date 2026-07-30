@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,21 @@ import '../../../shared/widgets/custom_button.dart';
 import '../../profile/widgets/photo_picker_sheet.dart';
 import '../models/recipe_model.dart';
 import '../providers/recipe_provider.dart';
+
+const _cuisineOptions = <({String value, String label})>[
+  (value: 'MAMAK', label: 'Mamak'),
+  (value: 'NASI_KANDAR', label: 'Nasi Kandar'),
+  (value: 'MALAYSIAN', label: 'Malaysian'),
+  (value: 'KOPITIAM', label: 'Kopitiam'),
+  (value: 'CHINESE', label: 'Chinese'),
+  (value: 'JAPANESE', label: 'Japanese'),
+  (value: 'KOREAN', label: 'Korean'),
+  (value: 'FUSION', label: 'Fusion'),
+  (value: 'INDONESIAN', label: 'Indonesian'),
+  (value: 'MEXICAN', label: 'Mexican'),
+  (value: 'MEDITERRANEAN', label: 'Mediterranean'),
+  (value: 'HEALTHY', label: 'Healthy'),
+];
 
 class CreateRecipeScreen extends ConsumerStatefulWidget {
   const CreateRecipeScreen({super.key});
@@ -40,6 +56,8 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
   final _prepTimeCtrl = TextEditingController();
   final _servingsCtrl = TextEditingController();
   final _caloriesCtrl = TextEditingController();
+
+  String? _selectedCuisine;
 
   final Set<String> _selectedTags = {};
   final List<_IngredientEntry> _ingredients = [
@@ -179,6 +197,7 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
       isVegan: _selectedTags.contains('Vegan'),
       isVegetarian: _selectedTags.contains('Vegetarian'),
       isGlutenFree: _selectedTags.contains('Gluten-Free'),
+      cuisine: _selectedCuisine,
       ingredients: ingredients,
       steps: steps,
       visibility: RecipeVisibility.public,
@@ -217,22 +236,15 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
       } else {
         context.go('/recipes');
       }
-    } catch (_) {
+    } catch (error) {
       if (!mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unable to create recipe. Please try again.',
-            style: AppTypography.body1.copyWith(color: AppColors.white),
-          ),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          ),
+      _showErrorSnack(
+        _errorMessageFrom(
+          error,
+          fallback: 'Unable to create recipe. Please try again.',
         ),
       );
     } finally {
@@ -242,6 +254,96 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
         });
       }
     }
+  }
+
+
+  void _showErrorSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: AppTypography.body1.copyWith(color: AppColors.white),
+        ),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+      ),
+    );
+  }
+
+  String _errorMessageFrom(
+    Object error, {
+    required String fallback,
+  }) {
+    if (error is DioException) {
+      final message = _extractApiError(error.response?.data);
+
+      if (message != null && message.trim().isNotEmpty) {
+        return message;
+      }
+    }
+
+    return fallback;
+  }
+
+  String? _extractApiError(dynamic data, {String? field}) {
+    if (data == null) {
+      return null;
+    }
+
+    if (data is String) {
+      return field == null ? data : '$field: $data';
+    }
+
+    if (data is List) {
+      final messages = <String>[];
+
+      for (var i = 0; i < data.length; i++) {
+        final item = data[i];
+        final itemField = field == null ? null : '$field ${i + 1}';
+        final nested = _extractApiError(item, field: itemField);
+
+        if (nested != null && nested.isNotEmpty) {
+          messages.add(nested);
+        }
+      }
+
+      return messages.isEmpty ? null : messages.join('\n');
+    }
+
+    if (data is Map) {
+      final messages = <String>[];
+
+      for (final entry in data.entries) {
+        final fieldName = _formatApiFieldName(entry.key.toString());
+        final nextField = field == null ? fieldName : '$field $fieldName';
+        final nested = _extractApiError(entry.value, field: nextField);
+
+        if (nested != null && nested.isNotEmpty) {
+          messages.add(nested);
+        }
+      }
+
+      return messages.isEmpty ? null : messages.join('\n');
+    }
+
+    return null;
+  }
+
+  String _formatApiFieldName(String value) {
+    if (value == 'non_field_errors') {
+      return 'Error';
+    }
+
+    final words = value.replaceAll('_', ' ');
+
+    if (words.isEmpty) {
+      return 'Error';
+    }
+
+    return words[0].toUpperCase() + words.substring(1);
   }
 
   @override
@@ -266,6 +368,8 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
                       _buildTitleField(),
                       const SizedBox(height: AppSpacing.lg),
                       _buildDetailsRow(),
+                      const SizedBox(height: AppSpacing.lg),
+                      _buildCuisineDropdown(),
                       const SizedBox(height: AppSpacing.lg),
                       _buildDietaryTags(),
                       const SizedBox(height: AppSpacing.lg),
@@ -445,6 +549,32 @@ class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         borderSide: const BorderSide(color: AppColors.error, width: 1.5),
       ),
+    );
+  }
+
+
+  Widget _buildCuisineDropdown() {
+    return DropdownButtonFormField<String>(
+      initialValue: _selectedCuisine,
+      isExpanded: true,
+      decoration: _inputDecoration('Cuisine'),
+      hint: Text(
+        'Select cuisine',
+        style: AppTypography.body1.copyWith(color: AppColors.neutral400),
+      ),
+      items: _cuisineOptions.map((option) {
+        return DropdownMenuItem<String>(
+          value: option.value,
+          child: Text(option.label, style: AppTypography.body1),
+        );
+      }).toList(),
+      onChanged: _isSaving
+          ? null
+          : (value) {
+              setState(() {
+                _selectedCuisine = value;
+              });
+            },
     );
   }
 
@@ -641,7 +771,7 @@ class _IngredientRowWidgetState extends State<_IngredientRowWidget> {
             controller: widget.entry.quantityCtrl,
             hint: 'Qty',
             enabled: widget.enabled,
-            keyboardType: TextInputType.number,
+            keyboardType: TextInputType.text,
           ),
         ),
         const SizedBox(width: AppSpacing.xs),

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +9,52 @@ import '../../../core/theme/app_colors.dart';
 import '../../profile/widgets/unsaved_changes_dialog.dart';
 import '../models/recipe_model.dart';
 import '../providers/recipe_provider.dart';
+
+const _cuisineOptions = <({String value, String label})>[
+  (value: 'MAMAK', label: 'Mamak'),
+  (value: 'NASI_KANDAR', label: 'Nasi Kandar'),
+  (value: 'MALAYSIAN', label: 'Malaysian'),
+  (value: 'KOPITIAM', label: 'Kopitiam'),
+  (value: 'CHINESE', label: 'Chinese'),
+  (value: 'JAPANESE', label: 'Japanese'),
+  (value: 'KOREAN', label: 'Korean'),
+  (value: 'FUSION', label: 'Fusion'),
+  (value: 'INDONESIAN', label: 'Indonesian'),
+  (value: 'MEXICAN', label: 'Mexican'),
+  (value: 'MEDITERRANEAN', label: 'Mediterranean'),
+  (value: 'HEALTHY', label: 'Healthy'),
+];
+
+String? _normaliseCuisineValue(String? value) {
+  final raw = value?.trim();
+
+  if (raw == null || raw.isEmpty) {
+    return null;
+  }
+
+  var cleaned = raw
+      .replaceAll(r'\"', '"')
+      .replaceAll(r"\'", "'")
+      .replaceAll('\\', '')
+      .trim();
+
+  while (cleaned.length >= 2 &&
+      ((cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+          (cleaned.startsWith("'") && cleaned.endsWith("'")))) {
+    cleaned = cleaned.substring(1, cleaned.length - 1).trim();
+  }
+
+  final normalised = cleaned.toUpperCase().replaceAll(' ', '_');
+
+  for (final option in _cuisineOptions) {
+    if (option.value == normalised ||
+        option.label.toUpperCase().replaceAll(' ', '_') == normalised) {
+      return option.value;
+    }
+  }
+
+  return null;
+}
 
 class _IngredientEntry {
   final TextEditingController nameCtrl;
@@ -55,6 +102,8 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
   late final TextEditingController _servingsCtrl;
   late final TextEditingController _caloriesCtrl;
 
+  String? _selectedCuisine;
+
   late List<_IngredientEntry> _ingredients;
   late List<TextEditingController> _stepControllers;
 
@@ -84,6 +133,10 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
     final originalCalories = recipe.calories > 0 ? recipe.calories.toString() : '';
 
     if (_caloriesCtrl.text.trim() != originalCalories) {
+      return true;
+    }
+
+    if (_selectedCuisine != _normaliseCuisineValue(recipe.cuisine)) {
       return true;
     }
 
@@ -156,6 +209,7 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
     _caloriesCtrl = TextEditingController(
       text: recipe.calories > 0 ? recipe.calories.toString() : '',
     );
+    _selectedCuisine = _normaliseCuisineValue(recipe.cuisine);
 
     _ingredients = recipe.ingredients.isEmpty
         ? [_IngredientEntry()]
@@ -335,6 +389,7 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
         _caloriesCtrl.text,
         widget.recipe.calories,
       ),
+      cuisine: _selectedCuisine,
       isHalal: _isHalal,
       isVegan: _isVegan,
       isVegetarian: _isVegetarian,
@@ -369,12 +424,17 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
       );
 
       Navigator.of(context).pop();
-    } catch (_) {
+    } catch (error) {
       if (!mounted) {
         return;
       }
 
-      _showErrorSnack('Unable to update recipe. Please try again.');
+      _showErrorSnack(
+        _errorMessageFrom(
+          error,
+          fallback: 'Unable to update recipe. Please try again.',
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -442,12 +502,17 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
       );
 
       context.go('/recipes');
-    } catch (_) {
+    } catch (error) {
       if (!mounted) {
         return;
       }
 
-      _showErrorSnack('Unable to delete recipe. Please try again.');
+      _showErrorSnack(
+        _errorMessageFrom(
+          error,
+          fallback: 'Unable to delete recipe. Please try again.',
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -470,6 +535,127 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         ),
       ),
+    );
+  }
+
+
+  String _errorMessageFrom(
+    Object error, {
+    required String fallback,
+  }) {
+    if (error is DioException) {
+      final message = _extractApiError(error.response?.data);
+
+      if (message != null && message.trim().isNotEmpty) {
+        return message;
+      }
+    }
+
+    return fallback;
+  }
+
+  String? _extractApiError(dynamic data, {String? field}) {
+    if (data == null) {
+      return null;
+    }
+
+    if (data is String) {
+      return field == null ? data : '$field: $data';
+    }
+
+    if (data is List) {
+      final messages = <String>[];
+
+      for (var i = 0; i < data.length; i++) {
+        final item = data[i];
+        final itemField = field == null ? null : '$field ${i + 1}';
+        final nested = _extractApiError(item, field: itemField);
+
+        if (nested != null && nested.isNotEmpty) {
+          messages.add(nested);
+        }
+      }
+
+      return messages.isEmpty ? null : messages.join('\n');
+    }
+
+    if (data is Map) {
+      final messages = <String>[];
+
+      for (final entry in data.entries) {
+        final fieldName = _formatApiFieldName(entry.key.toString());
+        final nextField = field == null ? fieldName : '$field $fieldName';
+        final nested = _extractApiError(entry.value, field: nextField);
+
+        if (nested != null && nested.isNotEmpty) {
+          messages.add(nested);
+        }
+      }
+
+      return messages.isEmpty ? null : messages.join('\n');
+    }
+
+    return null;
+  }
+
+  String _formatApiFieldName(String value) {
+    if (value == 'non_field_errors') {
+      return 'Error';
+    }
+
+    final words = value.replaceAll('_', ' ');
+
+    if (words.isEmpty) {
+      return 'Error';
+    }
+
+    return words[0].toUpperCase() + words.substring(1);
+  }
+
+  Widget _buildCuisineDropdown() {
+    return DropdownButtonFormField<String>(
+      initialValue: _selectedCuisine,
+      isExpanded: true,
+      decoration: InputDecoration(
+        hintText: 'Select cuisine',
+        hintStyle: AppTypography.body1.copyWith(color: AppColors.neutral400),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm + 2,
+        ),
+        isDense: true,
+        filled: true,
+        fillColor: AppColors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+      ),
+      items: _cuisineOptions.map((option) {
+        return DropdownMenuItem<String>(
+          value: option.value,
+          child: Text(option.label, style: AppTypography.body1),
+        );
+      }).toList(),
+      onChanged: _isSaving || _isDeleting
+          ? null
+          : (value) {
+              setState(() {
+                _selectedCuisine = value;
+              });
+            },
     );
   }
 
@@ -576,6 +762,10 @@ class _EditRecipeScreenState extends ConsumerState<EditRecipeScreen> {
                       hint: 'e.g. 450',
                       keyboardType: TextInputType.number,
                     ),
+                    const SizedBox(height: AppSpacing.lg),
+                    const _SectionLabel('Cuisine'),
+                    const SizedBox(height: AppSpacing.sm),
+                    _buildCuisineDropdown(),
                     const SizedBox(height: AppSpacing.lg),
                     const _SectionLabel('Dietary Tags'),
                     const SizedBox(height: AppSpacing.sm),
@@ -779,7 +969,7 @@ class _IngredientRowWidgetState extends State<_IngredientRowWidget> {
             controller: widget.entry.quantityCtrl,
             enabled: widget.enabled,
             hint: 'Qty',
-            keyboardType: TextInputType.number,
+            keyboardType: TextInputType.text,
           ),
         ),
         const SizedBox(width: AppSpacing.xs),
