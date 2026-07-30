@@ -3,6 +3,10 @@
   --color-highlight-bg: hsl(221, 100%, 95%);
 }
 
+[id] {
+  scroll-margin-top: 8rem;
+}
+
 .marketing {
   display: flex;
   flex-direction: column;
