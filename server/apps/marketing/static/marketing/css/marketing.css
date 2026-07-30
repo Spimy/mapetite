@@ -65,6 +65,10 @@
   display: none;
 }
 
+.marketing__container {
+  padding: 2rem 5%;
+}
+
 .marketing__footer {
   margin-top: auto;
   display: flex;
