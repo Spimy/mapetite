@@ -158,7 +158,9 @@ class NearbyStoresListAPIView(ListAPIView):
         })
 
 
-# TODO: Recommendation system for nearby stores based on user preferences and dietary restrictions while considering the store's operating hours and current status (open/closed).
+# Preference-aware restaurant recommendations live in recommendation_views.py
+# (GET /api/recommendations/top-pick/ and GET /api/recommendations/restaurants/).
+# NearbyStoresListAPIView stays distance-only for browse/map flows.
 
 
 class StoreAPIView(RetrieveAPIView):

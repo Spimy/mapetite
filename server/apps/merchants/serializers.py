@@ -151,6 +151,31 @@ class NearbyStoresResponseSerializer(serializers.Serializer):
     results = NearbyStoreSerializer(many=True)
 
 
+class RecommendedRestaurantSerializer(serializers.Serializer):
+    store = NearbyStoreSerializer()
+    match_score = serializers.IntegerField()
+    reasons = serializers.ListField(child=serializers.CharField())
+    distance_km = serializers.FloatField()
+    pricing_bracket = serializers.CharField()
+    is_open = serializers.BooleanField()
+    avg_price = serializers.FloatField(allow_null=True, required=False)
+    avg_calories = serializers.FloatField(allow_null=True, required=False)
+    recommendation_reason = serializers.CharField(required=False, allow_blank=True)
+
+
+class TopPickResponseSerializer(RecommendedRestaurantSerializer):
+    """Single top-pick payload (same fields as a ranked result)."""
+
+    pass
+
+
+class RankedRestaurantsResponseSerializer(serializers.Serializer):
+    search_point = SearchPointSerializer()
+    radius_km = serializers.FloatField()
+    count = serializers.IntegerField()
+    results = RecommendedRestaurantSerializer(many=True)
+
+
 class MinimalStoreItemSerializer(serializers.ModelSerializer):
     """
     Serializer for minimal representation of StoreItem, used in promotions.

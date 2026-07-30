@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import recommendation_views
 
 app_name = "merchants"
 
@@ -16,6 +17,17 @@ urlpatterns = [
     path("api/stores/<int:store_id>/promotions/", view=views.StorePromotionsAPIView.as_view(), name="store_promotions"),
     path('api/stores/nearby/', views.NearbyStoresListAPIView.as_view(), name='nearby_stores'),
     path('api/items/<int:item_id>/promotions/', view=views.ItemPromotionsAPIView.as_view(), name='item_promotions'),
+    # Preference-aware restaurant recommendations (see services.restaurant_recommender)
+    path(
+        "api/recommendations/top-pick/",
+        recommendation_views.RestaurantTopPickAPIView.as_view(),
+        name="restaurant_top_pick",
+    ),
+    path(
+        "api/recommendations/restaurants/",
+        recommendation_views.RankedRestaurantsAPIView.as_view(),
+        name="ranked_restaurants",
+    ),
     # --- Dashboard URLs ---
     path("dashboard/", view=views.DashboardRedirectView.as_view(), name="dashboard"),
     path(
