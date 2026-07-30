@@ -37,8 +37,15 @@ class _FakeProfileNotifier extends ProfileNotifier {
 }
 
 GoRouter _testRouter() => GoRouter(
+      initialLocation: '/edit',
       routes: [
-        GoRoute(path: '/', builder: (_, _) => const EditProfileScreen()),
+        GoRoute(
+          path: '/',
+          builder: (_, _) => const Scaffold(body: SizedBox()),
+          routes: [
+            GoRoute(path: 'edit', builder: (_, _) => const EditProfileScreen()),
+          ],
+        ),
       ],
     );
 
@@ -93,4 +100,37 @@ void main() {
 
     expect(find.text('Could not connect.'), findsOneWidget);
   });
+
+  testWidgets(
+    'discarding changes resets profileProvider instead of leaving staged edits',
+    (tester) async {
+      await tester.pumpWidget(_app(
+        () => _FakeProfileNotifier(initial: _profile()),
+      ));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(EditProfileScreen)),
+      );
+
+      // Simulate what EditProfileScreen._navigateToDietary does after
+      // returning from the Dietary Preferences screen: it stages the edit
+      // straight into profileProvider, before Save Changes is ever tapped.
+      container.read(profileProvider.notifier).updateDietary(isHalal: false);
+      await tester.pump();
+
+      // Back out of Edit Profile. hasUnsaved is now true (isHalal flipped),
+      // so PopScope blocks the pop and shows the unsaved-changes dialog.
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+      expect(find.text('Leave without saving?'), findsOneWidget);
+
+      await tester.tap(find.text('Discard Changes'));
+      await tester.pumpAndSettle();
+
+      // profileProvider must reflect the original fetched profile again,
+      // not the discarded staged edit.
+      expect(container.read(profileProvider).value!.isHalal, isTrue);
+    },
+  );
 }

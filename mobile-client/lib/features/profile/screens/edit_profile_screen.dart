@@ -214,7 +214,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   void _handlePopAttempt() async {
     final discard = await showUnsavedChangesDialog(context);
-    if (discard && mounted) context.pop();
+    if (!discard || !mounted) return;
+    ref.invalidate(profileProvider);
+    context.pop();
   }
 
   @override
