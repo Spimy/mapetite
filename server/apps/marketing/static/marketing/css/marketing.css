@@ -203,6 +203,7 @@
   gap: 1rem;
 }
 
+.marketing__text-block h1,
 .marketing__text-block h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
@@ -210,10 +211,7 @@
   margin: 0 auto;
 }
 
-.marketing__text-block--full-heading h2 {
-  max-width: 100%;
-}
-
+.marketing__text-block--primary h1,
 .marketing__text-block--primary h2 {
   color: var(--color-primary);
 }
