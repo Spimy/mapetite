@@ -35,7 +35,7 @@
 
       <div class="marketing__header__cta">
         <a href="{% url 'users:sign_in' %}">Merchant Login</a>
-        <a href="#" class="btn">Become a Partner</a>
+        <a href="{% url 'marketing:contact-page' %}" class="btn">Become a Partner</a>
       </div>
 
       <div class="marketing__header__mobile-menu">
@@ -81,7 +81,7 @@
               <a href="#">Help Center</a>
             </li>
             <li>
-              <a href="#">Contact Sales</a>
+              <a href="{% url 'marketing:contact-page' %}">Contact Sales</a>
             </li>
           </ul>
         </div>
