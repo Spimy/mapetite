@@ -47,6 +47,22 @@
   gap: 1rem;
 }
 
+.marketing__hero__cta .btn:has(span) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.marketing__hero__cta .btn span {
+  display: flex;
+  align-items: center;
+}
+
+.marketing__hero__cta .btn span svg {
+  width: 1rem;
+  height: 1rem;
+}
+
 .marketing__hero__cta .btn--neutral {
   background-color: var(--color-white);
   color: var(--color-neutral);
