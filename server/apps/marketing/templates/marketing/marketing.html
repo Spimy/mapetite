@@ -27,7 +27,7 @@
                aria-current="{% if request.resolver_match.url_name == 'pricing-page' %}page{% endif %}">Pricing</a>
           </li>
           <li>
-            <a href="#"
+            <a href="{% url 'marketing:testimonials-page' %}"
                aria-current="{% if request.resolver_match.url_name == 'testimonials-page' %}page{% endif %}">Testimonials</a>
           </li>
         </ul>
