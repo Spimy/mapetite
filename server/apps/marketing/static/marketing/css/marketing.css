@@ -234,6 +234,7 @@
   border-radius: 0.75rem;
   border: 2px solid var(--color-border);
   padding: 2rem;
+  background-color: var(--color-white);
 }
 
 .marketing__card__icon svg {
