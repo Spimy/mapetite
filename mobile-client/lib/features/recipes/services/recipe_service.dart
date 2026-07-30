@@ -1,26 +1,101 @@
+import 'package:mapetite/core/network/api_client.dart';
+import 'package:mapetite/core/network/api_endpoints.dart';
 import '../models/recipe_model.dart';
-import '../models/mocks/recipe_mocks.dart';
 
 class RecipeService {
-  Future<List<RecipeModel>> getRecipes() async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    return RecipeMocks.all;
-    // TODO: Replace with real API call to GET /api/v1/recipes/
-  }
+  Future<List<RecipeModel>> getRecipes({
+    String? query,
+    int? currentUserId,
+  }) async {
+    final response = await ApiClient.get(
+      ApiEndpoints.recipes,
+      params: {
+        if (query != null && query.trim().isNotEmpty) 'q': query.trim(),
+      },
+    );
 
-  Future<RecipeModel?> getRecipeById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    try {
-      return RecipeMocks.all.firstWhere((r) => r.id == id);
-    } catch (_) {
-      return null;
+    final data = response.data;
+
+    if (data is List) {
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((json) => RecipeModel.fromJson(
+                json,
+                currentUserId: currentUserId,
+              ))
+          .toList();
     }
-    // TODO: Replace with real API call to GET /api/v1/recipes/:id
+
+    return [];
   }
 
-  Future<RecipeModel> createRecipe(Map<String, dynamic> data) async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    return RecipeMocks.all.first;
-    // TODO: Replace with real API call to POST /api/v1/recipes/
+  Future<RecipeModel> getRecipeById(
+    String id, {
+    int? currentUserId,
+  }) async {
+    final response = await ApiClient.get(ApiEndpoints.recipe(id));
+
+    return RecipeModel.fromJson(
+      response.data as Map<String, dynamic>,
+      currentUserId: currentUserId,
+    );
+  }
+
+  Future<RecipeModel> createRecipe(
+    RecipeModel recipe, {
+    int? currentUserId,
+  }) async {
+    final response = await ApiClient.post(
+      ApiEndpoints.recipes,
+      data: recipe.toRequestJson(),
+    );
+
+    return RecipeModel.fromJson(
+      response.data as Map<String, dynamic>,
+      currentUserId: currentUserId,
+    );
+  }
+
+  Future<RecipeModel> updateRecipe(
+    RecipeModel recipe, {
+    int? currentUserId,
+  }) async {
+    final response = await ApiClient.put(
+      ApiEndpoints.recipe(recipe.id),
+      data: recipe.toRequestJson(),
+    );
+
+    return RecipeModel.fromJson(
+      response.data as Map<String, dynamic>,
+      currentUserId: currentUserId,
+    );
+  }
+
+  Future<void> deleteRecipe(String id) async {
+    await ApiClient.delete(ApiEndpoints.recipe(id));
+  }
+
+  Future<RecipeModel> saveRecipe(
+    String id, {
+    int? currentUserId,
+  }) async {
+    final response = await ApiClient.post(ApiEndpoints.recipeSave(id));
+
+    return RecipeModel.fromJson(
+      response.data as Map<String, dynamic>,
+      currentUserId: currentUserId,
+    );
+  }
+
+  Future<RecipeModel> unsaveRecipe(
+    String id, {
+    int? currentUserId,
+  }) async {
+    final response = await ApiClient.delete(ApiEndpoints.recipeSave(id));
+
+    return RecipeModel.fromJson(
+      response.data as Map<String, dynamic>,
+      currentUserId: currentUserId,
+    );
   }
 }

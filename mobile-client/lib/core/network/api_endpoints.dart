@@ -30,6 +30,8 @@ abstract class ApiEndpoints {
   static const String discover = 'discovery/';
   static const String recipes = 'recipes/';
   static String recipe(String id) => 'recipes/$id/';
+  static String recipeSave(String id) => 'recipes/$id/save/';
+  static const String ingredientSearchNearbyStores = 'ingredients/search-nearby-stores/';
   static const String groceryList = 'grocery-list/';
   static const String budget = 'spending-records/';
   static String budgetDetail(String id) => 'spending-records/$id/';

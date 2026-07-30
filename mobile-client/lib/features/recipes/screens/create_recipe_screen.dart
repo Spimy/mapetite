@@ -1,16 +1,36 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
+
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../profile/widgets/photo_picker_sheet.dart';
+import '../models/recipe_model.dart';
+import '../providers/recipe_provider.dart';
 
-class CreateRecipeScreen extends StatefulWidget {
+const _cuisineOptions = <({String value, String label})>[
+  (value: 'MAMAK', label: 'Mamak'),
+  (value: 'NASI_KANDAR', label: 'Nasi Kandar'),
+  (value: 'MALAYSIAN', label: 'Malaysian'),
+  (value: 'KOPITIAM', label: 'Kopitiam'),
+  (value: 'CHINESE', label: 'Chinese'),
+  (value: 'JAPANESE', label: 'Japanese'),
+  (value: 'KOREAN', label: 'Korean'),
+  (value: 'FUSION', label: 'Fusion'),
+  (value: 'INDONESIAN', label: 'Indonesian'),
+  (value: 'MEXICAN', label: 'Mexican'),
+  (value: 'MEDITERRANEAN', label: 'Mediterranean'),
+  (value: 'HEALTHY', label: 'Healthy'),
+];
+
+class CreateRecipeScreen extends ConsumerStatefulWidget {
   const CreateRecipeScreen({super.key});
 
   @override
-  State<CreateRecipeScreen> createState() => _CreateRecipeScreenState();
+  ConsumerState<CreateRecipeScreen> createState() => _CreateRecipeScreenState();
 }
 
 class _IngredientEntry {
@@ -30,12 +50,14 @@ class _StepEntry {
   void dispose() => descCtrl.dispose();
 }
 
-class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
+class _CreateRecipeScreenState extends ConsumerState<CreateRecipeScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleCtrl = TextEditingController();
   final _prepTimeCtrl = TextEditingController();
   final _servingsCtrl = TextEditingController();
   final _caloriesCtrl = TextEditingController();
+
+  String? _selectedCuisine;
 
   final Set<String> _selectedTags = {};
   final List<_IngredientEntry> _ingredients = [
@@ -49,6 +71,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
 
   String? _ingredientsError;
   String? _stepsError;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -56,12 +79,15 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
     _prepTimeCtrl.dispose();
     _servingsCtrl.dispose();
     _caloriesCtrl.dispose();
-    for (final i in _ingredients) {
-      i.dispose();
+
+    for (final ingredient in _ingredients) {
+      ingredient.dispose();
     }
-    for (final s in _steps) {
-      s.dispose();
+
+    for (final step in _steps) {
+      step.dispose();
     }
+
     super.dispose();
   }
 
@@ -77,7 +103,10 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
   }
 
   void _removeIngredient(int index) {
-    if (_ingredients.length <= 1) return;
+    if (_ingredients.length <= 1) {
+      return;
+    }
+
     setState(() {
       _ingredients[index].dispose();
       _ingredients.removeAt(index);
@@ -92,30 +121,229 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
   }
 
   void _removeStep(int index) {
-    if (_steps.length <= 1) return;
+    if (_steps.length <= 1) {
+      return;
+    }
+
     setState(() {
       _steps[index].dispose();
       _steps.removeAt(index);
     });
   }
 
-  void _save() {
-    final hasIngredient = _ingredients.any((i) => i.nameCtrl.text.trim().isNotEmpty);
-    final hasStep = _steps.any((s) => s.descCtrl.text.trim().isNotEmpty);
+  int _parseIntOrDefault(String value, int fallback) {
+    return int.tryParse(value.trim()) ?? fallback;
+  }
+
+  List<RecipeIngredient> _buildIngredients() {
+    return _ingredients
+        .where((entry) => entry.nameCtrl.text.trim().isNotEmpty)
+        .map(
+          (entry) => RecipeIngredient(
+            name: entry.nameCtrl.text.trim(),
+            quantity: entry.quantityCtrl.text.trim().isEmpty
+                ? '1'
+                : entry.quantityCtrl.text.trim(),
+            unit: entry.unit,
+          ),
+        )
+        .toList();
+  }
+
+  List<RecipeStep> _buildSteps() {
+    final completedSteps = _steps
+        .where((entry) => entry.descCtrl.text.trim().isNotEmpty)
+        .toList();
+
+    return completedSteps.asMap().entries.map((entry) {
+      return RecipeStep(
+        stepNumber: entry.key + 1,
+        description: entry.value.descCtrl.text.trim(),
+      );
+    }).toList();
+  }
+
+  Future<void> _save() async {
+    if (_isSaving) {
+      return;
+    }
+
+    final ingredients = _buildIngredients();
+    final steps = _buildSteps();
 
     setState(() {
-      _ingredientsError = hasIngredient ? null : 'Add at least one ingredient';
-      _stepsError = hasStep ? null : 'Add at least one step';
+      _ingredientsError =
+          ingredients.isNotEmpty ? null : 'Add at least one ingredient';
+      _stepsError = steps.isNotEmpty ? null : 'Add at least one step';
     });
 
-    if (!_formKey.currentState!.validate()) return;
-    if (!hasIngredient || !hasStep) return;
-
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      context.go('/recipes');
+    if (!_formKey.currentState!.validate()) {
+      return;
     }
+
+    if (ingredients.isEmpty || steps.isEmpty) {
+      return;
+    }
+
+    final recipe = RecipeModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: _titleCtrl.text.trim(),
+      authorName: 'You',
+      authorInitial: 'Y',
+      cookMinutes: _parseIntOrDefault(_prepTimeCtrl.text, 0),
+      calories: _parseIntOrDefault(_caloriesCtrl.text, 0),
+      servings: _parseIntOrDefault(_servingsCtrl.text, 1),
+      isHalal: _selectedTags.contains('Halal'),
+      isVegan: _selectedTags.contains('Vegan'),
+      isVegetarian: _selectedTags.contains('Vegetarian'),
+      isGlutenFree: _selectedTags.contains('Gluten-Free'),
+      cuisine: _selectedCuisine,
+      ingredients: ingredients,
+      steps: steps,
+      visibility: RecipeVisibility.public,
+      saves: 0,
+      isOwnedByCurrentUser: true,
+      createdAt: DateTime.now(),
+    );
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await ref.read(recipeListProvider.notifier).addRecipe(recipe);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Recipe created!',
+            style: AppTypography.body1.copyWith(color: AppColors.white),
+          ),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+        ),
+      );
+
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/recipes');
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      _showErrorSnack(
+        _errorMessageFrom(
+          error,
+          fallback: 'Unable to create recipe. Please try again.',
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+
+  void _showErrorSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: AppTypography.body1.copyWith(color: AppColors.white),
+        ),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+      ),
+    );
+  }
+
+  String _errorMessageFrom(
+    Object error, {
+    required String fallback,
+  }) {
+    if (error is DioException) {
+      final message = _extractApiError(error.response?.data);
+
+      if (message != null && message.trim().isNotEmpty) {
+        return message;
+      }
+    }
+
+    return fallback;
+  }
+
+  String? _extractApiError(dynamic data, {String? field}) {
+    if (data == null) {
+      return null;
+    }
+
+    if (data is String) {
+      return field == null ? data : '$field: $data';
+    }
+
+    if (data is List) {
+      final messages = <String>[];
+
+      for (var i = 0; i < data.length; i++) {
+        final item = data[i];
+        final itemField = field == null ? null : '$field ${i + 1}';
+        final nested = _extractApiError(item, field: itemField);
+
+        if (nested != null && nested.isNotEmpty) {
+          messages.add(nested);
+        }
+      }
+
+      return messages.isEmpty ? null : messages.join('\n');
+    }
+
+    if (data is Map) {
+      final messages = <String>[];
+
+      for (final entry in data.entries) {
+        final fieldName = _formatApiFieldName(entry.key.toString());
+        final nextField = field == null ? fieldName : '$field $fieldName';
+        final nested = _extractApiError(entry.value, field: nextField);
+
+        if (nested != null && nested.isNotEmpty) {
+          messages.add(nested);
+        }
+      }
+
+      return messages.isEmpty ? null : messages.join('\n');
+    }
+
+    return null;
+  }
+
+  String _formatApiFieldName(String value) {
+    if (value == 'non_field_errors') {
+      return 'Error';
+    }
+
+    final words = value.replaceAll('_', ' ');
+
+    if (words.isEmpty) {
+      return 'Error';
+    }
+
+    return words[0].toUpperCase() + words.substring(1);
   }
 
   @override
@@ -140,6 +368,8 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
                       _buildTitleField(),
                       const SizedBox(height: AppSpacing.lg),
                       _buildDetailsRow(),
+                      const SizedBox(height: AppSpacing.lg),
+                      _buildCuisineDropdown(),
                       const SizedBox(height: AppSpacing.lg),
                       _buildDietaryTags(),
                       const SizedBox(height: AppSpacing.lg),
@@ -171,22 +401,24 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
       scrolledUnderElevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: AppColors.neutral),
-        onPressed: () {
-          if (context.canPop()) {
-            context.pop();
-          } else {
-            context.go('/recipes');
-          }
-        },
+        onPressed: _isSaving
+            ? null
+            : () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/recipes');
+                }
+              },
       ),
       title: Text('New Recipe', style: AppTypography.headline1),
       actions: [
         TextButton(
-          onPressed: _save,
+          onPressed: _isSaving ? null : () => _save(),
           child: Text(
-            'Save',
+            _isSaving ? 'Saving...' : 'Save',
             style: AppTypography.body1.copyWith(
-              color: AppColors.primary,
+              color: _isSaving ? AppColors.neutral400 : AppColors.primary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -201,7 +433,7 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
 
   Widget _buildImageUpload() {
     return GestureDetector(
-      onTap: _openPhotoPicker,
+      onTap: _isSaving ? null : _openPhotoPicker,
       child: Container(
         width: double.infinity,
         height: 180,
@@ -221,7 +453,9 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Tap to upload cover photo',
-              style: AppTypography.body1.copyWith(color: AppColors.neutral600),
+              style: AppTypography.body1.copyWith(
+                color: AppColors.neutral600,
+              ),
             ),
           ],
         ),
@@ -232,10 +466,16 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
   Widget _buildTitleField() {
     return TextFormField(
       controller: _titleCtrl,
+      enabled: !_isSaving,
       style: AppTypography.body1,
       decoration: _inputDecoration('Recipe Title'),
-      validator: (v) =>
-          (v == null || v.trim().isEmpty) ? 'Recipe title is required' : null,
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return 'Recipe title is required';
+        }
+
+        return null;
+      },
     );
   }
 
@@ -264,11 +504,14 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
   ) {
     return TextFormField(
       controller: ctrl,
+      enabled: !_isSaving,
       keyboardType: TextInputType.number,
       style: AppTypography.body1,
       decoration: _inputDecoration(label).copyWith(
         suffixText: suffix.isNotEmpty ? suffix : null,
-        suffixStyle: AppTypography.label.copyWith(color: AppColors.neutral600),
+        suffixStyle: AppTypography.label.copyWith(
+          color: AppColors.neutral600,
+        ),
       ),
     );
   }
@@ -277,7 +520,9 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
     return InputDecoration(
       labelText: label,
       labelStyle: AppTypography.body2.copyWith(color: AppColors.neutral600),
-      floatingLabelStyle: AppTypography.label.copyWith(color: AppColors.primary),
+      floatingLabelStyle: AppTypography.label.copyWith(
+        color: AppColors.primary,
+      ),
       filled: true,
       fillColor: AppColors.white,
       contentPadding: const EdgeInsets.symmetric(
@@ -307,6 +552,32 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
     );
   }
 
+
+  Widget _buildCuisineDropdown() {
+    return DropdownButtonFormField<String>(
+      initialValue: _selectedCuisine,
+      isExpanded: true,
+      decoration: _inputDecoration('Cuisine'),
+      hint: Text(
+        'Select cuisine',
+        style: AppTypography.body1.copyWith(color: AppColors.neutral400),
+      ),
+      items: _cuisineOptions.map((option) {
+        return DropdownMenuItem<String>(
+          value: option.value,
+          child: Text(option.label, style: AppTypography.body1),
+        );
+      }).toList(),
+      onChanged: _isSaving
+          ? null
+          : (value) {
+              setState(() {
+                _selectedCuisine = value;
+              });
+            },
+    );
+  }
+
   Widget _buildDietaryTags() {
     const tags = [
       ('Halal', AppColors.tagHalal),
@@ -325,16 +596,19 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
           runSpacing: AppSpacing.sm,
           children: tags.map((tag) {
             final isSelected = _selectedTags.contains(tag.$1);
+
             return GestureDetector(
-              onTap: () {
-                setState(() {
-                  if (isSelected) {
-                    _selectedTags.remove(tag.$1);
-                  } else {
-                    _selectedTags.add(tag.$1);
-                  }
-                });
-              },
+              onTap: _isSaving
+                  ? null
+                  : () {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedTags.remove(tag.$1);
+                        } else {
+                          _selectedTags.add(tag.$1);
+                        }
+                      });
+                    },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(
@@ -374,7 +648,8 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             child: _IngredientRowWidget(
               entry: _ingredients[i],
-              onDelete: _ingredients.length > 1
+              enabled: !_isSaving,
+              onDelete: _ingredients.length > 1 && !_isSaving
                   ? () => _removeIngredient(i)
                   : null,
             ),
@@ -389,7 +664,10 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
             ),
           ),
         const SizedBox(height: AppSpacing.sm),
-        _AddRowButton(label: 'Add ingredient', onTap: _addIngredient),
+        _AddRowButton(
+          label: 'Add ingredient',
+          onTap: _isSaving ? null : _addIngredient,
+        ),
       ],
     );
   }
@@ -406,8 +684,10 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
             padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             child: _StepRowWidget(
               entry: _steps[i],
+              enabled: !_isSaving,
               stepNumber: i + 1,
-              onDelete: _steps.length > 1 ? () => _removeStep(i) : null,
+              onDelete:
+                  _steps.length > 1 && !_isSaving ? () => _removeStep(i) : null,
             ),
           ),
         ),
@@ -420,7 +700,10 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
             ),
           ),
         const SizedBox(height: AppSpacing.sm),
-        _AddRowButton(label: 'Add step', onTap: _addStep),
+        _AddRowButton(
+          label: 'Add step',
+          onTap: _isSaving ? null : _addStep,
+        ),
       ],
     );
   }
@@ -439,7 +722,10 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
       ),
       child: SafeArea(
         top: false,
-        child: AppButton(label: 'Save Recipe', onPressed: _save),
+        child: AppButton(
+          label: _isSaving ? 'Saving...' : 'Save Recipe',
+          onPressed: _isSaving ? () {} : () => _save(),
+        ),
       ),
     );
   }
@@ -449,9 +735,14 @@ class _CreateRecipeScreenState extends State<CreateRecipeScreen> {
 
 class _IngredientRowWidget extends StatefulWidget {
   final _IngredientEntry entry;
+  final bool enabled;
   final VoidCallback? onDelete;
 
-  const _IngredientRowWidget({required this.entry, this.onDelete});
+  const _IngredientRowWidget({
+    required this.entry,
+    required this.enabled,
+    this.onDelete,
+  });
 
   @override
   State<_IngredientRowWidget> createState() => _IngredientRowWidgetState();
@@ -470,6 +761,7 @@ class _IngredientRowWidgetState extends State<_IngredientRowWidget> {
           child: _CompactField(
             controller: widget.entry.nameCtrl,
             hint: 'Ingredient',
+            enabled: widget.enabled,
           ),
         ),
         const SizedBox(width: AppSpacing.xs),
@@ -478,7 +770,8 @@ class _IngredientRowWidgetState extends State<_IngredientRowWidget> {
           child: _CompactField(
             controller: widget.entry.quantityCtrl,
             hint: 'Qty',
-            keyboardType: TextInputType.number,
+            enabled: widget.enabled,
+            keyboardType: TextInputType.text,
           ),
         ),
         const SizedBox(width: AppSpacing.xs),
@@ -499,15 +792,21 @@ class _IngredientRowWidgetState extends State<_IngredientRowWidget> {
               style: AppTypography.body2.copyWith(color: AppColors.neutral),
               items: _units
                   .map(
-                    (u) => DropdownMenuItem(
-                      value: u,
-                      child: Text(u, style: AppTypography.body2),
+                    (unit) => DropdownMenuItem(
+                      value: unit,
+                      child: Text(unit, style: AppTypography.body2),
                     ),
                   )
                   .toList(),
-              onChanged: (v) {
-                if (v != null) setState(() => widget.entry.unit = v);
-              },
+              onChanged: widget.enabled
+                  ? (value) {
+                      if (value != null) {
+                        setState(() {
+                          widget.entry.unit = value;
+                        });
+                      }
+                    }
+                  : null,
             ),
           ),
         ),
@@ -533,11 +832,13 @@ class _IngredientRowWidgetState extends State<_IngredientRowWidget> {
 
 class _StepRowWidget extends StatelessWidget {
   final _StepEntry entry;
+  final bool enabled;
   final int stepNumber;
   final VoidCallback? onDelete;
 
   const _StepRowWidget({
     required this.entry,
+    required this.enabled,
     required this.stepNumber,
     this.onDelete,
   });
@@ -566,6 +867,7 @@ class _StepRowWidget extends StatelessWidget {
         Expanded(
           child: TextField(
             controller: entry.descCtrl,
+            enabled: enabled,
             maxLines: 2,
             style: AppTypography.body1,
             decoration: InputDecoration(
@@ -586,8 +888,10 @@ class _StepRowWidget extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                borderSide:
-                    const BorderSide(color: AppColors.primary, width: 1.5),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 1.5,
+                ),
               ),
             ),
           ),
@@ -613,11 +917,13 @@ class _StepRowWidget extends StatelessWidget {
 class _CompactField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
+  final bool enabled;
   final TextInputType? keyboardType;
 
   const _CompactField({
     required this.controller,
     required this.hint,
+    required this.enabled,
     this.keyboardType,
   });
 
@@ -632,11 +938,14 @@ class _CompactField extends StatelessWidget {
       ),
       child: TextField(
         controller: controller,
+        enabled: enabled,
         keyboardType: keyboardType,
         style: AppTypography.body1,
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: AppTypography.body1.copyWith(color: AppColors.neutral400),
+          hintStyle: AppTypography.body1.copyWith(
+            color: AppColors.neutral400,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
@@ -652,12 +961,17 @@ class _CompactField extends StatelessWidget {
 
 class _AddRowButton extends StatelessWidget {
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
-  const _AddRowButton({required this.label, required this.onTap});
+  const _AddRowButton({
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = onTap != null;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -671,11 +985,17 @@ class _AddRowButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.add, size: 16, color: AppColors.primary),
+            Icon(
+              Icons.add,
+              size: 16,
+              color: isEnabled ? AppColors.primary : AppColors.neutral400,
+            ),
             const SizedBox(width: AppSpacing.xs),
             Text(
               label,
-              style: AppTypography.body1.copyWith(color: AppColors.primary),
+              style: AppTypography.body1.copyWith(
+                color: isEnabled ? AppColors.primary : AppColors.neutral400,
+              ),
             ),
           ],
         ),

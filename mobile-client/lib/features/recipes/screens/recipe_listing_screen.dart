@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -15,11 +16,21 @@ class RecipeListingScreen extends ConsumerStatefulWidget {
   const RecipeListingScreen({super.key});
 
   @override
-  ConsumerState<RecipeListingScreen> createState() => _RecipeListingScreenState();
+  ConsumerState<RecipeListingScreen> createState() =>
+      _RecipeListingScreenState();
 }
 
 class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
   final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recipeListProvider.notifier).loadRecipes();
+    });
+  }
 
   @override
   void dispose() {
@@ -40,6 +51,9 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
   Widget build(BuildContext context) {
     final recipes = ref.watch(filteredRecipesProvider);
     final filterState = ref.watch(recipeFilterProvider);
+    final isLoading = ref.watch(recipeLoadingProvider);
+    final errorMessage = ref.watch(recipeErrorProvider);
+
     final activeFilterCount = filterState.activeFilters.length +
         filterState.activeCuisines.length +
         filterState.allergenFreeFilters.length +
@@ -51,39 +65,63 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
         child: CustomScrollView(
           slivers: [
             _buildAppBar(),
-            SliverToBoxAdapter(child: _buildSearchBar(filterState, activeFilterCount)),
+            SliverToBoxAdapter(
+              child: _buildSearchBar(filterState, activeFilterCount),
+            ),
             SliverToBoxAdapter(child: _buildFilterChips(filterState)),
             SliverToBoxAdapter(child: _buildSortTabs(filterState)),
-            recipes.isEmpty
-                ? SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: _EmptyState(
-                      onClear: () => ref.read(recipeFilterProvider.notifier).clearFilters(),
-                    ),
-                  )
-                : SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxl,
-                    ),
-                    sliver: SliverGrid(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final recipe = recipes[index];
-                          return RecipeCard(
-                            recipe: recipe,
-                            onTap: () => context.push('/recipes/${recipe.id}'),
-                          );
-                        },
-                        childCount: recipes.length,
-                      ),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: AppSpacing.md,
-                        mainAxisSpacing: AppSpacing.md,
-                        mainAxisExtent: 280,
-                      ),
-                    ),
+            if (isLoading && recipes.isEmpty)
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+              )
+            else if (errorMessage != null && recipes.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: _RecipeErrorState(
+                  message: errorMessage,
+                  onRetry: () =>
+                      ref.read(recipeListProvider.notifier).loadRecipes(),
+                ),
+              )
+            else if (recipes.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: _EmptyState(
+                  onClear: () =>
+                      ref.read(recipeFilterProvider.notifier).clearFilters(),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.xxl,
+                ),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final recipe = recipes[index];
+
+                      return RecipeCard(
+                        recipe: recipe,
+                        onTap: () => context.push('/recipes/${recipe.id}'),
+                      );
+                    },
+                    childCount: recipes.length,
                   ),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: AppSpacing.md,
+                    mainAxisSpacing: AppSpacing.md,
+                    mainAxisExtent: 280,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -132,10 +170,16 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
 
   // ─── Search Bar ───────────────────────────────────────────────────────────
 
-  Widget _buildSearchBar(RecipeFilterState filterState, int activeFilterCount) {
+  Widget _buildSearchBar(
+    RecipeFilterState filterState,
+    int activeFilterCount,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        0,
       ),
       child: TextField(
         controller: _searchController,
@@ -143,11 +187,21 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
         style: AppTypography.body1,
         decoration: InputDecoration(
           hintText: 'Search recipes or ingredients...',
-          hintStyle: AppTypography.body1.copyWith(color: AppColors.neutral400),
-          prefixIcon: const Icon(Icons.search, color: AppColors.neutral400, size: 20),
+          hintStyle: AppTypography.body1.copyWith(
+            color: AppColors.neutral400,
+          ),
+          prefixIcon: const Icon(
+            Icons.search,
+            color: AppColors.neutral400,
+            size: 20,
+          ),
           suffixIcon: filterState.searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.close, size: 18, color: AppColors.neutral400),
+                  icon: const Icon(
+                    Icons.close,
+                    size: 18,
+                    color: AppColors.neutral400,
+                  ),
                   onPressed: () {
                     _searchController.clear();
                     ref.read(recipeFilterProvider.notifier).setSearch('');
@@ -157,7 +211,9 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
                   count: activeFilterCount,
                   onTap: _openFilterSheet,
                 ),
-          contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.sm + 2),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.sm + 2,
+          ),
           filled: true,
           fillColor: AppColors.white,
           isDense: true,
@@ -185,13 +241,22 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
       height: 44,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.md,
+          AppSpacing.lg,
+          0,
+        ),
         children: _chipDefinitions().map((def) {
           final isActive = filterState.activeFilters.contains(def.filter);
+
           return Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
             child: GestureDetector(
-              onTap: () => ref.read(recipeFilterProvider.notifier).toggleFilter(def.filter),
+              onTap: () =>
+                  ref.read(recipeFilterProvider.notifier).toggleFilter(
+                        def.filter,
+                      ),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(
@@ -213,7 +278,9 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
                     Text(
                       def.label,
                       style: AppTypography.label.copyWith(
-                        color: isActive ? AppColors.white : AppColors.neutral600,
+                        color: isActive
+                            ? AppColors.white
+                            : AppColors.neutral600,
                       ),
                     ),
                   ],
@@ -238,6 +305,7 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
         ),
       );
     }
+
     return Icon(
       def.icon,
       size: 13,
@@ -246,12 +314,42 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
   }
 
   List<_ChipDef> _chipDefinitions() => [
-        const _ChipDef(RecipeFilter.halal, 'Halal', Icons.check_circle_outline, AppColors.tagHalal),
-        const _ChipDef(RecipeFilter.vegan, 'Vegan', Icons.eco, AppColors.tagVegan),
-        const _ChipDef(RecipeFilter.vegetarian, 'Vegetarian', Icons.spa, AppColors.tagVegetarian),
-        const _ChipDef(RecipeFilter.under30min, 'Under 30 min', Icons.timer_outlined, AppColors.neutral600),
-        const _ChipDef(RecipeFilter.saved, 'Saved', Icons.bookmark_outline, AppColors.primary),
-        const _ChipDef(RecipeFilter.myRecipes, 'My Recipes', Icons.person_outline, AppColors.secondary),
+        const _ChipDef(
+          RecipeFilter.halal,
+          'Halal',
+          Icons.check_circle_outline,
+          AppColors.tagHalal,
+        ),
+        const _ChipDef(
+          RecipeFilter.vegan,
+          'Vegan',
+          Icons.eco,
+          AppColors.tagVegan,
+        ),
+        const _ChipDef(
+          RecipeFilter.vegetarian,
+          'Vegetarian',
+          Icons.spa,
+          AppColors.tagVegetarian,
+        ),
+        const _ChipDef(
+          RecipeFilter.under30min,
+          'Under 30 min',
+          Icons.timer_outlined,
+          AppColors.neutral600,
+        ),
+        const _ChipDef(
+          RecipeFilter.saved,
+          'Saved',
+          Icons.bookmark_outline,
+          AppColors.primary,
+        ),
+        const _ChipDef(
+          RecipeFilter.myRecipes,
+          'My Recipes',
+          Icons.person_outline,
+          AppColors.secondary,
+        ),
       ];
 
   // ─── Sort Tabs ────────────────────────────────────────────────────────────
@@ -268,21 +366,31 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
       height: 42,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.sm,
+          AppSpacing.lg,
+          0,
+        ),
         itemCount: tabs.length,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.lg),
         itemBuilder: (_, i) {
           final (option, label) = tabs[i];
           final isActive = filterState.sortOption == option;
+
           return GestureDetector(
-            onTap: () => ref.read(recipeFilterProvider.notifier).setSort(option),
+            onTap: () => ref.read(recipeFilterProvider.notifier).setSort(
+                  option,
+                ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   label,
                   style: AppTypography.body2.copyWith(
-                    color: isActive ? AppColors.primary : AppColors.neutral600,
+                    color: isActive
+                        ? AppColors.primary
+                        : AppColors.neutral600,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
@@ -290,10 +398,12 @@ class _RecipeListingScreenState extends ConsumerState<RecipeListingScreen> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   height: 2,
-                  width: double.infinity,
+                  width: isActive ? 32 : 0,
                   decoration: BoxDecoration(
                     color: isActive ? AppColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.radiusFull,
+                    ),
                   ),
                 ),
               ],
@@ -366,6 +476,7 @@ class _FilterBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final filterState = ref.watch(recipeFilterProvider);
     final notifier = ref.read(recipeFilterProvider.notifier);
+
     final hasActiveFilters = filterState.activeFilters.isNotEmpty ||
         filterState.activeCuisines.isNotEmpty ||
         filterState.allergenFreeFilters.isNotEmpty ||
@@ -378,13 +489,20 @@ class _FilterBottomSheet extends ConsumerWidget {
       child: Container(
         decoration: const BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppSpacing.radiusXl),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                0,
+              ),
               child: Column(
                 children: [
                   Center(
@@ -393,7 +511,9 @@ class _FilterBottomSheet extends ConsumerWidget {
                       height: 4,
                       decoration: BoxDecoration(
                         color: AppColors.neutral200,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusFull,
+                        ),
                       ),
                     ),
                   ),
@@ -407,7 +527,9 @@ class _FilterBottomSheet extends ConsumerWidget {
                           onTap: notifier.clearFilters,
                           child: Text(
                             'Clear all',
-                            style: AppTypography.body2.copyWith(color: AppColors.primary),
+                            style: AppTypography.body2.copyWith(
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
                     ],
@@ -417,18 +539,33 @@ class _FilterBottomSheet extends ConsumerWidget {
             ),
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  AppSpacing.lg,
+                  0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Cuisine', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    Text(
+                      'Cuisine',
+                      style: AppTypography.headline3.copyWith(
+                        color: AppColors.neutral600,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     _CuisineIconGrid(
                       activeOptions: filterState.activeCuisines,
                       onToggle: notifier.toggleCuisine,
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    Text('Dietary', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    Text(
+                      'Dietary',
+                      style: AppTypography.headline3.copyWith(
+                        color: AppColors.neutral600,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
@@ -436,26 +573,40 @@ class _FilterBottomSheet extends ConsumerWidget {
                       children: [
                         _IconFilterChip(
                           label: 'Halal',
-                          isActive: filterState.activeFilters.contains(RecipeFilter.halal),
-                          onToggle: () => notifier.toggleFilter(RecipeFilter.halal),
+                          isActive: filterState.activeFilters.contains(
+                            RecipeFilter.halal,
+                          ),
+                          onToggle: () =>
+                              notifier.toggleFilter(RecipeFilter.halal),
                           svgAsset: 'assets/icons/dietary/halal-icon.svg',
                         ),
                         _IconFilterChip(
                           label: 'Vegan',
-                          isActive: filterState.activeFilters.contains(RecipeFilter.vegan),
-                          onToggle: () => notifier.toggleFilter(RecipeFilter.vegan),
+                          isActive: filterState.activeFilters.contains(
+                            RecipeFilter.vegan,
+                          ),
+                          onToggle: () =>
+                              notifier.toggleFilter(RecipeFilter.vegan),
                           icon: Icons.eco,
                         ),
                         _IconFilterChip(
                           label: 'Vegetarian',
-                          isActive: filterState.activeFilters.contains(RecipeFilter.vegetarian),
-                          onToggle: () => notifier.toggleFilter(RecipeFilter.vegetarian),
+                          isActive: filterState.activeFilters.contains(
+                            RecipeFilter.vegetarian,
+                          ),
+                          onToggle: () =>
+                              notifier.toggleFilter(RecipeFilter.vegetarian),
                           icon: Icons.spa,
                         ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    Text('Time', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    Text(
+                      'Time',
+                      style: AppTypography.headline3.copyWith(
+                        color: AppColors.neutral600,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
@@ -463,14 +614,22 @@ class _FilterBottomSheet extends ConsumerWidget {
                       children: [
                         _IconFilterChip(
                           label: 'Under 30 min',
-                          isActive: filterState.activeFilters.contains(RecipeFilter.under30min),
-                          onToggle: () => notifier.toggleFilter(RecipeFilter.under30min),
+                          isActive: filterState.activeFilters.contains(
+                            RecipeFilter.under30min,
+                          ),
+                          onToggle: () =>
+                              notifier.toggleFilter(RecipeFilter.under30min),
                           icon: Icons.timer_outlined,
                         ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    Text('Calories', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    Text(
+                      'Calories',
+                      style: AppTypography.headline3.copyWith(
+                        color: AppColors.neutral600,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       'Low <300 kcal  ·  Medium 300–500 kcal  ·  High >500 kcal',
@@ -483,26 +642,37 @@ class _FilterBottomSheet extends ConsumerWidget {
                       children: [
                         _IconFilterChip(
                           label: 'Low (<300 kcal)',
-                          isActive: filterState.calorieRange == CalorieRange.low,
-                          onToggle: () => notifier.setCalorieRange(CalorieRange.low),
+                          isActive:
+                              filterState.calorieRange == CalorieRange.low,
+                          onToggle: () =>
+                              notifier.setCalorieRange(CalorieRange.low),
                           icon: Icons.local_fire_department_outlined,
                         ),
                         _IconFilterChip(
                           label: 'Medium (300–500)',
-                          isActive: filterState.calorieRange == CalorieRange.medium,
-                          onToggle: () => notifier.setCalorieRange(CalorieRange.medium),
+                          isActive:
+                              filterState.calorieRange == CalorieRange.medium,
+                          onToggle: () =>
+                              notifier.setCalorieRange(CalorieRange.medium),
                           icon: Icons.local_fire_department,
                         ),
                         _IconFilterChip(
                           label: 'High (>500 kcal)',
-                          isActive: filterState.calorieRange == CalorieRange.high,
-                          onToggle: () => notifier.setCalorieRange(CalorieRange.high),
+                          isActive:
+                              filterState.calorieRange == CalorieRange.high,
+                          onToggle: () =>
+                              notifier.setCalorieRange(CalorieRange.high),
                           icon: Icons.whatshot,
                         ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    Text('Allergen-free (Free from)', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    Text(
+                      'Allergen-free (Free from)',
+                      style: AppTypography.headline3.copyWith(
+                        color: AppColors.neutral600,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
@@ -510,14 +680,23 @@ class _FilterBottomSheet extends ConsumerWidget {
                       children: AppConstants.allergenOptions.map((allergen) {
                         return _IconFilterChip(
                           label: allergen,
-                          isActive: filterState.allergenFreeFilters.contains(allergen),
-                          onToggle: () => notifier.toggleAllergenFree(allergen),
-                          icon: AppChip.allergenIconMap[allergen] ?? Icons.warning_amber,
+                          isActive: filterState.allergenFreeFilters.contains(
+                            allergen,
+                          ),
+                          onToggle: () =>
+                              notifier.toggleAllergenFree(allergen),
+                          icon: AppChip.allergenIconMap[allergen] ??
+                              Icons.warning_amber,
                         );
                       }).toList(),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    Text('Collections', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
+                    Text(
+                      'Collections',
+                      style: AppTypography.headline3.copyWith(
+                        color: AppColors.neutral600,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
                       spacing: AppSpacing.sm,
@@ -525,14 +704,20 @@ class _FilterBottomSheet extends ConsumerWidget {
                       children: [
                         _IconFilterChip(
                           label: 'Saved',
-                          isActive: filterState.activeFilters.contains(RecipeFilter.saved),
-                          onToggle: () => notifier.toggleFilter(RecipeFilter.saved),
+                          isActive: filterState.activeFilters.contains(
+                            RecipeFilter.saved,
+                          ),
+                          onToggle: () =>
+                              notifier.toggleFilter(RecipeFilter.saved),
                           icon: Icons.bookmark_outline,
                         ),
                         _IconFilterChip(
                           label: 'My Recipes',
-                          isActive: filterState.activeFilters.contains(RecipeFilter.myRecipes),
-                          onToggle: () => notifier.toggleFilter(RecipeFilter.myRecipes),
+                          isActive: filterState.activeFilters.contains(
+                            RecipeFilter.myRecipes,
+                          ),
+                          onToggle: () =>
+                              notifier.toggleFilter(RecipeFilter.myRecipes),
                           icon: Icons.person_outline,
                         ),
                       ],
@@ -544,7 +729,10 @@ class _FilterBottomSheet extends ConsumerWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xxxl,
+                AppSpacing.lg,
+                AppSpacing.md,
+                AppSpacing.lg,
+                AppSpacing.xxxl,
               ),
               child: SizedBox(
                 width: double.infinity,
@@ -590,6 +778,7 @@ class _IconFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final contentColor = isActive ? AppColors.primary : AppColors.neutral600;
+
     return GestureDetector(
       onTap: onToggle,
       child: AnimatedContainer(
@@ -651,12 +840,14 @@ class _CuisineIconGrid extends StatelessWidget {
         const columns = 4;
         const totalSpacing = (columns - 1) * AppSpacing.sm;
         final chipWidth = (constraints.maxWidth - totalSpacing) / columns;
+
         return Wrap(
           spacing: AppSpacing.sm,
           runSpacing: AppSpacing.sm,
           children: AppConstants.cuisineCategories.map((cuisine) {
             final isActive = activeOptions.contains(cuisine);
             final icon = AppConstants.cuisineIcons[cuisine] ?? Icons.restaurant;
+
             return GestureDetector(
               onTap: () => onToggle(cuisine),
               child: AnimatedContainer(
@@ -680,14 +871,19 @@ class _CuisineIconGrid extends StatelessWidget {
                     Icon(
                       icon,
                       size: 22,
-                      color: isActive ? AppColors.primary : AppColors.neutral600,
+                      color: isActive
+                          ? AppColors.primary
+                          : AppColors.neutral600,
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       cuisine,
                       style: AppTypography.caption.copyWith(
-                        color: isActive ? AppColors.primary : AppColors.neutral600,
-                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                        color: isActive
+                            ? AppColors.primary
+                            : AppColors.neutral600,
+                        fontWeight:
+                            isActive ? FontWeight.w600 : FontWeight.w400,
                         height: 1.2,
                       ),
                       textAlign: TextAlign.center,
@@ -731,11 +927,17 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.search_off_rounded, size: 52, color: AppColors.neutral400),
+            const Icon(
+              Icons.search_off_rounded,
+              size: 52,
+              color: AppColors.neutral400,
+            ),
             const SizedBox(height: AppSpacing.lg),
             Text(
               'No recipes found',
-              style: AppTypography.headline2.copyWith(color: AppColors.neutral600),
+              style: AppTypography.headline2.copyWith(
+                color: AppColors.neutral600,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
@@ -748,6 +950,59 @@ class _EmptyState extends StatelessWidget {
               onTap: onClear,
               child: Text(
                 'Clear filters',
+                style: AppTypography.body2.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RecipeErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _RecipeErrorState({
+    required this.message,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 52,
+              color: AppColors.error,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Unable to load recipes',
+              style: AppTypography.headline2.copyWith(
+                color: AppColors.neutral600,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              message,
+              style: AppTypography.body2,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            GestureDetector(
+              onTap: onRetry,
+              child: Text(
+                'Try again',
                 style: AppTypography.body2.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
