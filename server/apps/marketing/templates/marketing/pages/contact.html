@@ -135,4 +135,29 @@
       </p>
     </form>
   </article>
+
+  <template id="throbber-template">
+    {% include "icons/throbber.html" %}
+  </template>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const contactForm = document.querySelector(".marketing-contact__form");
+      const submitBtn = contactForm.querySelector(".marketing-contact__submit");
+      const throbberHTML = document.getElementById("throbber-template").innerHTML;
+
+      if (contactForm && submitBtn) {
+        contactForm.addEventListener("submit", (e) => {
+          if (contactForm.checkValidity()) {
+            
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7'; 
+            submitBtn.style.cursor = 'wait';
+
+            submitBtn.innerHTML = `Sending... <span class="spinner-icon">${throbberHTML}</span>`;
+          }
+        });
+      }
+    });
+  </script>
 {% endblock marketing_content %}
