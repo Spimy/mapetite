@@ -1,0 +1,156 @@
+.marketing__pricing {
+  margin-bottom: 6rem;
+}
+
+.marketing__pricing__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.marketing__pricing__card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.marketing__pricing__card:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--color-neutral) 10%, transparent);
+}
+
+.marketing__pricing__card--pro {
+  border: 2px solid var(--color-primary);
+  background-color: color-mix(in srgb, var(--color-primary) 70%, black);
+  background-image: radial-gradient(circle at 50% 0%,
+      color-mix(in srgb, var(--color-white) 15%, transparent) 0%,
+      transparent 15rem);
+  color: var(--color-white);
+}
+
+.marketing__pricing__badge {
+  position: absolute;
+  top: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 0.25rem 1rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.marketing__pricing__header {
+  margin-bottom: 2rem;
+  text-align: center;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.marketing__pricing__card--pro .marketing__pricing__header {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-white) 20%, transparent);
+}
+
+.marketing__pricing__tier {
+  font-size: 1.25rem;
+  color: var(--color-grey-600);
+  margin-bottom: 0.5rem;
+}
+
+.marketing__pricing__card--pro .marketing__pricing__tier {
+  color: var(--color-primary-light);
+}
+
+.marketing__pricing__price {
+  font-size: 3rem;
+  font-weight: var(--font-weight-heading-bold);
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.marketing__pricing__price span {
+  font-size: 1rem;
+  font-weight: var(--font-weight-body);
+  color: var(--color-grey-600);
+}
+
+.marketing__pricing__card--pro .marketing__pricing__price span {
+  color: var(--color-primary-light);
+}
+
+.marketing__pricing__desc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.marketing__pricing__features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2.5rem !important;
+}
+
+.marketing__pricing__features li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* Disabled feature styling */
+.marketing__pricing__features li.disabled {
+  color: var(--color-grey-400);
+  text-decoration: line-through;
+}
+
+.marketing__pricing__card--pro .marketing__pricing__features li.disabled {
+  color: color-mix(in srgb, var(--color-white) 40%, transparent);
+}
+
+.marketing__pricing__features li span {
+  display: flex;
+  align-items: center;
+  color: var(--color-primary);
+}
+
+.marketing__pricing__card--pro .marketing__pricing__features li span {
+  color: var(--color-primary-light);
+}
+
+.marketing__pricing__features li svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.marketing__pricing__features li.disabled span {
+  color: var(--color-grey-400);
+}
+
+
+.marketing__pricing__cta {
+  margin-top: auto;
+}
+
+.marketing__pricing__cta .btn {
+  width: 100%;
+}
+
+@media (min-width: 980px) {
+  .marketing__pricing__grid {
+    grid-template-columns: repeat(3, 1fr);
+    align-items: stretch;
+  }
+
+  .marketing__pricing__card--pro {
+    scale: 1.05;
+  }
+}

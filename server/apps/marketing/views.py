@@ -8,3 +8,7 @@ class LandingPageView(TemplateView):
 
 class SolutionsPageView(TemplateView):
     template_name = "marketing/pages/solutions.html"
+
+
+class PricingPageView(TemplateView):
+    template_name = "marketing/pages/pricing.html"
