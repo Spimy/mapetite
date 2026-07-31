@@ -2,6 +2,7 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from drf_spectacular.utils import extend_schema_view, extend_schema
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import (
     APIView,
     IsAuthenticated,
@@ -15,6 +16,8 @@ class GoogleLoginView(SocialLoginView):
     """Takes the access token from the frontend provided by Google and uses it to log in the user via Google OAuth2"""
 
     adapter_class = GoogleOAuth2Adapter
+    client_class = OAuth2Client
+    authentication_classes = []
 
 
 @extend_schema_view(
