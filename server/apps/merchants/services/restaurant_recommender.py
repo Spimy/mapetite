@@ -125,7 +125,7 @@ def is_store_open_at(
         for row in prefetched:
             hours_by_day[row.day_of_week] = row
     else:
-        for row in store.operating_hours.all():
+        for row in store.operating_hours.all():  # type: ignore
             hours_by_day[row.day_of_week] = row
 
     today = hours_by_day.get(weekday)
@@ -169,7 +169,7 @@ def compute_menu_aggregates(
     if prefetched is not None:
         items = [i for i in prefetched if i.is_active]
     else:
-        items = list(store.items.filter(is_active=True))
+        items = list(store.items.filter(is_active=True))  # type: ignore
 
     if not items:
         # No menu: treat as fully "safe" for ratio math but zero counts so
@@ -276,7 +276,7 @@ def get_or_embed_user_cuisine_vector(
         )
         if not response.embeddings:
             return None
-        vector = list(response.embeddings[0].values)
+        vector = list(response.embeddings[0].values)  # type: ignore
         _USER_CUISINE_EMBED_CACHE[cache_key] = vector
         return vector
     except Exception as exc:
@@ -436,9 +436,7 @@ def _health_score(
             calorie_fit = 0.0
         else:
             span = meal_target * 0.8
-            calorie_fit = max(
-                0.0, 1.0 - (avg_calories - meal_target * 0.7) / span
-            )
+            calorie_fit = max(0.0, 1.0 - (avg_calories - meal_target * 0.7) / span)
         return WEIGHT_HEALTH * min(1.0, calorie_fit + healthy_category_boost)
 
     if goal == UserProfile.HealthGoalChoices.GAIN_MUSCLE:
@@ -487,7 +485,7 @@ def build_recommendation_reason(
 ) -> str:
     """Deterministic 1–2 sentence caption from reason tags."""
     name = store.business_name
-    cuisine = store.get_category_display() if store.category else "local"
+    cuisine = store.get_category_display() if store.category else "local"  # type: ignore
     bits: list[str] = []
 
     if "diet_match" in reasons:
@@ -527,7 +525,7 @@ def enrich_recommendation_reason_with_gemini(
         prompt = (
             f"Write one friendly sentence (max 25 words, no markdown) recommending "
             f"the restaurant '{store.business_name}' "
-            f"({store.get_category_display() if store.category else 'restaurant'}). "
+            f"({store.get_category_display() if store.category else 'restaurant'}). "  # type: ignore
             f"Mention these match reasons: {', '.join(reasons) or 'nearby'}. "
             f"Do not invent ratings or deals."
         )
@@ -659,9 +657,7 @@ class RestaurantRecommender:
                 "health": health,
                 "open_now": open_bonus,
             }
-            match_score = int(
-                round(sum(score_parts.values()))
-            )
+            match_score = int(round(sum(score_parts.values())))
             match_score = max(0, min(100, match_score))
 
             reasons = build_reasons(score_parts, is_open)

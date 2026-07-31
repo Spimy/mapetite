@@ -1,0 +1,74 @@
+from django.urls import path
+from . import views_web
+
+urlpatterns = [
+    path(
+        "dashboard/", view=views_web.DashboardRedirectView.as_view(), name="dashboard"
+    ),
+    path(
+        "dashboard/<int:store_index>/",
+        views_web.DashboardView.as_view(),
+        name="dashboard_home",
+    ),
+    path(
+        "dashboard/<int:store_index>/items/",
+        views_web.DashboardItemsView.as_view(),
+        name="dashboard_items",
+    ),
+    path(
+        "dashboard/<int:store_index>/items/<int:pk>/",
+        views_web.DashboardItemUpdateView.as_view(),
+        name="dashboard_edit_item",
+    ),
+    path(
+        "dashboard/<int:store_index>/promotions/",
+        views_web.DashboardPromotionListView.as_view(),
+        name="dashboard_promotions",
+    ),
+    path(
+        "dashboard/<int:store_index>/promotions/<int:pk>/",
+        views_web.DashboardPromotionUpdateView.as_view(),
+        name="dashboard_promotion_edit",
+    ),
+    path(
+        "dashboard/<int:store_index>/locations-and-hours/",
+        views_web.DashboardLocationsAndHoursView.as_view(),
+        name="dashboard_locations_and_hours",
+    ),
+    path(
+        "dashboard/<int:store_index>/staff/",
+        views_web.DashboardStaffView.as_view(),
+        name="dashboard_staff",
+    ),
+    path(
+        "invite/accept/<uuid:token>/",
+        views_web.AcceptInviteView.as_view(),
+        name="accept_invite",
+    ),
+    path(
+        "dashboard/<int:store_index>/settings/",
+        views_web.DashboardSettingsView.as_view(),
+        name="dashboard_settings",
+    ),
+    path("onboarding/", views_web.OnboardingView.as_view(), name="onboarding"),
+    path(
+        "onboarding/<int:pk>/",
+        views_web.OnboardingStoreDetailView.as_view(),
+        name="onboarding_detail",
+    ),
+    path(
+        "onboarding/<int:pk>/claim/",
+        views_web.ClaimRequestCreateView.as_view(),
+        name="claim_request_create",
+    ),
+    path(
+        "onboarding/claim-requests/",
+        views_web.ClaimRequestListView.as_view(),
+        name="claim_requests",
+    ),
+    path(
+        "store/<int:store_id>/mark-location/",
+        views_web.MarkLocationView.as_view(),
+        name="mark_location",
+    ),
+]
