@@ -109,7 +109,7 @@ To enable Google Sign-In for the mobile API:
 3. Log in to the local [Django Admin Dashboard](http://127.0.0.1:8000/admin/).
 4. Under **Sites**, update `example.com` to `127.0.0.1:8000` (Display name: `Mapetite Local`).
 5. Under **Social Accounts > Social applications**, add a new Google application with your Client ID and Secret key. Move `Mapetite Local` to the "Chosen sites" box.
-6. _(For API Testing)_: Use the [Google OAuth2 Playground](https://developers.google.com/oauthplayground/) (Google OAuth2 API) to generate temporary `access_token` and `id_token` payloads for Postman.
+6. _(For API Testing)_: Use the [Google OAuth2 Playground](https://developers.google.com/oauthplayground/) (Google OAuth2 API) to generate temporary `access_token` and `id_token` payloads for Postman. Ensure, under settings, to provide the Client ID and Secret Key to Playground. ![Playground Settings](../docs/playground-settings.png)
 
 ---
 
