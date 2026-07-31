@@ -158,11 +158,6 @@ class NearbyStoresListAPIView(ListAPIView):
         })
 
 
-# Preference-aware restaurant recommendations live in recommendation_views.py
-# (GET /api/recommendations/top-pick/ and GET /api/recommendations/restaurants/).
-# NearbyStoresListAPIView stays distance-only for browse/map flows.
-
-
 class StoreAPIView(RetrieveAPIView):
     """Fetches a single store with its operating hours and items"""
 
