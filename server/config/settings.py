@@ -89,6 +89,8 @@ REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_COOKIE": None,
     "TOKEN_MODEL": None,
+    "JWT_AUTH_HTTPONLY": False,
+    "SESSION_LOGIN": False,
 }
 
 # Allauth and dj-rest-auth settings
