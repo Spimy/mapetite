@@ -92,10 +92,11 @@ All domain logic is located in the `apps/` directory to keep the root clean:
 
 | App                  | Responsibility                                                                     |
 | -------------------- | ---------------------------------------------------------------------------------- |
-| **`apps.core`**      | Services used throughout the system such as GeminiService.                         |
+| **`apps.core`**      | Services used throughout the system such as GeminiService and Notification model.  |
 | **`apps.users`**     | Identity and Authentication.                                                       |
 | **`apps.merchants`** | Store profiles, spatial location (PostGIS), vector embeddings, and business logic. |
 | **`apps.recipes`**   | Recipes, ingredients, recipe instruction steps, and business logic.                |
+| **`apps.budgets`**   | Spending records of authenticated users for budget tracking.                       |
 
 ---
 
@@ -104,10 +105,11 @@ All domain logic is located in the `apps/` directory to keep the root clean:
 To enable Google Sign-In for the mobile API:
 
 1. Generate a **Web application** OAuth client ID in the [Google Cloud Console](https://console.cloud.google.com/auth/clients/create). Leave redirect URIs empty.
-2. Log in to the local [Django Admin Dashboard](http://127.0.0.1:8000/admin/).
-3. Under **Sites**, update `example.com` to `127.0.0.1:8000` (Display name: `Mapetite Local`).
-4. Under **Social Accounts > Social applications**, add a new Google application with your Client ID and Secret key. Move `Mapetite Local` to the "Chosen sites" box.
-5. _(For API Testing)_: Use the [Google OAuth2 Playground](https://developers.google.com/oauthplayground/) (v2 API, `email` & `profile` scopes) to generate temporary `access_token` and `id_token` payloads for Postman.
+2. Under **Authorised redirect URIs**, add `https://developers.google.com/oauthplayground` which will be needed when testing using Postman and Google OAuth Playground.
+3. Log in to the local [Django Admin Dashboard](http://127.0.0.1:8000/admin/).
+4. Under **Sites**, update `example.com` to `127.0.0.1:8000` (Display name: `Mapetite Local`).
+5. Under **Social Accounts > Social applications**, add a new Google application with your Client ID and Secret key. Move `Mapetite Local` to the "Chosen sites" box.
+6. _(For API Testing)_: Use the [Google OAuth2 Playground](https://developers.google.com/oauthplayground/) (Google OAuth2 API) to generate temporary `access_token` and `id_token` payloads for Postman.
 
 ---
 
