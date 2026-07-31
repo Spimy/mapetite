@@ -1,15 +1,20 @@
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema_view, extend_schema
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client, OAuth2Error
 from dj_rest_auth.registration.views import (
     APIView,
     IsAuthenticated,
     SocialLoginView,
     VerifyEmailView,
 )
-from .serializers import UserDetailSerializer, UserProfileUpdateSerializer
+from .serializers import (
+    CustomGoogleLoginSerializer,
+    UserDetailSerializer,
+    UserProfileUpdateSerializer,
+)
 
 
 class GoogleLoginView(SocialLoginView):
@@ -18,18 +23,28 @@ class GoogleLoginView(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
     client_class = OAuth2Client
     authentication_classes = []
+    serializer_class = CustomGoogleLoginSerializer
 
     # Override to avoid creating cookies since we are using JWTs for authentication
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
+        try:
+            response = super().post(request, *args, **kwargs)
 
-        if hasattr(request, "_messages"):
-            request._messages.added_new = False
+            if hasattr(request, "_messages"):
+                request._messages.added_new = False
 
-        if hasattr(request, "session"):
-            request.session.modified = False
+            if hasattr(request, "session"):
+                request.session.modified = False
 
-        return response
+            return response
+        except OAuth2Error as err:
+            raise ValidationError({"detail": str(err) or "Invalid token provided."})
+        except Exception as err:
+            if "Audience doesn't match" in str(err) or "Invalid id_token" in str(err):
+                raise ValidationError(
+                    {"detail": "Invalid token audience or signature."}
+                )
+            raise err
 
 
 @extend_schema_view(

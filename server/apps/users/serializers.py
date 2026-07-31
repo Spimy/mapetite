@@ -3,6 +3,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
 from allauth.account.models import EmailAddress
+from dj_rest_auth.registration.serializers import SocialLoginSerializer
 from .models import User, UserProfile
 
 
@@ -200,3 +201,16 @@ class UserProfileUpdateSerializer(serializers.Serializer):
         profile.save()
 
         return instance
+
+
+class CustomGoogleLoginSerializer(SocialLoginSerializer):
+    def validate(self, attrs):
+        """
+        If the frontend provides an id_token but no access_token, inject a dummy access_token to satisfy the strict base validation.
+        Allauth is a bit dumb that it doesn't allow id_token-only logins, even though the id_token is sufficient for authentication.
+        Allauth handles the id_token validation and user creation, so we just need to bypass the strict validation in the base class.
+        """
+        if attrs.get("id_token") and not attrs.get("access_token"):
+            attrs["access_token"] = "dummy_token_to_bypass_validation"
+
+        return super().validate(attrs)
