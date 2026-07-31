@@ -10,18 +10,9 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import RedirectView
 from django.urls import reverse_lazy
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from dj_rest_auth.registration.views import (
-    IsAuthenticated,
-    SocialLoginView,
-    VerifyEmailView,
-)
 from allauth.account.models import EmailConfirmationHMAC, EmailConfirmation
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from drf_spectacular.utils import extend_schema_view, extend_schema
 from .forms import SignInForm
 from .mixins import SuccessUrlMixin
-from .serializers import UserDetailSerializer, UserProfileUpdateSerializer
 
 
 # Create your views here.
@@ -42,39 +33,6 @@ class SignOutView(LoginRequiredMixin, RedirectView):
     def post(self, request, *args, **kwargs):
         logout(request)
         return super(SignOutView, self).get(request, *args, **kwargs)
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-
-
-class UserDetailView(APIView):
-    """API view to get details of the currently authenticated user"""
-
-    permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
-
-    @extend_schema(responses={200: UserDetailSerializer})
-    def get(self, request, *args, **kwargs):
-        serializer = UserDetailSerializer(request.user)
-        return Response(serializer.data)
-
-    @extend_schema(
-        request=UserProfileUpdateSerializer, responses={200: UserDetailSerializer}
-    )
-    def patch(self, request, *args, **kwargs):
-        serializer = UserProfileUpdateSerializer(
-            instance=request.user,
-            data=request.data,
-            partial=True,
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        request.user.refresh_from_db()
-        request.user.user_profile.refresh_from_db()
-
-        return Response(UserDetailSerializer(request.user).data)
 
 
 class PasswordResetView(auth_views.PasswordResetView):
@@ -165,12 +123,6 @@ class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
         return super().get(request, *args, **kwargs)
 
 
-class GoogleLoginView(SocialLoginView):
-    """Takes the access token from the frontend provided by Google and uses it to log in the user via Google OAuth2"""
-
-    adapter_class = GoogleOAuth2Adapter
-
-
 class ConfirmEmailView(View):
     def get(self, request, key, *args, **kwargs):
         confirmation = self.get_confirmation(key)
@@ -194,16 +146,3 @@ class ConfirmEmailView(View):
                 return EmailConfirmation.objects.get(key=key.lower())
             except EmailConfirmation.DoesNotExist:
                 return None
-
-
-@extend_schema_view(
-    post=extend_schema(
-        exclude=True  # This hides the dummy route entirely from Swagger/ReDoc
-    )
-)
-class HiddenDummyVerifyView(VerifyEmailView):
-    """
-    Used for the allauth dummy route. We hide it so it doesn't clutter the API docs.
-    """
-
-    pass

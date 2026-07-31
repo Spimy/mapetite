@@ -1,9 +1,3 @@
-"""
-Restaurant recommendation API views.
-
-See apps.merchants.services.restaurant_recommender for scoring logic.
-"""
-
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from django.contrib.gis.geos import Point
 from rest_framework.exceptions import NotFound, ValidationError
@@ -46,12 +40,10 @@ def _parse_bool(value, default: bool) -> bool:
 
 
 def _scored_to_dict(scored: ScoredRestaurant, request) -> dict:
-    store_data = NearbyStoreSerializer(
-        scored.store, context={"request": request}
-    ).data
+    store_data = NearbyStoreSerializer(scored.store, context={"request": request}).data
     # Prefer the recommender's rounded distance when annotation is present
-    if store_data.get("distance_km") is None:
-        store_data["distance_km"] = scored.distance_km
+    if store_data.get("distance_km") is None:  # type: ignore
+        store_data["distance_km"] = scored.distance_km  # type: ignore
     return {
         "store": store_data,
         "match_score": scored.match_score,
