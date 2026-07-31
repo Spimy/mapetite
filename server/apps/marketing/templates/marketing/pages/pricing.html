@@ -1,0 +1,119 @@
+{% extends "marketing/marketing.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'marketing/css/marketing.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'marketing/css/pages/pricing.css' %}" />
+{% endblock styles %}
+
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Pricing
+{% endblock title %}
+
+{% block description %}
+  Explore Mapetite's transparent pricing plans designed for smart merchants. Choose the right plan to grow your business, optimise visibility, and connect with health-conscious urban residents. No hidden fees.
+{% endblock description %}
+
+{% block keywords %}
+  pricing, smart city solutions, urban technology, sustainable living, Mapetite innovations, smart city development, merchant growth
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block marketing_content %}
+  <section class="marketing__hero marketing__text-block">
+    <h1>Transparent Pricing for Smart Merchants</h1>
+    <p>
+      Choose the perfect plan to grow your business, optimise visibility, and connect with health-conscious urban residents. No hidden fees.
+    </p>
+  </section>
+
+  <section class="marketing__pricing">
+    <div class="marketing__pricing__grid">
+
+      <article class="marketing__card marketing__pricing__card">
+        <div class="marketing__pricing__header">
+          <h3 class="marketing__pricing__tier">Core</h3>
+          <div class="marketing__pricing__price">Free</div>
+          <p class="marketing__pricing__desc">For small eateries starting out.</p>
+        </div>
+
+        <ul role="list" class="marketing__pricing__features">
+          <li>
+            <span>{% include "icons/check.html" %}</span>Up to 50 menu items
+          </li>
+          <li>
+            <span>{% include "icons/check.html" %}</span>Basic local discovery
+          </li>
+          <li>
+            <span>{% include "icons/check.html" %}</span>Standard store profile
+          </li>
+        </ul>
+
+        <div class="marketing__pricing__cta">
+          <a href="{% url 'marketing:contact-page' %}" class="btn btn--invert">Inquire Now</a>
+        </div>
+      </article>
+
+      <article class="marketing__card marketing__pricing__card marketing__pricing__card--pro">
+        <div class="marketing__pricing__badge">Most Popular</div>
+        <div class="marketing__pricing__header">
+          <h3 class="marketing__pricing__tier">Pro</h3>
+          <div class="marketing__pricing__price">
+            RM 149<span>/mo</span>
+          </div>
+          <p class="marketing__pricing__desc">For growing restaurants and cafes.</p>
+        </div>
+
+        <ul role="list" class="marketing__pricing__features">
+          <li>
+            <span>{% include "icons/check.html" %}</span>Unlimited menu items
+          </li>
+          <li>
+            <span>{% include "icons/check.html" %}</span>Priority local discovery
+          </li>
+          <li>
+            <span>{% include "icons/check.html" %}</span>Verified merchant badge
+          </li>
+          <li>
+            <span>{% include "icons/check.html" %}</span>Promotions engine
+          </li>
+        </ul>
+
+        <div class="marketing__pricing__cta">
+          <a href="{% url 'marketing:contact-page' %}" class="btn">Inquire Now</a>
+        </div>
+      </article>
+
+      <article class="marketing__card marketing__pricing__card">
+        <div class="marketing__pricing__header">
+          <h3 class="marketing__pricing__tier">Enterprise</h3>
+          <div class="marketing__pricing__price">Custom</div>
+          <p class="marketing__pricing__desc">For grocery chains and franchises.</p>
+        </div>
+
+        <ul role="list" class="marketing__pricing__features">
+          <li>
+            <span>{% include "icons/check.html" %}</span>Everything in Pro
+          </li>
+          <li>
+            <span>{% include "icons/check.html" %}</span>Multi-location management
+          </li>
+          <li>
+            <span>{% include "icons/check.html" %}</span>POS API integration
+          </li>
+          <li>
+            <span>{% include "icons/check.html" %}</span>Dedicated account manager
+          </li>
+        </ul>
+
+        <div class="marketing__pricing__cta">
+          <a href="{% url 'marketing:contact-page' %}" class="btn btn--invert">Inquire Now</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+{% endblock marketing_content %}

@@ -1,0 +1,123 @@
+{% extends "marketing/marketing.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'marketing/css/marketing.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'marketing/css/pages/testimonials.css' %}" />
+{% endblock styles %}
+
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Testimonials
+{% endblock title %}
+
+{% block description %}
+  Read real stories from merchants who have transformed their businesses with Mapetite's smart city solutions. Discover how our platform enhances urban living through technology and sustainability.
+{% endblock description %}
+
+{% block keywords %}
+  testimonials, smart city solutions, urban technology, sustainable living, Mapetite innovations, smart city development
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block marketing_content %}
+  <section class="marketing__hero marketing__text-block marketing__text-block--primary marketing__text-block--bold">
+    <h1>Real Growth. Real Stories.</h1>
+    <p>
+      See how merchants across the city are transforming their businesses, increasing foot traffic, and connecting with health-conscious customers through Mapetite.
+    </p>
+  </section>
+
+  <section class="marketing__testimonials">
+    <div class="marketing__testimonials__grid">
+      <article class="marketing__card marketing__testimonial marketing__testimonial">
+        <span class="marketing__testimonial__rating">★★★★★</span>
+        <p class="marketing__testimonial__quote">
+          "Mapetite didn't just bring us customers; it brought us the *right*
+          customers. Our vegan bakery saw a massive surge in regulars who
+          found us specifically through the app's dietary filters."
+        </p>
+        <div class="marketing__testimonial__author">
+          <div class="marketing__testimonial__author__info">
+            <img src="{% static 'marketing/img/sarah.jpg' %}"
+                 alt="Sarah"
+                 width="50"
+                 height="50" />
+            <div class="marketing__testimonial__author__details">
+              <p class="marketing__testimonial__author__name">Sarah Jenkins</p>
+              <p class="marketing__testimonial__author__title">Owner, The Green Crumb Bakery</p>
+            </div>
+          </div>
+          <dl class="marketing__testimonial__author__stats">
+            <dt>New Customer Growth</dt>
+            <dd>
+              +45%
+            </dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="marketing__card marketing__testimonial marketing__testimonial">
+        <span>{% include "icons/grow.html" %}</span>
+        <h2>3.2×</h2>
+        <p>Average Return on Investment for our Premium Partners in Year 1.</p>
+      </article>
+
+      <article class="marketing__card marketing__testimonial marketing__testimonial">
+        <h2>Supermarket Integration</h2>
+        <p class="marketing__testimonial__quote">
+          "Integrating our inventory with Mapetite's allergen
+          alerts reduced customer inquiries by half and
+          increased specialty item sales."
+        </p>
+
+        <div class="marketing__testimonial__author">
+          <img src="{% static 'marketing/img/david.jpg' %}"
+               alt="David"
+               width="50"
+               height="50" />
+          <div class="marketing__testimonial__author__details">
+            <p class="marketing__testimonial__author__name">David Lee</p>
+            <p class="marketing__testimonial__author__title">Manager, FreshMart Urban</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="marketing__card marketing__testimonial marketing__testimonial">
+        <img src="{% static 'marketing/img/marcus.jpg' %}"
+             alt="Marcus"
+             width="50"
+             height="50" />
+
+        <div class="marketing__testimonial__content">
+          <p class="marketing__testimonial__quote">
+            "We launched our Halal-certified menu right as we
+            joined Mapetite. The visibility the platform gave us
+            within the community was instant. It completely
+            changed the trajectory of our first quarter."
+          </p>
+
+          <div class="marketing__testimonial__author">
+            <div class="marketing__testimonial__author__details">
+              <p class="marketing__testimonial__author__name">Marcus Tan</p>
+              <p class="marketing__testimonial__author__title">Founder, Crescent Roasters</p>
+            </div>
+            <span>
+              <span class="marketing__card__tag marketing__card__tag--halal">Halal Partner</span>
+            </span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="marketing__text-block marketing__text-block--custom">
+    <h2>Ready to grow your urban footprint?</h2>
+    <p>Join hundreds of merchants who are already connecting with Mapetite's active user base.</p>
+    <div class="marketing__text-block__cta">
+      <a href="{% url 'marketing:contact-page' %}" class="btn">Become a Partner Today</a>
+    </div>
+  </section>
+{% endblock marketing_content %}

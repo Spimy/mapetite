@@ -116,3 +116,14 @@ a {
   font-size: 1.25rem;
   margin-bottom: 1rem;
 }
+
+.icon-throbber {
+  animation: spin 1.5s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

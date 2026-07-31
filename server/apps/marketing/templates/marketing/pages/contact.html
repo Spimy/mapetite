@@ -1,0 +1,163 @@
+{% extends "marketing/marketing.html" %}
+{% load static %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'marketing/css/marketing.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'marketing/css/pages/contact.css' %}" />
+{% endblock styles %}
+
+
+{% comment %} Page Meta {% endcomment %}
+{% block title %}
+  Contact Us
+{% endblock title %}
+
+{% block description %}
+  Get in touch with our team at Mapetite. Have questions about our smart city solutions? Fill out the form below and we'll get back to you as soon as possible.
+{% endblock description %}
+
+{% block keywords %}
+  contact, smart city solutions, urban technology, sustainable living, Mapetite innovations, smart city development
+{% endblock keywords %}
+{% comment %} End Page Meta {% endcomment %}
+
+{% block marketing_content %}
+  <article class="marketing__contact">
+    <div class="marketing__info">
+      <section class="marketing__hero">
+        <h1>We're here to help you scale.</h1>
+        <p>
+          Whether you're a boutique cafe or a multi-location supermarket,
+          our team is ready to assist you in joining the Mapetite ecosystem.
+        </p>
+      </section>
+
+      <section class="marketing__contact-info">
+        <h2 class="marketing__contact-info__title">Get in Touch</h2>
+
+        <ul role="list" class="marketing__contact-info__list">
+          <li class="marketing__contact-info__item">
+            <span class="marketing__contact-info__icon">{% include "icons/mail.html" %}</span>
+            <div class="marketing__contact-info__details">
+              <span class="marketing__contact-info__label">Email Support</span>
+              <p class="marketing__contact-info__value">partners@mapetite.com</p>
+            </div>
+          </li>
+
+          <li class="marketing__contact-info__item">
+            <span class="marketing__contact-info__icon">{% include "icons/phone.html" %}</span>
+            <div class="marketing__contact-info__details">
+              <span class="marketing__contact-info__label">Phone</span>
+              <p class="marketing__contact-info__value">+60 193-67 4203</p>
+              <span class="marketing__contact-info__note">Mon-Fri, 9am - 6pm UTC+8</span>
+            </div>
+          </li>
+
+          <li class="marketing__contact-info__item">
+            <span class="marketing__contact-info__icon">{% include "icons/location.html" %}</span>
+            <div class="marketing__contact-info__details">
+              <span class="marketing__contact-info__label">Headquarters</span>
+              <p class="marketing__contact-info__value">
+                123 Smart City Avenue, Suite 456
+                <br />
+                Kuala Lumpur, Malaysia
+              </p>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <img src="{% static 'marketing/img/contact_form.png' %}"
+           alt="Contact Us"
+           width="100%"
+           height="100%" />
+    </div>
+
+    <form method="post" class="marketing__card marketing-contact__form">
+      {% csrf_token %}
+
+      <h2>Inquiry & Application</h2>
+
+      {% if messages %}
+        <div class="marketing-contact__messages">
+          {% for message in messages %}
+            <div class="marketing-contact__message marketing-contact__message--{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="marketing-contact__form-grid">
+        <div class="form-group">
+          <label for="{{ form.business_name.id_for_label }}">{{ form.business_name.label }}</label>
+          {{ form.business_name }}
+          {% if form.business_name.errors %}<div class="error-msg">{{ form.business_name.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.business_type.id_for_label }}">{{ form.business_type.label }}</label>
+          {{ form.business_type }}
+          {% if form.business_type.errors %}<div class="error-msg">{{ form.business_type.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.contact_person.id_for_label }}">{{ form.contact_person.label }}</label>
+          {{ form.contact_person }}
+          {% if form.contact_person.errors %}<div class="error-msg">{{ form.contact_person.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.phone_number.id_for_label }}">{{ form.phone_number.label }}</label>
+          {{ form.phone_number }}
+          {% if form.phone_number.errors %}<div class="error-msg">{{ form.phone_number.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="form-group form-group--full-width">
+          <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.errors %}<div class="error-msg">{{ form.email.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="form-group form-group--full-width">
+          <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+          {{ form.message }}
+          {% if form.message.errors %}<div class="error-msg">{{ form.message.errors.0 }}</div>{% endif %}
+        </div>
+
+      </div>
+
+      <button type="submit" class="btn marketing-contact__submit">
+        Submit Application
+        <span>{% include "icons/right-arrow.html" %}</span>
+      </button>
+      <p class="marketing-contact__disclaimer">
+        By submitting this form, you agree to our <a href="#">Privacy Policy</a>.
+      </p>
+    </form>
+  </article>
+
+  <template id="throbber-template">
+    {% include "icons/throbber.html" %}
+  </template>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const contactForm = document.querySelector(".marketing-contact__form");
+      const submitBtn = contactForm.querySelector(".marketing-contact__submit");
+      const throbberHTML = document.getElementById("throbber-template").innerHTML;
+
+      if (contactForm && submitBtn) {
+        contactForm.addEventListener("submit", (e) => {
+          if (contactForm.checkValidity()) {
+            
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7'; 
+            submitBtn.style.cursor = 'wait';
+
+            submitBtn.innerHTML = `Sending... <span class="spinner-icon">${throbberHTML}</span>`;
+          }
+        });
+      }
+    });
+  </script>
+{% endblock marketing_content %}
