@@ -19,6 +19,18 @@ class GoogleLoginView(SocialLoginView):
     client_class = OAuth2Client
     authentication_classes = []
 
+    # Override to avoid creating cookies since we are using JWTs for authentication
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+
+        if hasattr(request, "_messages"):
+            request._messages.added_new = False
+
+        if hasattr(request, "session"):
+            request.session.modified = False
+
+        return response
+
 
 @extend_schema_view(
     post=extend_schema(
