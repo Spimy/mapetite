@@ -11,30 +11,87 @@ from .models import (
 )
 
 
-# Register your models here.
+@admin.register(StoreProfile)
 class StoreProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "business_name",
+        "owner_display_name",
+        "merchant_type",
+        "category",
+        "created_at",
+    )
+    list_filter = ("merchant_type", "category", "halal", "vegan")
+    search_fields = (
+        "business_name",
+        "owner__username",
+        "owner__email",
+        "street_address",
+    )
     readonly_fields = ("created_at", "updated_at")
+    autocomplete_fields = ["owner", "staff"]  # Makes searching for users easy
 
 
+@admin.register(StoreOperatingHour)
 class StoreOperatingHourAdmin(admin.ModelAdmin):
-    readonly_fields = ("created_at", "updated_at")
+    list_display = ("store", "day_of_week", "open_time", "close_time")
+    list_filter = ("day_of_week",)
+    search_fields = ("store__business_name",)
+    autocomplete_fields = ["store"]
 
 
+@admin.register(ItemCategory)
 class ItemCategoryAdmin(admin.ModelAdmin):
-    readonly_fields = ("created_at", "updated_at")
+    list_display = ("name", "store", "display_order")
+    list_filter = ("store",)
+    search_fields = ("name", "store__business_name")
+    autocomplete_fields = ["store"]
+    list_editable = ("display_order",)  # Quickly reorder categories from the list view
 
 
+@admin.register(StoreItem)
 class StoreItemAdmin(admin.ModelAdmin):
+    list_display = ("name", "store", "category", "price", "stock_status", "is_active")
+    list_filter = ("stock_status", "is_active", "vegetarian", "gluten_free", "organic")
+    search_fields = ("name", "store__business_name", "category__name")
     readonly_fields = ("embedding", "created_at", "updated_at")
+    autocomplete_fields = ["store", "category"]
+    list_editable = (
+        "price",
+        "stock_status",
+        "is_active",
+    )  # Perfect for quick stock updates!
 
 
+@admin.register(Promotion)
 class PromotionAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "store",
+        "promotion_type",
+        "status",
+        "is_active",
+        "start_date",
+        "end_date",
+    )
+    list_filter = ("promotion_type", "is_active")
+    search_fields = ("title", "store__business_name")
     readonly_fields = ("created_at", "updated_at")
+    autocomplete_fields = ["store", "eligible_items", "reward_item", "bundle_items"]
 
 
+@admin.register(StoreInvitation)
 class StoreInvitationAdmin(admin.ModelAdmin):
-    # Token should not be editable as it is generated automatically and is important for the invitation process
-    readonly_fields = ("token",)
+    list_display = (
+        "email",
+        "store",
+        "first_name",
+        "last_name",
+        "is_expired",
+        "created_at",
+    )
+    search_fields = ("email", "store__business_name", "first_name")
+    readonly_fields = ("token", "created_at")
+    autocomplete_fields = ["store"]
 
 
 class StoreClaimRequestAdmin(admin.ModelAdmin):
@@ -106,12 +163,3 @@ class StoreClaimRequestAdmin(admin.ModelAdmin):
                 obj.reject(request.user, reason=obj.rejection_reason, save=False)
 
         super().save_model(request, obj, form, change)
-
-
-admin.site.register(StoreProfile, StoreProfileAdmin)
-admin.site.register(StoreOperatingHour, StoreOperatingHourAdmin)
-admin.site.register(ItemCategory, ItemCategoryAdmin)
-admin.site.register(StoreItem, StoreItemAdmin)
-admin.site.register(Promotion, PromotionAdmin)
-admin.site.register(StoreInvitation, StoreInvitationAdmin)
-admin.site.register(StoreClaimRequest, StoreClaimRequestAdmin)
