@@ -70,6 +70,36 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> loginWithGoogle(String idToken) async {
+    state = const AuthState(isLoading: true);
+
+    try {
+      final tokens = await _authService.loginWithGoogle(idToken);
+      await AuthTokenService.saveTokens(tokens);
+
+      final currentUser = await _authService.getCurrentUser();
+
+      state = AuthState(
+        isLoading: false,
+        successMessage: 'Signed in successfully.',
+        currentUser: currentUser,
+      );
+
+      return true;
+    } on AppException catch (error) {
+      await AuthTokenService.clearTokens();
+      state = AuthState(isLoading: false, errorMessage: error.message);
+      return false;
+    } catch (_) {
+      await AuthTokenService.clearTokens();
+      state = const AuthState(
+        isLoading: false,
+        errorMessage: 'Unable to sign in with Google. Please try again.',
+      );
+      return false;
+    }
+  }
+
   Future<bool> loadCurrentUser() async {
     if (!AuthTokenService.hasTokens) {
       state = state.copyWith(clearUser: true);

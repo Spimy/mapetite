@@ -73,4 +73,22 @@ void main() {
     expect(find.text('Forgot password?'), findsOneWidget);
     expect(find.text('Continue with Google'), findsOneWidget);
   });
+
+  testWidgets('tapping Continue with Google fails gracefully without crashing when no platform implementation is available', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp.router(routerConfig: _testRouter()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+
+    // In the test environment there's no native Google Sign-In plugin
+    // implementation, so the attempt must fail cleanly (caught, surfaced as
+    // an error message) rather than let an unhandled platform exception
+    // crash the widget tree.
+    expect(tester.takeException(), isNull);
+  });
 }

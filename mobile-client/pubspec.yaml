@@ -38,6 +38,9 @@ dependencies:
   # Networking
   dio: ^5.7.0
 
+  # Auth
+  google_sign_in: ^6.2.1
+
   # Storage
   shared_preferences: ^2.3.3
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
@@ -54,6 +55,48 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } else {
         context.go('/profile/dietary');
       }
+    }
+  }
+
+  Future<void> _onGoogleSignIn() async {
+    ref.read(authControllerProvider.notifier).clearMessages();
+
+    try {
+      final googleSignIn = GoogleSignIn(scopes: ['email']);
+      final account = await googleSignIn.signIn();
+      if (account == null || !mounted) return; // user cancelled
+
+      final googleAuth = await account.authentication;
+      final idToken = googleAuth.idToken;
+      if (idToken == null || !mounted) return;
+
+      final success = await ref
+          .read(authControllerProvider.notifier)
+          .loginWithGoogle(idToken);
+
+      if (!mounted || !success) return;
+
+      final authState = ref.read(authControllerProvider);
+      if (authState.onboardingCompleted) {
+        context.go('/home');
+      } else {
+        context.go('/profile/dietary');
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Unable to sign in with Google. Please try again.',
+            style: AppTypography.body1.copyWith(color: AppColors.white),
+          ),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+        ),
+      );
     }
   }
 
@@ -203,7 +246,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       label: 'Continue with Google',
                       variant: AppButtonVariant.outlined,
                       leadingIcon: Icons.g_mobiledata,
-                      onPressed: isLoading ? null : () {},
+                      onPressed: isLoading ? null : _onGoogleSignIn,
                     ),
 
                     const SizedBox(height: AppSpacing.xxxl),

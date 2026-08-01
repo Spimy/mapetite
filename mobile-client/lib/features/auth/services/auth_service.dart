@@ -104,6 +104,15 @@ class AuthService {
     }
   }
 
+  Future<AuthTokens> loginWithGoogle(String idToken) async {
+    final response = await ApiClient.post(
+      ApiEndpoints.googleLogin,
+      data: {'id_token': idToken},
+    );
+
+    return AuthTokens.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<String> resendVerificationEmail(String email) async {
     try {
       final response = await ApiClient.post(
