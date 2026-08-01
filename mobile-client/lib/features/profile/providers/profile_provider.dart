@@ -9,7 +9,7 @@ class ProfileNotifier extends AsyncNotifier<UserProfile> {
 
   @override
   Future<UserProfile> build() async {
-    final currentUser = ref.read(authControllerProvider).currentUser;
+    final currentUser = ref.watch(authControllerProvider).currentUser;
     if (currentUser == null) {
       throw StateError('ProfileNotifier requires a signed-in user.');
     }
