@@ -9,6 +9,7 @@ import '../../../routes/app_router.dart';
 import '../../../shared/models/store_item_model.dart';
 import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/store_providers.dart';
+import '../../../shared/utils/directions_util.dart';
 import '../../../shared/utils/pricing_util.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/custom_button.dart';
@@ -50,38 +51,6 @@ class _RestaurantDetailScreenState
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => _RestaurantShareSheet(restaurant: store),
-    );
-  }
-
-  void _openDirections(StoreModel store) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Opening Google Maps to ${store.businessName}',
-                style: AppTypography.body1.copyWith(color: AppColors.white),
-              ),
-            ),
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.25),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.check, color: AppColors.white, size: 14),
-            ),
-          ],
-        ),
-        backgroundColor: AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(AppSpacing.lg),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        ),
-      ),
     );
   }
 
@@ -454,7 +423,7 @@ class _RestaurantDetailScreenState
             AppButton(
               label: 'Get Directions',
               leadingIcon: Icons.directions,
-              onPressed: () => _openDirections(store),
+              onPressed: () => openDirections(context, store),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
