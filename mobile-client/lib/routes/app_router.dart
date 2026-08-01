@@ -226,7 +226,9 @@ final GoRouter appRouter = GoRouter(
     // ── Dine-in flow ──────────────────────────────────────────────────────
     GoRoute(
       path: AppRoutes.dineIn,
-      builder: (context, state) => const RestaurantListingScreen(),
+      builder: (context, state) => RestaurantListingScreen(
+        initialCuisine: state.uri.queryParameters['cuisine'],
+      ),
     ),
     GoRoute(
       path: AppRoutes.cookIn,

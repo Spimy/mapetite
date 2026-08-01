@@ -20,7 +20,9 @@ import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/network_error_state.dart';
 
 class RestaurantListingScreen extends ConsumerStatefulWidget {
-  const RestaurantListingScreen({super.key});
+  final String? initialCuisine;
+
+  const RestaurantListingScreen({super.key, this.initialCuisine});
 
   @override
   ConsumerState<RestaurantListingScreen> createState() =>
@@ -34,7 +36,18 @@ class _RestaurantListingScreenState
   final Set<_DineInQuickFilter> _quickFilters = {};
   String _searchQuery = '';
   final _searchController = TextEditingController();
-  _RestaurantFilters _filters = const _RestaurantFilters();
+  late _RestaurantFilters _filters;
+
+  @override
+  void initState() {
+    super.initState();
+    final cuisine = widget.initialCuisine;
+    if (cuisine != null && cuisine.isNotEmpty) {
+      _filters = _RestaurantFilters(cuisines: {cuisine});
+    } else {
+      _filters = const _RestaurantFilters();
+    }
+  }
 
   @override
   void dispose() {
