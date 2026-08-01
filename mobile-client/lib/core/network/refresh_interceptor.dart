@@ -34,7 +34,8 @@ bool shouldAttemptRefresh(DioException err) {
 
   final data = err.response?.data;
 
-  if (data is Map && data['code'] == 'token_not_valid') {
+  if (data is Map &&
+      (data['code'] == 'token_not_valid' || data['code'] == 'not_authenticated')) {
     return true;
   }
 
