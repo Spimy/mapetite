@@ -149,4 +149,24 @@ void main() {
     expect(mock.lastLaunchedUrl, contains('3.0733'));
     expect(mock.lastLaunchedUrl, contains('101.6067'));
   });
+
+  testWidgets('typing in the search bar filters the ingredient list by name', (tester) async {
+    await tester.pumpWidget(_wrap(
+      const GroceryStoreDetailScreen(storeId: '23'),
+      overrides: [
+        storeDetailProvider.overrideWith((ref, id) async => _store),
+        storeItemsProvider.overrideWith((ref, id) async => _items),
+      ],
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Baby Carrots'), findsOneWidget);
+    expect(find.text('Fresh Milk'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'milk');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fresh Milk'), findsOneWidget);
+    expect(find.text('Baby Carrots'), findsNothing);
+  });
 }

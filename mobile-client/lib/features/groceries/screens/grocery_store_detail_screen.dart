@@ -63,8 +63,13 @@ class _GroceryStoreDetailScreenState
     int activeIndex,
   ) {
     final tab = tabs[activeIndex];
-    if (tab == 'All') return items;
-    return items.where((i) => i.category == tab).toList();
+    var filtered = tab == 'All' ? items : items.where((i) => i.category == tab).toList();
+
+    final query = _searchCtrl.text.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      filtered = filtered.where((i) => i.name.toLowerCase().contains(query)).toList();
+    }
+    return filtered;
   }
 
   @override
@@ -264,6 +269,7 @@ class _GroceryStoreDetailScreenState
         ),
         child: TextField(
           controller: _searchCtrl,
+          onChanged: (_) => setState(() {}),
           style: AppTypography.body1,
           decoration: InputDecoration(
             hintText: 'Search ingredients...',
