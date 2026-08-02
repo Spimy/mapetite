@@ -357,7 +357,9 @@ class _SpendingAnalyticsScreenState
                       ? AppColors.primaryLight
                       : AppColors.tertiaryDark,
                   iconColor: AppColors.primary,
-                  title: 'Weekend Spikes',
+                  title: peakWeekday == 6 || peakWeekday == 7
+                      ? 'Weekend Spikes'
+                      : 'Spending Spikes',
                   body: 'Your Grocery spending peaks on ',
                   boldPart: _weekdayNames[peakWeekday - 1],
                   bodySuffix:

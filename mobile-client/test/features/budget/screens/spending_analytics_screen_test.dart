@@ -98,18 +98,30 @@ void main() {
   });
 
   testWidgets(
-      'Grocery peak insight names the real peak weekday, not the old hardcoded Saturdays',
+      'Grocery peak insight shows "Weekend Spikes" when peak is on Saturday or Sunday',
       (tester) async {
     final now = DateTime.now();
-    // Two grocery transactions 7 days apart share a weekday; a third on a
-    // different weekday for a much smaller amount makes the shared weekday
-    // a clear (>=30% above average) peak.
-    final anchor = DateTime(now.year, now.month, 10);
-    final sameWeekday = anchor.add(const Duration(days: 7));
-    final otherWeekday = anchor.add(const Duration(days: 2));
+    // Find a Saturday or Sunday in the current month
+    late DateTime saturday;
+    for (var day = 1; day <= DateTime(now.year, now.month + 1, 0).day; day++) {
+      final date = DateTime(now.year, now.month, day);
+      if (date.weekday == 6) {
+        saturday = date;
+        break;
+      }
+    }
+
+    // Two grocery transactions 7 days apart on the same weekday (Saturday);
+    // a third on a different weekday with a much smaller amount makes
+    // the Saturday a clear (>=30% above average) peak.
+    final sameWeekday = saturday.add(const Duration(days: 7));
+    final otherWeekday = saturday.add(const Duration(days: 2));
 
     final transactions = [
-      _tx(category: BudgetCategory.groceries, amount: 100, dateSpent: anchor),
+      _tx(
+          category: BudgetCategory.groceries,
+          amount: 100,
+          dateSpent: saturday),
       _tx(
           category: BudgetCategory.groceries,
           amount: 100,
@@ -127,10 +139,62 @@ void main() {
     )));
     await tester.pumpAndSettle();
 
-    final expectedLabel = _weekdayNames[anchor.weekday - 1];
     expect(find.text('Weekend Spikes'), findsOneWidget);
     expect(
-      find.textContaining(expectedLabel, findRichText: true),
+      find.textContaining('Saturdays', findRichText: true),
+      findsWidgets,
+    );
+  });
+
+  testWidgets(
+      'Grocery peak insight shows "Spending Spikes" when peak is on a weekday (not weekend)',
+      (tester) async {
+    final now = DateTime.now();
+    // Find a Tuesday in the current month
+    late DateTime tuesday;
+    for (var day = 1; day <= DateTime(now.year, now.month + 1, 0).day; day++) {
+      final date = DateTime(now.year, now.month, day);
+      if (date.weekday == 2) {
+        tuesday = date;
+        break;
+      }
+    }
+
+    // Two grocery transactions 7 days apart on the same weekday (Tuesday);
+    // a third on a different weekday with a much smaller amount makes
+    // the Tuesday a clear (>=30% above average) peak.
+    final sameWeekday = tuesday.add(const Duration(days: 7));
+    final otherWeekday = tuesday.add(const Duration(days: 2));
+
+    final transactions = [
+      _tx(
+          category: BudgetCategory.groceries,
+          amount: 100,
+          dateSpent: tuesday),
+      _tx(
+          category: BudgetCategory.groceries,
+          amount: 100,
+          dateSpent: sameWeekday),
+      _tx(
+          category: BudgetCategory.groceries,
+          amount: 10,
+          dateSpent: otherWeekday),
+    ];
+
+    await tester.pumpWidget(_wrap(BudgetState(
+      transactions: transactions,
+      dineInBudget: 300,
+      groceryBudget: 300,
+    )));
+    await tester.pumpAndSettle();
+
+    // Should NOT show "Weekend Spikes" for a non-weekend peak
+    expect(find.text('Weekend Spikes'), findsNothing);
+    // Should show the generic "Spending Spikes" title instead
+    expect(find.text('Spending Spikes'), findsOneWidget);
+    // Should still correctly show the actual weekday name in the body
+    expect(
+      find.textContaining('Tuesdays', findRichText: true),
       findsWidgets,
     );
   });
