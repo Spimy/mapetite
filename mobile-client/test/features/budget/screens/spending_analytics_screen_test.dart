@@ -35,11 +35,6 @@ BudgetTransaction _tx({
       createdAt: dateSpent,
     );
 
-const _weekdayNames = [
-  'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays',
-  'Fridays', 'Saturdays', 'Sundays',
-];
-
 void main() {
   testWidgets(
       'Key Discoveries shows a real dining trend, not the old hardcoded 15%',

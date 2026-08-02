@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mapetite/features/grocery/widgets/store_picker_sheet.dart';
 import 'package:mapetite/shared/models/store_model.dart';
-import 'package:mapetite/shared/providers/location_provider.dart';
 import 'package:mapetite/shared/providers/store_providers.dart';
 
 const _storeA = StoreModel(

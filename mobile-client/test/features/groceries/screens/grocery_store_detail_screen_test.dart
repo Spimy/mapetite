@@ -10,7 +10,7 @@ import 'package:url_launcher_platform_interface/link.dart';
 
 class _MockUrlLauncherPlatform extends UrlLauncherPlatform {
   _MockUrlLauncherPlatform(this._result);
-  bool _result;
+  final bool _result;
   String? lastLaunchedUrl;
 
   @override

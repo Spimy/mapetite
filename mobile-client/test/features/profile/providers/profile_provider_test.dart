@@ -4,7 +4,6 @@ import 'package:mapetite/features/profile/models/user_profile.dart'
     as profile_models;
 import 'package:mapetite/features/profile/providers/profile_provider.dart';
 import 'package:mapetite/features/auth/controllers/auth_controller.dart';
-import 'package:mapetite/features/auth/models/auth_state.dart';
 import 'package:mapetite/features/auth/models/current_user.dart';
 import 'package:mapetite/features/auth/services/auth_service.dart';
 
