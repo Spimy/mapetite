@@ -98,6 +98,17 @@ class ProfileNotifier extends AsyncNotifier<UserProfile> {
     await ref.read(authControllerProvider.notifier).loadCurrentUser();
     ref.invalidate(budgetProvider);
   }
+
+  /// Uploads immediately (unlike the staged dietary/budget/etc. edits above),
+  /// matching how avatar changes work in most apps — no separate Save step.
+  /// Refreshes [authControllerProvider] so the drawer's avatar updates too,
+  /// then invalidates self to refetch the new avatar URL from the server
+  /// rather than guessing at the upload path Django generated.
+  Future<void> uploadAvatar(List<int> bytes, String filename) async {
+    await _profileService.uploadAvatar(bytes, filename);
+    await ref.read(authControllerProvider.notifier).loadCurrentUser();
+    ref.invalidateSelf();
+  }
 }
 
 final profileProvider =

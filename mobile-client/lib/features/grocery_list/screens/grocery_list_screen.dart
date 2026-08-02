@@ -135,8 +135,8 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
     final unchecked = items.where((i) => !i.isChecked).toList();
     final checked = items.where((i) => i.isChecked).toList();
     final isEmpty = items.isEmpty;
-    final displayName =
-        ref.watch(authControllerProvider).currentUser?.displayName ?? '';
+    final currentUser = ref.watch(authControllerProvider).currentUser;
+    final displayName = currentUser?.displayName ?? '';
     final budgetState = ref.watch(budgetProvider).valueOrNull;
     final remainingThisMonth = budgetState == null
         ? 0.0
@@ -146,6 +146,7 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
       backgroundColor: AppColors.background,
       drawer: AppDrawer(
         displayName: displayName,
+        avatarUrl: currentUser?.profile.avatar,
         remainingThisMonth: remainingThisMonth,
       ),
       appBar: _buildAppBar(context, items.length),

@@ -1,3 +1,5 @@
+import '../../../core/config/app_config.dart';
+
 class CurrentUser {
   final int id;
   final String email;
@@ -78,7 +80,7 @@ class UserProfile {
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
       onboardingCompleted: json['onboarding_completed'] as bool? ?? false,
-      avatar: json['avatar'] as String?,
+      avatar: AppConfig.resolveMediaUrl(json['avatar'] as String?),
       phoneNumber: json['phone_number'] as String? ?? '',
       address: json['address'] as String? ?? '',
       city: json['city'] as String? ?? '',

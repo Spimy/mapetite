@@ -1,3 +1,4 @@
+import '../../../core/config/app_config.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../auth/models/current_user.dart';
 
@@ -75,6 +76,7 @@ class UserProfile {
       id: currentUser.id.toString(),
       username: currentUser.username,
       email: currentUser.email,
+      avatarUrl: AppConfig.resolveMediaUrl(profileJson['avatar']?.toString()),
       city: profileJson['city']?.toString(),
       isHalal: profileJson['is_halal'] as bool? ?? false,
       isVegetarian: profileJson['is_vegetarian'] as bool? ?? false,
