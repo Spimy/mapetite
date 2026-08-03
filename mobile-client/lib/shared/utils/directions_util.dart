@@ -18,8 +18,12 @@ Future<void> openDirections(BuildContext context, StoreModel store) async {
     'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
   );
 
-  final launched = await canLaunchUrl(uri) &&
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+  bool launched;
+  try {
+    launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (_) {
+    launched = false;
+  }
 
   if (!launched && context.mounted) {
     _showLaunchError(context);

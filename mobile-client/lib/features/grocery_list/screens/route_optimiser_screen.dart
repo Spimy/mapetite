@@ -95,8 +95,12 @@ class RouteOptimiserScreen extends ConsumerWidget {
     };
     final uri = Uri.https('www.google.com', '/maps/dir/', params);
 
-    final launched =
-        await canLaunchUrl(uri) && await launchUrl(uri, mode: LaunchMode.externalApplication);
+    bool launched;
+    try {
+      launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      launched = false;
+    }
 
     if (!launched && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

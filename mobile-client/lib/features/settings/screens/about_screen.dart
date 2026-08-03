@@ -205,8 +205,10 @@ class AboutScreen extends StatelessWidget {
       child: InkWell(
         onTap: () async {
           final uri = Uri.parse('mailto:hello@mapetite.app');
-          if (await canLaunchUrl(uri)) {
+          try {
             await launchUrl(uri);
+          } catch (_) {
+            // No mail client available; nothing to fall back to here.
           }
         },
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
