@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,6 +61,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
     }
     return parts.first.isNotEmpty ? parts.first[0].toUpperCase() : '?';
+  }
+
+  Widget _buildInitials(String username) {
+    return Center(
+      child: Text(
+        _initials(username),
+        style: AppTypography.headline1.copyWith(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 
   String _dietarySummary(UserProfile p) {
@@ -314,15 +327,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   color: AppColors.primaryLight,
                   shape: BoxShape.circle,
                 ),
-                child: Center(
-                  child: Text(
-                    _initials(profile.username),
-                    style: AppTypography.headline1.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+                clipBehavior: Clip.antiAlias,
+                child: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: profile.avatarUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (_, _) => _buildInitials(profile.username),
+                        errorWidget: (_, _, _) => _buildInitials(profile.username),
+                      )
+                    : _buildInitials(profile.username),
               ),
               Positioned(
                 bottom: 0,

@@ -483,15 +483,26 @@ class _RecipeDetailContentState extends ConsumerState<_RecipeDetailContent> {
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          color: AppColors.primaryLight,
-          child: const Center(
-            child: Icon(
-              Icons.restaurant_menu,
-              size: 64,
-              color: AppColors.primary,
-            ),
-          ),
+        background: recipe.thumbnailUrl != null &&
+                recipe.thumbnailUrl!.isNotEmpty
+            ? Image.network(
+                recipe.thumbnailUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _buildHeroPlaceholder(),
+              )
+            : _buildHeroPlaceholder(),
+      ),
+    );
+  }
+
+  Widget _buildHeroPlaceholder() {
+    return Container(
+      color: AppColors.primaryLight,
+      child: const Center(
+        child: Icon(
+          Icons.restaurant_menu,
+          size: 64,
+          color: AppColors.primary,
         ),
       ),
     );

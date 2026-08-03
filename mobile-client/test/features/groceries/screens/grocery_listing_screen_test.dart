@@ -106,4 +106,23 @@ void main() {
     expect(find.text('No grocery stores found'), findsOneWidget);
     expect(find.text('Clear Filters'), findsOneWidget);
   });
+
+  testWidgets('does not show Halal/Vegan quick filters or a Dietary filter section', (tester) async {
+    await tester.pumpWidget(_wrap(const GroceryListingScreen(), overrides: [
+      nearbyStoresProvider.overrideWith((ref, query) async => [_storeA]),
+    ]));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Halal'), findsNothing);
+    expect(find.text('Vegan'), findsNothing);
+    expect(find.text('Open Now'), findsOneWidget);
+    expect(find.text('Nearby < 1km'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.tune_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Filter Grocery Stores'), findsOneWidget);
+    expect(find.text('Dietary'), findsNothing);
+    expect(find.text('Distance'), findsOneWidget);
+  });
 }

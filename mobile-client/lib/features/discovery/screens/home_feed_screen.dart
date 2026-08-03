@@ -124,8 +124,8 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     );
     final restaurantsAsync = ref.watch(nearbyStoresProvider(restaurantQuery));
     final groceriesAsync = ref.watch(nearbyStoresProvider(groceryQuery));
-    final displayName =
-        ref.watch(authControllerProvider).currentUser?.displayName ?? '';
+    final currentUser = ref.watch(authControllerProvider).currentUser;
+    final displayName = currentUser?.displayName ?? '';
     final budgetState = ref.watch(budgetProvider).valueOrNull;
     final remainingThisMonth = budgetState == null
         ? 0.0
@@ -135,6 +135,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
       backgroundColor: AppColors.background,
       drawer: AppDrawer(
         displayName: displayName,
+        avatarUrl: currentUser?.profile.avatar,
         remainingThisMonth: remainingThisMonth,
       ),
       body: SafeArea(

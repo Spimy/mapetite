@@ -82,8 +82,10 @@ class NavigateSheet extends StatelessWidget {
                 final url = Uri.parse(
                   'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude',
                 );
-                if (await canLaunchUrl(url)) {
+                try {
                   await launchUrl(url, mode: LaunchMode.externalApplication);
+                } catch (_) {
+                  // Nothing to fall back to here; sheet closes regardless.
                 }
                 if (context.mounted) Navigator.of(context).pop();
               },

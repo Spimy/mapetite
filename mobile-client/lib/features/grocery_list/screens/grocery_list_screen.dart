@@ -11,7 +11,9 @@ import '../../../features/auth/controllers/auth_controller.dart';
 import '../../../features/budget/providers/budget_provider.dart';
 import '../../../features/grocery/models/grocery_list_model.dart';
 import '../../../features/grocery/providers/grocery_list_provider.dart';
+import '../../../features/grocery/widgets/store_picker_sheet.dart';
 import '../../../features/recipes/providers/selected_ingredients_provider.dart';
+import '../../../shared/models/store_model.dart';
 
 class ShoppingListScreen extends ConsumerStatefulWidget {
   const ShoppingListScreen({super.key});
@@ -133,8 +135,8 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
     final unchecked = items.where((i) => !i.isChecked).toList();
     final checked = items.where((i) => i.isChecked).toList();
     final isEmpty = items.isEmpty;
-    final displayName =
-        ref.watch(authControllerProvider).currentUser?.displayName ?? '';
+    final currentUser = ref.watch(authControllerProvider).currentUser;
+    final displayName = currentUser?.displayName ?? '';
     final budgetState = ref.watch(budgetProvider).valueOrNull;
     final remainingThisMonth = budgetState == null
         ? 0.0
@@ -144,6 +146,7 @@ class _ShoppingListScreenState extends ConsumerState<ShoppingListScreen> {
       backgroundColor: AppColors.background,
       drawer: AppDrawer(
         displayName: displayName,
+        avatarUrl: currentUser?.profile.avatar,
         remainingThisMonth: remainingThisMonth,
       ),
       appBar: _buildAppBar(context, items.length),
@@ -636,14 +639,13 @@ class _AddItemSheet extends StatefulWidget {
 class _AddItemSheetState extends State<_AddItemSheet> {
   final _nameCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
-  final _storeCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
+  StoreModel? _selectedStore;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _quantityCtrl.dispose();
-    _storeCtrl.dispose();
     _priceCtrl.dispose();
     super.dispose();
   }
@@ -657,7 +659,10 @@ class _AddItemSheetState extends State<_AddItemSheet> {
         name: name,
         quantity:
             _quantityCtrl.text.trim().isEmpty ? '1' : _quantityCtrl.text.trim(),
-        storeName: _storeCtrl.text.trim(),
+        storeName: _selectedStore?.businessName ?? '',
+        storeId: _selectedStore?.id,
+        storeLatitude: _selectedStore?.latitude,
+        storeLongitude: _selectedStore?.longitude,
         estimatedPrice: double.tryParse(_priceCtrl.text.trim()) ?? 0.0,
       ),
     );
@@ -734,11 +739,49 @@ class _AddItemSheetState extends State<_AddItemSheet> {
           const SizedBox(height: AppSpacing.md),
           const _FieldLabel('Store (optional)'),
           const SizedBox(height: AppSpacing.xs),
-          _SheetField(
-            controller: _storeCtrl,
-            hint: 'e.g. Jaya Grocer',
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _submit(),
+          InkWell(
+            onTap: () async {
+              final store = await showModalBottomSheet<StoreModel>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: AppColors.white,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(AppSpacing.radiusXl),
+                  ),
+                ),
+                builder: (_) => const StorePickerSheet(),
+              );
+              if (store != null) {
+                setState(() => _selectedStore = store);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm + 2,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.neutral100,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectedStore?.businessName ?? 'Select a store',
+                      style: AppTypography.body1.copyWith(
+                        color: _selectedStore == null
+                            ? AppColors.neutral400
+                            : AppColors.neutral,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right, color: AppColors.neutral400),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: AppSpacing.xl),
           SizedBox(
@@ -782,7 +825,6 @@ class _SheetField extends StatelessWidget {
   final bool autofocus;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
-  final ValueChanged<String>? onSubmitted;
 
   const _SheetField({
     required this.controller,
@@ -790,7 +832,6 @@ class _SheetField extends StatelessWidget {
     this.autofocus = false,
     this.keyboardType,
     this.textInputAction,
-    this.onSubmitted,
   });
 
   @override
@@ -806,7 +847,6 @@ class _SheetField extends StatelessWidget {
         autofocus: autofocus,
         keyboardType: keyboardType,
         textInputAction: textInputAction,
-        onSubmitted: onSubmitted,
         style: AppTypography.body1.copyWith(color: AppColors.neutral),
         decoration: InputDecoration(
           hintText: hint,

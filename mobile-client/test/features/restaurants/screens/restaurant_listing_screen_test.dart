@@ -28,6 +28,46 @@ const _storeA = StoreModel(
   distanceKm: 0.5,
 );
 
+const _chineseStore = StoreModel(
+  id: '2',
+  businessName: 'Golden Dragon',
+  description: '',
+  merchantType: StoreType.restaurant,
+  halal: false,
+  vegan: false,
+  category: 'Chinese',
+  streetAddress: 'Jalan Test',
+  operatingHours: [
+    OperatingHourModel(
+      dayOfWeek: 0,
+      isClosed: false,
+      openTime: '00:00:00',
+      closeTime: '23:59:00',
+    ),
+  ],
+  distanceKm: 0.5,
+);
+
+const _mamakStore = StoreModel(
+  id: '3',
+  businessName: 'Mamak Corner',
+  description: '',
+  merchantType: StoreType.restaurant,
+  halal: true,
+  vegan: false,
+  category: 'Mamak',
+  streetAddress: 'Jalan Test',
+  operatingHours: [
+    OperatingHourModel(
+      dayOfWeek: 0,
+      isClosed: false,
+      openTime: '00:00:00',
+      closeTime: '23:59:00',
+    ),
+  ],
+  distanceKm: 0.5,
+);
+
 Widget _wrap(Widget child, {required List<Override> overrides}) =>
     ProviderScope(
       overrides: overrides,
@@ -136,5 +176,18 @@ void main() {
 
     expect(find.text('No restaurants found'), findsOneWidget);
     expect(find.text('Clear Filters'), findsOneWidget);
+  });
+
+  testWidgets('initialCuisine seeds the cuisine filter so results are pre-filtered', (tester) async {
+    await tester.pumpWidget(_wrap(
+      const RestaurantListingScreen(initialCuisine: 'Chinese'),
+      overrides: [
+        nearbyStoresProvider.overrideWith((ref, query) async => [_chineseStore, _mamakStore]),
+      ],
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text(_chineseStore.businessName), findsOneWidget);
+    expect(find.text(_mamakStore.businessName), findsNothing);
   });
 }

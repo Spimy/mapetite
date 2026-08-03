@@ -6,6 +6,26 @@ import 'package:mapetite/features/restaurants/screens/restaurant_detail_screen.d
 import 'package:mapetite/shared/models/store_item_model.dart';
 import 'package:mapetite/shared/models/store_model.dart';
 import 'package:mapetite/shared/providers/store_providers.dart';
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
+import 'package:url_launcher_platform_interface/link.dart';
+
+class _MockUrlLauncherPlatform extends UrlLauncherPlatform {
+  _MockUrlLauncherPlatform(this._result);
+  final bool _result;
+  String? lastLaunchedUrl;
+
+  @override
+  LinkDelegate? get linkDelegate => null;
+
+  @override
+  Future<bool> canLaunch(String url) async => true;
+
+  @override
+  Future<bool> launchUrl(String url, LaunchOptions options) async {
+    lastLaunchedUrl = url;
+    return _result;
+  }
+}
 
 final _store = StoreModel(
   id: '1',
@@ -17,6 +37,8 @@ final _store = StoreModel(
   streetAddress: 'Jalan Test',
   phone: null,
   category: null,
+  latitude: 3.0733,
+  longitude: 101.6067,
   operatingHours: [
     OperatingHourModel(
       dayOfWeek: DateTime.now().weekday - 1,
@@ -98,5 +120,25 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Something went wrong'), findsOneWidget);
+  });
+
+  testWidgets('Get Directions launches Google Maps with the store\'s coordinates', (tester) async {
+    final mock = _MockUrlLauncherPlatform(true);
+    UrlLauncherPlatform.instance = mock;
+
+    await tester.pumpWidget(_wrap(
+      const RestaurantDetailScreen(restaurantId: '1'),
+      overrides: [
+        storeDetailProvider.overrideWith((ref, id) async => _store),
+        storeItemsProvider.overrideWith((ref, id) async => _items),
+      ],
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Get Directions'));
+    await tester.pumpAndSettle();
+
+    expect(mock.lastLaunchedUrl, contains('3.0733'));
+    expect(mock.lastLaunchedUrl, contains('101.6067'));
   });
 }

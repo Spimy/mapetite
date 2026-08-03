@@ -8,12 +8,12 @@ class CategoryBrowseScreen extends StatelessWidget {
   const CategoryBrowseScreen({super.key});
 
   static const List<List<String>> _categories = [
-    ['🍛', 'Mamak', '/dine-in?cuisine=mamak'],
-    ['☕', 'Kopitiam', '/dine-in?cuisine=kopitiam'],
-    ['🥢', 'Chinese', '/dine-in?cuisine=chinese'],
-    ['🌶️', 'Indian', '/dine-in?cuisine=indian'],
-    ['🍣', 'Japanese', '/dine-in?cuisine=japanese'],
-    ['🍔', 'Western', '/dine-in?cuisine=western'],
+    ['🍛', 'Mamak', '/dine-in?cuisine=Mamak'],
+    ['☕', 'Kopitiam', '/dine-in?cuisine=Kopitiam'],
+    ['🥢', 'Chinese', '/dine-in?cuisine=Chinese'],
+    ['🍚', 'Malaysian', '/dine-in?cuisine=Malaysian'],
+    ['🍣', 'Japanese', '/dine-in?cuisine=Japanese'],
+    ['🍜', 'Korean', '/dine-in?cuisine=Korean'],
     ['🛒', 'Groceries', '/groceries'],
     ['📖', 'My Recipes', '/cook-in'],
   ];

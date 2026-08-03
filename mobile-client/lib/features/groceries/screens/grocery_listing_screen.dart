@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
@@ -26,7 +25,7 @@ class GroceryListingScreen extends ConsumerStatefulWidget {
       _GroceryListingScreenState();
 }
 
-enum _GroceryQuickFilter { halal, openNow, vegan, nearest }
+enum _GroceryQuickFilter { openNow, nearest }
 
 class _GroceryListingScreenState extends ConsumerState<GroceryListingScreen> {
   final Set<_GroceryQuickFilter> _quickFilters = {};
@@ -54,20 +53,13 @@ class _GroceryListingScreenState extends ConsumerState<GroceryListingScreen> {
 
     for (final f in _quickFilters) {
       switch (f) {
-        case _GroceryQuickFilter.halal:
-          list = list.where((s) => s.dietaryTags.contains('Halal')).toList();
         case _GroceryQuickFilter.openNow:
           list = list.where((s) => s.openStatus.isOpen).toList();
-        case _GroceryQuickFilter.vegan:
-          list = list.where((s) => s.dietaryTags.contains('Vegan')).toList();
         case _GroceryQuickFilter.nearest:
           list = list.where((s) => (s.distanceKm ?? 999) <= 1.0).toList();
       }
     }
 
-    for (final d in _filters.dietary) {
-      list = list.where((s) => s.dietaryTags.contains(d)).toList();
-    }
     if (_filters.underThirtyMinWalk) {
       list = list.where((s) => (s.walkMinutesEstimate ?? 999) <= 30).toList();
     }
@@ -292,9 +284,7 @@ class _GroceryListingScreenState extends ConsumerState<GroceryListingScreen> {
 
   Widget _buildFilterChips() {
     const chips = [
-      (_GroceryQuickFilter.halal,   null,                        'Halal'),
       (_GroceryQuickFilter.openNow, Icons.access_time_outlined,  'Open Now'),
-      (_GroceryQuickFilter.vegan,   Icons.eco,                   'Vegan'),
       (_GroceryQuickFilter.nearest, Icons.near_me_outlined,      'Nearby < 1km'),
     ];
 
@@ -327,15 +317,7 @@ class _GroceryListingScreenState extends ConsumerState<GroceryListingScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (filter == _GroceryQuickFilter.halal)
-                      SvgPicture.asset(
-                        'assets/icons/dietary/halal-icon.svg',
-                        width: 13,
-                        height: 13,
-                        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-                      )
-                    else if (icon != null)
-                      Icon(icon, size: 13, color: iconColor),
+                    Icon(icon, size: 13, color: iconColor),
                     const SizedBox(width: 4),
                     Text(label,
                         style: AppTypography.label.copyWith(color: iconColor)),
@@ -709,15 +691,13 @@ class _ImagePlaceholder extends StatelessWidget {
 // ── Grocery Filter Data ───────────────────────────────────────────────────────
 
 class _GroceryFilters {
-  final Set<String> dietary;
   final bool underThirtyMinWalk;
 
   const _GroceryFilters({
-    this.dietary = const {},
     this.underThirtyMinWalk = false,
   });
 
-  int get activeCount => dietary.length + (underThirtyMinWalk ? 1 : 0);
+  int get activeCount => underThirtyMinWalk ? 1 : 0;
 }
 
 // ── Grocery Filter Sheet ──────────────────────────────────────────────────────
@@ -736,21 +716,18 @@ class _GroceryFilterSheet extends StatefulWidget {
 }
 
 class _GroceryFilterSheetState extends State<_GroceryFilterSheet> {
-  late Set<String> _dietary;
   late bool _underThirtyMin;
 
   @override
   void initState() {
     super.initState();
     final f = widget.initialFilters;
-    _dietary = Set.from(f.dietary);
     _underThirtyMin = f.underThirtyMinWalk;
   }
 
-  bool get _hasActive => _dietary.isNotEmpty || _underThirtyMin;
+  bool get _hasActive => _underThirtyMin;
 
   void _clearAll() => setState(() {
-        _dietary.clear();
         _underThirtyMin = false;
       });
 
@@ -804,34 +781,6 @@ class _GroceryFilterSheetState extends State<_GroceryFilterSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Dietary', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: [
-                        _IconFilterChip(
-                          label: 'Halal',
-                          isActive: _dietary.contains('Halal'),
-                          onToggle: () => setState(() {
-                            if (_dietary.contains('Halal')) { _dietary.remove('Halal'); }
-                            else { _dietary.add('Halal'); }
-                          }),
-                          svgAsset: 'assets/icons/dietary/halal-icon.svg',
-                        ),
-                        _IconFilterChip(
-                          label: 'Vegan',
-                          isActive: _dietary.contains('Vegan'),
-                          onToggle: () => setState(() {
-                            if (_dietary.contains('Vegan')) { _dietary.remove('Vegan'); }
-                            else { _dietary.add('Vegan'); }
-                          }),
-                          icon: Icons.eco,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-
                     Text('Distance', style: AppTypography.headline3.copyWith(color: AppColors.neutral600)),
                     const SizedBox(height: AppSpacing.sm),
                     Wrap(
@@ -861,7 +810,6 @@ class _GroceryFilterSheetState extends State<_GroceryFilterSheet> {
                 child: ElevatedButton(
                   onPressed: () {
                     widget.onApply(_GroceryFilters(
-                      dietary: Set.from(_dietary),
                       underThirtyMinWalk: _underThirtyMin,
                     ));
                     Navigator.of(context).pop();
@@ -892,14 +840,12 @@ class _IconFilterChip extends StatelessWidget {
   final bool isActive;
   final VoidCallback onToggle;
   final IconData? icon;
-  final String? svgAsset;
 
   const _IconFilterChip({
     required this.label,
     required this.isActive,
     required this.onToggle,
     this.icon,
-    this.svgAsset,
   });
 
   @override
@@ -924,10 +870,7 @@ class _IconFilterChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (svgAsset != null)
-              SvgPicture.asset(svgAsset!, width: 13, height: 13,
-                  colorFilter: ColorFilter.mode(contentColor, BlendMode.srcIn))
-            else if (icon != null)
+            if (icon != null)
               Icon(icon, size: 13, color: contentColor),
             const SizedBox(width: 4),
             Text(label,

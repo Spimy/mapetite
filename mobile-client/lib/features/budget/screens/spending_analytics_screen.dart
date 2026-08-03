@@ -158,6 +158,67 @@ class _SpendingAnalyticsScreenState
     return amounts.last < amounts[amounts.length - 2];
   }
 
+  /// Month-over-month totals for one category, independent of whatever
+  /// period tab (Week/Month/Year) is currently selected — Key Discoveries
+  /// is always a monthly comparison regardless of the chart's period toggle.
+  (double thisMonth, double lastMonth) _monthOverMonth(
+    List<BudgetTransaction> transactions,
+    BudgetCategory category,
+  ) {
+    final now = DateTime.now();
+    var lastMonthNum = now.month - 1;
+    var lastMonthYear = now.year;
+    if (lastMonthNum <= 0) {
+      lastMonthNum += 12;
+      lastMonthYear--;
+    }
+
+    double sumFor(int year, int month) => transactions
+        .where((t) =>
+            t.category == category &&
+            t.dateSpent.year == year &&
+            t.dateSpent.month == month)
+        .fold(0.0, (s, t) => s + t.amount);
+
+    return (
+      sumFor(now.year, now.month),
+      sumFor(lastMonthYear, lastMonthNum),
+    );
+  }
+
+  /// Which weekday this month's grocery spending peaks on, and by how much
+  /// it exceeds the average day — null if there isn't enough data to call
+  /// it a real "peak" (fewer than 3 transactions, or the top day isn't at
+  /// least 30% above the daily average).
+  int? _groceryPeakWeekday(List<BudgetTransaction> transactions) {
+    final now = DateTime.now();
+    final thisMonthGroceries = transactions.where((t) =>
+        t.category == BudgetCategory.groceries &&
+        t.dateSpent.year == now.year &&
+        t.dateSpent.month == now.month);
+
+    if (thisMonthGroceries.length < 3) return null;
+
+    final byWeekday = <int, double>{};
+    for (final t in thisMonthGroceries) {
+      byWeekday[t.dateSpent.weekday] =
+          (byWeekday[t.dateSpent.weekday] ?? 0) + t.amount;
+    }
+
+    final average =
+        byWeekday.values.fold(0.0, (s, v) => s + v) / byWeekday.length;
+    final peakEntry =
+        byWeekday.entries.reduce((a, b) => a.value >= b.value ? a : b);
+
+    if (peakEntry.value < average * 1.3) return null;
+    return peakEntry.key;
+  }
+
+  static const _weekdayNames = [
+    'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays',
+    'Fridays', 'Saturdays', 'Sundays',
+  ];
+
   @override
   Widget build(BuildContext context) {
     final budgetAsync = ref.watch(budgetProvider);
@@ -255,33 +316,56 @@ class _SpendingAnalyticsScreenState
               // Key discoveries
               Text('Key Discoveries', style: AppTypography.headline2),
               const SizedBox(height: AppSpacing.md),
-              _buildInsightCard(
-                icon: Icons.restaurant_outlined,
-                iconBg: cat == 'dining'
-                    ? AppColors.warningLight
-                    : AppColors.primaryLight,
-                iconColor: cat == 'dining'
-                    ? AppColors.warning
-                    : AppColors.primary,
-                title: 'Dining out decreased',
-                body: 'You spent ',
-                boldPart: '15% less',
-                bodySuffix:
-                    ' on Dining Out this month compared to last. Great job cooking at home!',
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _buildInsightCard(
-                icon: Icons.local_grocery_store_outlined,
-                iconBg: cat == 'groceries'
-                    ? AppColors.primaryLight
-                    : AppColors.tertiaryDark,
-                iconColor: AppColors.primary,
-                title: 'Weekend Spikes',
-                body: 'Your Grocery spending peaks on ',
-                boldPart: 'Saturdays',
-                bodySuffix:
-                    '. Consider planning meals earlier to spread out costs.',
-              ),
+              () {
+                final (thisMonthDining, lastMonthDining) =
+                    _monthOverMonth(transactions, BudgetCategory.dining);
+                if (lastMonthDining <= 0) return const SizedBox.shrink();
+                final pctChange = ((thisMonthDining - lastMonthDining) /
+                    lastMonthDining *
+                    100);
+                final decreased = pctChange < 0;
+                return Column(
+                  children: [
+                    _buildInsightCard(
+                      icon: Icons.restaurant_outlined,
+                      iconBg: cat == 'dining'
+                          ? AppColors.warningLight
+                          : AppColors.primaryLight,
+                      iconColor: cat == 'dining'
+                          ? AppColors.warning
+                          : AppColors.primary,
+                      title: decreased
+                          ? 'Dining out decreased'
+                          : 'Dining out increased',
+                      body: 'You spent ',
+                      boldPart:
+                          '${pctChange.abs().toStringAsFixed(0)}% ${decreased ? 'less' : 'more'}',
+                      bodySuffix: decreased
+                          ? ' on Dining Out this month compared to last. Great job cooking at home!'
+                          : ' on Dining Out this month compared to last.',
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                );
+              }(),
+              () {
+                final peakWeekday = _groceryPeakWeekday(transactions);
+                if (peakWeekday == null) return const SizedBox.shrink();
+                return _buildInsightCard(
+                  icon: Icons.local_grocery_store_outlined,
+                  iconBg: cat == 'groceries'
+                      ? AppColors.primaryLight
+                      : AppColors.tertiaryDark,
+                  iconColor: AppColors.primary,
+                  title: peakWeekday == 6 || peakWeekday == 7
+                      ? 'Weekend Spikes'
+                      : 'Spending Spikes',
+                  body: 'Your Grocery spending peaks on ',
+                  boldPart: _weekdayNames[peakWeekday - 1],
+                  bodySuffix:
+                      '. Consider planning meals earlier to spread out costs.',
+                );
+              }(),
               const SizedBox(height: AppSpacing.xxl),
 
               // Dark CTA card

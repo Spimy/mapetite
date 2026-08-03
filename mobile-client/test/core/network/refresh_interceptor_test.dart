@@ -60,6 +60,18 @@ void main() {
       expect(shouldAttemptRefresh(err), isFalse);
     });
 
+    test('returns true for a 403 with not_authenticated code (missing/malformed auth header)', () {
+      final err = DioException(
+        requestOptions: RequestOptions(path: 'stores/'),
+        response: Response(
+          requestOptions: RequestOptions(path: 'stores/'),
+          statusCode: 403,
+          data: {'detail': 'Authentication credentials were not provided.', 'code': 'not_authenticated'},
+        ),
+      );
+      expect(shouldAttemptRefresh(err), isTrue);
+    });
+
     test('returns false for a plain 403 with no token_not_valid code', () {
       final err = DioException(
         requestOptions: RequestOptions(path: 'stores/5/'),

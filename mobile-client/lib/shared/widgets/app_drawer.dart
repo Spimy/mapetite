@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -8,11 +9,13 @@ import '../../routes/app_router.dart';
 
 class AppDrawer extends StatelessWidget {
   final String displayName;
+  final String? avatarUrl;
   final double remainingThisMonth;
 
   const AppDrawer({
     super.key,
     required this.displayName,
+    this.avatarUrl,
     required this.remainingThisMonth,
   });
 
@@ -69,13 +72,15 @@ class AppDrawer extends StatelessWidget {
                     color: AppColors.primary,
                     shape: BoxShape.circle,
                   ),
-                  child: Center(
-                    child: Text(
-                      initials,
-                      style: AppTypography.headline2
-                          .copyWith(color: AppColors.white),
-                    ),
-                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: avatarUrl != null && avatarUrl!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: avatarUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (_, _) => _buildInitials(initials),
+                          errorWidget: (_, _, _) => _buildInitials(initials),
+                        )
+                      : _buildInitials(initials),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -105,6 +110,15 @@ class AppDrawer extends StatelessWidget {
             _BudgetPill(amount: remainingThisMonth),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInitials(String initials) {
+    return Center(
+      child: Text(
+        initials,
+        style: AppTypography.headline2.copyWith(color: AppColors.white),
       ),
     );
   }

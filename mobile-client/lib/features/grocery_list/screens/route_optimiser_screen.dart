@@ -1,69 +1,171 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../grocery/models/grocery_list_model.dart';
+import '../../grocery/providers/grocery_list_provider.dart';
+import '../../../shared/providers/location_provider.dart';
 
-class RouteOptimiserScreen extends StatefulWidget {
-  const RouteOptimiserScreen({super.key});
+class _Stop {
+  final String storeId;
+  final String storeName;
+  final double lat;
+  final double lng;
+  final List<GroceryListItem> items;
 
-  @override
-  State<RouteOptimiserScreen> createState() => _RouteOptimiserScreenState();
+  _Stop({
+    required this.storeId,
+    required this.storeName,
+    required this.lat,
+    required this.lng,
+    required this.items,
+  });
 }
 
-class _RouteOptimiserScreenState extends State<RouteOptimiserScreen> {
-  bool _isWalking = true;
-  bool _stop3Expanded = false;
+/// Straight-line (haversine) distance in km — no external routing engine,
+/// matching how the rest of the app already computes "distance" figures.
+double _distanceKm(double lat1, double lng1, double lat2, double lng2) {
+  const distance = Distance();
+  return distance.as(LengthUnit.Kilometer, LatLng(lat1, lng1), LatLng(lat2, lng2));
+}
 
-  Future<void> _openGoogleMaps() async {
-    final uri = Uri.parse(
-      'https://www.google.com/maps/dir/Current+Location/Jaya+Grocer+Bangsar/Village+Grocer+Bangsar',
-    );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Unable to open Google Maps',
-              style: AppTypography.body1.copyWith(color: AppColors.white),
-            ),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            ),
+/// Orders stops by nearest-neighbor from the starting point.
+List<_Stop> _orderStops(List<_Stop> stops, double startLat, double startLng) {
+  final remaining = List<_Stop>.from(stops);
+  final ordered = <_Stop>[];
+  var currentLat = startLat;
+  var currentLng = startLng;
+
+  while (remaining.isNotEmpty) {
+    remaining.sort((a, b) => _distanceKm(currentLat, currentLng, a.lat, a.lng)
+        .compareTo(_distanceKm(currentLat, currentLng, b.lat, b.lng)));
+    final next = remaining.removeAt(0);
+    ordered.add(next);
+    currentLat = next.lat;
+    currentLng = next.lng;
+  }
+
+  return ordered;
+}
+
+class RouteOptimiserScreen extends ConsumerWidget {
+  const RouteOptimiserScreen({super.key});
+
+  List<_Stop> _buildStops(List<GroceryListItem> items) {
+    final byStore = <String, List<GroceryListItem>>{};
+    for (final item in items.where((i) => i.hasLinkedStore)) {
+      byStore.putIfAbsent(item.storeId!, () => []).add(item);
+    }
+    return byStore.entries
+        .map((e) => _Stop(
+              storeId: e.key,
+              storeName: e.value.first.storeName,
+              lat: e.value.first.storeLatitude!,
+              lng: e.value.first.storeLongitude!,
+              items: e.value,
+            ))
+        .toList();
+  }
+
+  Future<void> _openGoogleMaps(
+    BuildContext context,
+    double startLat,
+    double startLng,
+    List<_Stop> orderedStops,
+  ) async {
+    if (orderedStops.isEmpty) return;
+    final destination = orderedStops.last;
+    final waypoints = orderedStops
+        .take(orderedStops.length - 1)
+        .map((s) => '${s.lat},${s.lng}')
+        .join('|');
+
+    final params = {
+      'api': '1',
+      'origin': '$startLat,$startLng',
+      'destination': '${destination.lat},${destination.lng}',
+      if (waypoints.isNotEmpty) 'waypoints': waypoints,
+      'travelmode': 'walking',
+    };
+    final uri = Uri.https('www.google.com', '/maps/dir/', params);
+
+    bool launched;
+    try {
+      launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      launched = false;
+    }
+
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Unable to open Google Maps',
+            style: AppTypography.body1.copyWith(color: AppColors.white),
           ),
-        );
-      }
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+        ),
+      );
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(groceryListProvider);
+    final locationAsync = ref.watch(locationProvider);
+
+    final allStops = _buildStops(items);
+    final unassignedItems = items.where((i) => !i.hasLinkedStore).toList();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(context),
       body: SafeArea(
         top: false,
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildMapArea(),
-                    _buildStopList(),
-                    const SizedBox(height: AppSpacing.xxl),
-                  ],
+        child: locationAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, _) => const Center(child: Text('Unable to get your location.')),
+          data: (location) {
+            if (location == null) {
+              return const Center(child: Text('Enable location to plan a route.'));
+            }
+            final orderedStops =
+                _orderStops(allStops, location.latitude, location.longitude);
+
+            return Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _buildMap(location.latitude, location.longitude, orderedStops),
+                        _buildStopList(orderedStops),
+                        if (unassignedItems.isNotEmpty)
+                          _buildUnassignedSection(unassignedItems),
+                        const SizedBox(height: AppSpacing.xxl),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            _buildStickyFooter(),
-          ],
+                _buildStickyFooter(
+                  context,
+                  location.latitude,
+                  location.longitude,
+                  orderedStops,
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -96,180 +198,65 @@ class _RouteOptimiserScreenState extends State<RouteOptimiserScreen> {
     );
   }
 
-  Widget _buildMapArea() {
+  Widget _buildMap(double lat, double lng, List<_Stop> stops) {
     return SizedBox(
       height: 260,
-      child: Stack(
+      child: FlutterMap(
+        options: MapOptions(
+          initialCenter: LatLng(lat, lng),
+          initialZoom: 13.0,
+        ),
         children: [
-          Container(
-            width: double.infinity,
-            height: 260,
-            color: AppColors.neutral100,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.map_outlined,
-                  size: 48,
-                  color: AppColors.neutral400,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Map view coming soon',
-                  style: AppTypography.body1.copyWith(
-                    color: AppColors.neutral600,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Route: Home → Jaya Grocer → Village Grocer',
-                  style: AppTypography.body2,
-                ),
-              ],
-            ),
+          TileLayer(
+            urlTemplate:
+                'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+            subdomains: const ['a', 'b', 'c', 'd'],
+            userAgentPackageName: 'com.mapetite.app',
           ),
-          Positioned(
-            bottom: AppSpacing.lg,
-            left: AppSpacing.lg,
-            right: AppSpacing.lg,
-            child: _buildMapOverlayCard(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMapOverlayCard() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Estimated: 22 min', style: AppTypography.headline3),
-              const SizedBox(height: AppSpacing.xxs),
-              Text('1.4 km · ${_isWalking ? 'Walking' : 'Driving'} route',
-                  style: AppTypography.body2),
+          MarkerLayer(
+            markers: [
+              Marker(
+                point: LatLng(lat, lng),
+                width: 32,
+                height: 32,
+                child: const Icon(Icons.my_location, color: AppColors.secondary),
+              ),
+              for (final stop in stops)
+                Marker(
+                  point: LatLng(stop.lat, stop.lng),
+                  width: 32,
+                  height: 32,
+                  child: const Icon(Icons.location_on, color: AppColors.primary, size: 32),
+                ),
             ],
           ),
-          const Spacer(),
-          _buildTransitToggle(),
         ],
       ),
     );
   }
 
-  Widget _buildTransitToggle() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.xs),
-      decoration: BoxDecoration(
-        color: AppColors.neutral100,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _ToggleButton(
-            icon: Icons.directions_walk,
-            isActive: _isWalking,
-            onTap: () => setState(() => _isWalking = true),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          _ToggleButton(
-            icon: Icons.directions_car,
-            isActive: !_isWalking,
-            onTap: () => setState(() => _isWalking = false),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStopList() {
+  Widget _buildStopList(List<_Stop> stops) {
+    if (stops.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.lg),
+        child: Text('No stores linked to your list yet.'),
+      );
+    }
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.lg,
-        AppSpacing.lg,
-        0,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
+      child: Column(
         children: [
-          _buildStopLine(),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              children: [
-                _buildStop1(),
-                const SizedBox(height: AppSpacing.md),
-                _buildStop2(),
-                const SizedBox(height: AppSpacing.md),
-                _buildStop3(),
-              ],
+          for (final entry in stops.asMap().entries)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: _buildStopCard(entry.key + 1, entry.value),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildStopLine() {
-    return Column(
-      children: [
-        const _StopCircle(number: '1'),
-        Container(
-          width: 2,
-          height: 100,
-          color: AppColors.primary.withValues(alpha: 0.3),
-        ),
-        const _StopCircle(number: '2'),
-        Container(
-          width: 2,
-          height: _stop3Expanded ? 260 : 80,
-          color: AppColors.primary.withValues(alpha: 0.3),
-        ),
-        const _StopCircle(number: '3'),
-      ],
-    );
-  }
-
-  Widget _buildStop1() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Your Location', style: AppTypography.headline3),
-              Text('Starting point', style: AppTypography.body2),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStop2() {
+  Widget _buildStopCard(int stopNumber, _Stop stop) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -283,13 +270,7 @@ class _RouteOptimiserScreenState extends State<RouteOptimiserScreen> {
           Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Jaya Grocer', style: AppTypography.headline2),
-                    Text('750m away', style: AppTypography.body2),
-                  ],
-                ),
+                child: Text(stop.storeName, style: AppTypography.headline2),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -301,7 +282,7 @@ class _RouteOptimiserScreenState extends State<RouteOptimiserScreen> {
                   borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                 ),
                 child: Text(
-                  'Stop 1',
+                  'Stop $stopNumber',
                   style: AppTypography.label.copyWith(color: AppColors.primary),
                 ),
               ),
@@ -310,42 +291,28 @@ class _RouteOptimiserScreenState extends State<RouteOptimiserScreen> {
           const Divider(color: AppColors.border, height: AppSpacing.lg),
           Text(
             'TO PICK UP HERE',
-            style: AppTypography.label.copyWith(
-              color: AppColors.neutral600,
-              letterSpacing: 0.8,
-            ),
+            style: AppTypography.label.copyWith(color: AppColors.neutral600, letterSpacing: 0.8),
           ),
           const SizedBox(height: AppSpacing.sm),
-          ..._stop2Items.map(
-            (item) => Padding(
+          for (final item in stop.items)
+            Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.check_circle_outline,
-                    size: 16,
-                    color: AppColors.primary,
-                  ),
+                  const Icon(Icons.check_circle_outline, size: 16, color: AppColors.primary),
                   const SizedBox(width: AppSpacing.sm),
-                  Text(item, style: AppTypography.body1),
+                  Text(item.name, style: AppTypography.body1),
                 ],
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  static const _stop2Items = [
-    'Cooked rice',
-    'Anchovies (Ikan Bilis)',
-    'Shrimp Paste (Belacan)',
-  ];
-
-  Widget _buildStop3() {
-    return GestureDetector(
-      onTap: () => setState(() => _stop3Expanded = !_stop3Expanded),
+  Widget _buildUnassignedSection(List<GroceryListItem> items) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
@@ -354,174 +321,53 @@ class _RouteOptimiserScreenState extends State<RouteOptimiserScreen> {
           border: Border.all(color: AppColors.border),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Village Grocer', style: AppTypography.headline2),
-                      Text(
-                        'Final stop · 650m further',
-                        style: AppTypography.body2,
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xxs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.neutral100,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                  ),
-                  child: Text(
-                    '2 items',
-                    style: AppTypography.label.copyWith(
-                      color: AppColors.neutral600,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Icon(
-                  _stop3Expanded
-                      ? Icons.keyboard_arrow_up
-                      : Icons.keyboard_arrow_down,
-                  color: AppColors.neutral400,
-                ),
-              ],
+            Text('Unassigned items', style: AppTypography.headline3),
+            Text(
+              'These items aren\'t linked to a store, so they can\'t be routed.',
+              style: AppTypography.body2.copyWith(color: AppColors.neutral600),
             ),
-            if (_stop3Expanded) ...[
-              const Divider(color: AppColors.border, height: AppSpacing.lg),
-              Text(
-                'TO PICK UP HERE',
-                style: AppTypography.label.copyWith(
-                  color: AppColors.neutral600,
-                  letterSpacing: 0.8,
+            const SizedBox(height: AppSpacing.sm),
+            for (final item in items)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                child: Row(
+                  children: [
+                    Expanded(child: Text(item.name, style: AppTypography.body1)),
+                    Text(
+                      item.storeName,
+                      style: AppTypography.body2.copyWith(color: AppColors.neutral600),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              ..._stop3Items.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.check_circle_outline,
-                        size: 16,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(item, style: AppTypography.body1),
-                    ],
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),
     );
   }
 
-  static const _stop3Items = [
-    'Egg',
-    'Water Spinach (Kangkung)',
-  ];
-
-  Widget _buildStickyFooter() {
+  Widget _buildStickyFooter(
+    BuildContext context,
+    double lat,
+    double lng,
+    List<_Stop> orderedStops,
+  ) {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.white,
         border: Border(top: BorderSide(color: AppColors.border, width: 1)),
       ),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        AppSpacing.md,
-        AppSpacing.lg,
-        AppSpacing.lg,
-      ),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
       child: SafeArea(
         top: false,
         child: AppButton(
           label: 'Open in Google Maps',
           leadingIcon: Icons.map,
-          onPressed: _openGoogleMaps,
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Stop Circle ──────────────────────────────────────────────────────────────
-
-class _StopCircle extends StatelessWidget {
-  final String number;
-
-  const _StopCircle({required this.number});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: const BoxDecoration(
-        color: AppColors.primary,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(
-          number,
-          style: AppTypography.label.copyWith(
-            color: AppColors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Toggle Button ────────────────────────────────────────────────────────────
-
-class _ToggleButton extends StatelessWidget {
-  final IconData icon;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _ToggleButton({
-    required this.icon,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.white : Colors.transparent,
-          shape: BoxShape.circle,
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 4,
-                  ),
-                ]
-              : null,
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: isActive ? AppColors.primary : AppColors.neutral400,
+          onPressed: orderedStops.isEmpty
+              ? null
+              : () => _openGoogleMaps(context, lat, lng, orderedStops),
         ),
       ),
     );

@@ -52,6 +52,10 @@ class GroceryListNotifier extends StateNotifier<List<GroceryListItem>> {
 
     state = [...state, ...newItems];
   }
+
+  void addFromList(List<GroceryListItem> items) {
+    state = [...state, ...items];
+  }
 }
 
 final groceryListProvider =

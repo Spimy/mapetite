@@ -7,6 +7,7 @@ import '../../../core/constants/app_typography.dart';
 import '../../../shared/models/store_item_model.dart';
 import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/store_providers.dart';
+import '../../../shared/utils/directions_util.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/loading_indicator.dart';
@@ -51,38 +52,6 @@ class _GroceryStoreDetailScreenState
     );
   }
 
-  void _openDirections(StoreModel store) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Opening Google Maps to ${store.businessName}',
-                style: AppTypography.body1.copyWith(color: AppColors.white),
-              ),
-            ),
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.25),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.check, color: AppColors.white, size: 14),
-            ),
-          ],
-        ),
-        backgroundColor: AppColors.primary,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(AppSpacing.lg),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        ),
-      ),
-    );
-  }
-
   List<String> _categoryTabs(List<StoreItemModel> items) => [
         'All',
         ...items.map((i) => i.category).toSet().toList()..sort(),
@@ -94,8 +63,13 @@ class _GroceryStoreDetailScreenState
     int activeIndex,
   ) {
     final tab = tabs[activeIndex];
-    if (tab == 'All') return items;
-    return items.where((i) => i.category == tab).toList();
+    var filtered = tab == 'All' ? items : items.where((i) => i.category == tab).toList();
+
+    final query = _searchCtrl.text.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      filtered = filtered.where((i) => i.name.toLowerCase().contains(query)).toList();
+    }
+    return filtered;
   }
 
   @override
@@ -295,6 +269,7 @@ class _GroceryStoreDetailScreenState
         ),
         child: TextField(
           controller: _searchCtrl,
+          onChanged: (_) => setState(() {}),
           style: AppTypography.body1,
           decoration: InputDecoration(
             hintText: 'Search ingredients...',
@@ -381,7 +356,7 @@ class _GroceryStoreDetailScreenState
         child: AppButton(
           label: 'Get Directions',
           leadingIcon: Icons.directions,
-          onPressed: () => _openDirections(store),
+          onPressed: () => openDirections(context, store),
         ),
       ),
     );

@@ -20,6 +20,7 @@ void main() {
       final profile = UserProfile.fromApi(
         currentUser: _currentUser(username: 'jbonham', email: 'j@example.com'),
         profileJson: {
+          'avatar': 'http://localhost:8000/media/users/avatars/jbonham.jpg',
           'city': 'Bangsar, Kuala Lumpur',
           'target_calories': 2200,
           'dine_in_budget': '250.00',
@@ -38,6 +39,7 @@ void main() {
 
       expect(profile.username, 'jbonham');
       expect(profile.email, 'j@example.com');
+      expect(profile.avatarUrl, 'http://localhost:8000/media/users/avatars/jbonham.jpg');
       expect(profile.city, 'Bangsar, Kuala Lumpur');
       expect(profile.dailyCalorieTarget, 2200);
       expect(profile.dineInBudget, 250.0);
@@ -61,6 +63,33 @@ void main() {
       );
 
       expect(profile.allergens, ['Nuts']);
+    });
+
+    test('resolves a root-relative avatar path (Django ImageField.url) to an absolute URL', () {
+      final profile = UserProfile.fromApi(
+        currentUser: _currentUser(),
+        profileJson: {'avatar': '/media/users/avatars/x.jpg'},
+      );
+
+      expect(profile.avatarUrl, 'http://localhost:8000/media/users/avatars/x.jpg');
+    });
+
+    test('leaves an already-absolute avatar URL untouched', () {
+      final profile = UserProfile.fromApi(
+        currentUser: _currentUser(),
+        profileJson: {'avatar': 'https://cdn.example.com/avatars/x.jpg'},
+      );
+
+      expect(profile.avatarUrl, 'https://cdn.example.com/avatars/x.jpg');
+    });
+
+    test('treats an empty avatar string as no avatar', () {
+      final profile = UserProfile.fromApi(
+        currentUser: _currentUser(),
+        profileJson: {'avatar': ''},
+      );
+
+      expect(profile.avatarUrl, isNull);
     });
   });
 
