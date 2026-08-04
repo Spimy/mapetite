@@ -14,6 +14,9 @@ import 'package:mapetite/features/budget/models/budget_summary.dart';
 import 'package:mapetite/features/budget/providers/budget_provider.dart';
 import 'package:mapetite/features/discovery/models/home_feed_models.dart';
 import 'package:mapetite/features/discovery/screens/home_feed_screen.dart';
+import 'package:mapetite/features/recommendations/models/restaurant_recommendation_model.dart';
+import 'package:mapetite/features/recommendations/providers/recommendation_provider.dart';
+import 'package:mapetite/features/recommendations/services/recommendation_service.dart';
 import 'package:mapetite/shared/models/store_model.dart';
 import 'package:mapetite/shared/providers/store_providers.dart';
 import 'package:mapetite/shared/widgets/app_drawer.dart';
@@ -254,7 +257,32 @@ Future<List<StoreModel>> _defaultStoresBuilder(NearbyStoresQuery query) async {
       : _defaultRestaurants;
 }
 
-Widget _routerWrap({_StoresBuilder? storesBuilder}) => ProviderScope(
+class _FakeRecommendationService extends RecommendationService {
+  final RestaurantRecommendation recommendation;
+  _FakeRecommendationService(this.recommendation);
+
+  @override
+  Future<List<RestaurantRecommendation>> getRestaurantRecommendations({
+    required double lat,
+    required double lng,
+    int limit = 3,
+    double? radiusKm,
+    bool? openNow,
+    bool? strict,
+  }) async {
+    return [recommendation];
+  }
+}
+
+const _testRecommendation = RestaurantRecommendation(
+  store: _testRestaurantStore,
+  matchScore: 0.9,
+);
+
+Widget _routerWrap({
+  _StoresBuilder? storesBuilder,
+  RecommendationService? recommendationService,
+}) => ProviderScope(
       overrides: [
         nearbyStoresProvider.overrideWith(
           (ref, query) => (storesBuilder ?? _defaultStoresBuilder)(query),
@@ -264,6 +292,8 @@ Widget _routerWrap({_StoresBuilder? storesBuilder}) => ProviderScope(
             ..state = const AuthState(currentUser: _testCurrentUser),
         ),
         budgetProvider.overrideWith(() => _FixedBudgetNotifier()),
+        if (recommendationService != null)
+          recommendationServiceProvider.overrideWithValue(recommendationService),
       ],
       child: MaterialApp.router(routerConfig: _testRouter()),
     );
@@ -707,6 +737,39 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('DineIn'), findsOneWidget);
+    });
+
+    testWidgets(
+        'accepting a recommendation records its store for the next Add Transaction',
+        (tester) async {
+      await tester.pumpWidget(_routerWrap(
+        recommendationService: _FakeRecommendationService(_testRecommendation),
+      ));
+      await tester.pumpAndSettle();
+
+      // Manual pumps instead of pumpAndSettle: while the recommendation
+      // sheet is open, _DineInCard still shows its indeterminate
+      // CircularProgressIndicator (isLoading only flips back to false once
+      // the awaited showRestaurantRecommendationSheet call resolves), so
+      // pumpAndSettle never quiesces here. The sibling 'Dine-In card tap
+      // navigates to /dine-in' test above has the same constraint.
+      await tester.tap(find.text('Dine-In'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Accept and Navigate'), findsOneWidget);
+      await tester.tap(find.text('Accept and Navigate'));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(HomeFeedScreen)),
+      );
+      expect(
+        container.read(lastAcceptedRecommendationStoreProvider),
+        _testRestaurantStore,
+      );
     });
 
     testWidgets('Cook-In card tap navigates to /cook-in', (tester) async {

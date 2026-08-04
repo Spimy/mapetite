@@ -280,6 +280,10 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
         recommendations: recommendations,
         onAccept: (recommendation) {
           final store = recommendation.store;
+
+          ref.read(lastAcceptedRecommendationStoreProvider.notifier).state =
+              store;
+
           final lat = store.latitude;
           final lng = store.longitude;
 
