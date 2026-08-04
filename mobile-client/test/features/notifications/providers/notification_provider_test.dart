@@ -20,6 +20,13 @@ class _FakeNotificationNotifier extends NotificationNotifier {
   Future<List<AppNotification>> build() async => _initial;
 }
 
+class _FailingNotificationNotifier extends NotificationNotifier {
+  @override
+  Future<List<AppNotification>> build() async {
+    throw Exception('network unreachable');
+  }
+}
+
 void main() {
   test('build() surfaces the initial list as data', () async {
     final container = ProviderContainer(overrides: [
@@ -111,5 +118,17 @@ void main() {
     await future.catchError((_) {});
     final rolledBack = container.read(notificationProvider).value!;
     expect(rolledBack.every((n) => n.isRead), isFalse);
+  });
+
+  test('unreadCountProvider returns 0 instead of throwing when notificationProvider errors', () async {
+    final container = ProviderContainer(overrides: [
+      notificationProvider.overrideWith(() => _FailingNotificationNotifier()),
+    ]);
+    addTearDown(container.dispose);
+
+    // Let build() settle into AsyncError.
+    await container.read(notificationProvider.future).catchError((_) => <AppNotification>[]);
+
+    expect(container.read(unreadCountProvider), 0);
   });
 }

@@ -107,7 +107,7 @@ class _NotificationCentreScreenState
     BuildContext context,
     AsyncValue<List<AppNotification>> notificationsAsync,
   ) {
-    final hasUnread = notificationsAsync.value?.any((n) => !n.isRead) ?? false;
+    final hasUnread = notificationsAsync.valueOrNull?.any((n) => !n.isRead) ?? false;
 
     return AppBar(
       backgroundColor: AppColors.white,

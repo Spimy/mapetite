@@ -1,6 +1,7 @@
 {
-    "python.defaultInterpreterPath": "server/env/bin/python",
-    "python.terminal.activateEnvironment": true,
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestEnabled": false
+  "python.defaultInterpreterPath": "server/env/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "makefile.configureOnOpen": false
 }
