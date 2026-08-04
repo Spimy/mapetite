@@ -40,6 +40,12 @@ dependencies:
 
   # Auth
   google_sign_in: ^6.2.1
+  # Web needs the platform package directly: google_sign_in's imperative
+  # signIn() can't return an idToken on web, so the login screen renders
+  # google_sign_in_web's native button instead, which uses the proper
+  # credential flow.
+  google_sign_in_web: ^0.12.4
+  google_sign_in_platform_interface: ^2.5.0
 
   # Storage
   shared_preferences: ^2.3.3

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +15,7 @@ import '../../../core/utils/validators.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../controllers/auth_controller.dart';
+import '../widgets/google_sign_in_web_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -26,8 +29,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  // A single long-lived instance: the rendered web button (see
+  // GoogleSignInWebButton) needs initWithParams to have already run against
+  // the same platform instance, and needs onCurrentUserChanged subscribed
+  // before the user can tap it.
+  late final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email'],
+    // Web has no native client config to fall back on, so it needs the
+    // client ID passed explicitly; that also makes the resulting token's
+    // audience the Web client already, so serverClientId (which the web
+    // plugin rejects outright) isn't needed there. iOS reads its client
+    // ID from Info.plist and needs serverClientId to redirect its
+    // token's audience to the Web client the backend validates against.
+    clientId: kIsWeb ? AppConfig.googleWebClientId : null,
+    serverClientId: kIsWeb ? null : AppConfig.googleWebClientId,
+  );
+  StreamSubscription<GoogleSignInAccount?>? _googleAccountSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      // The rendered Google button drives sign-in itself; this is how we
+      // find out a user completed it. signInSilently() only initializes
+      // the plugin here - a null result (no prior session) is expected and
+      // ignored.
+      _googleAccountSubscription =
+          _googleSignIn.onCurrentUserChanged.listen(_onGoogleAccount);
+      unawaited(_googleSignIn.signInSilently());
+    }
+  }
+
   @override
   void dispose() {
+    _googleAccountSubscription?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -60,54 +95,73 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  // Web: fired by the rendered Google button via onCurrentUserChanged once
+  // the user completes the credential flow (see initState).
+  Future<void> _onGoogleAccount(GoogleSignInAccount? account) async {
+    if (account == null || !mounted) return;
+
+    ref.read(authControllerProvider.notifier).clearMessages();
+
+    try {
+      final googleAuth = await account.authentication;
+      final idToken = googleAuth.idToken;
+      if (idToken == null || !mounted) return;
+
+      await _completeGoogleSignIn(idToken);
+    } catch (_) {
+      if (!mounted) return;
+      _showGoogleSignInError();
+    }
+  }
+
+  // Non-web: the tap handler on the app's own styled button.
   Future<void> _onGoogleSignIn() async {
     ref.read(authControllerProvider.notifier).clearMessages();
 
     try {
-      final googleSignIn = GoogleSignIn(
-        scopes: ['email'],
-        // Web has no native client config to fall back on, so it needs the
-        // client ID passed explicitly; iOS reads its client ID from
-        // Info.plist and only needs serverClientId to audience its token
-        // correctly for the backend.
-        clientId: kIsWeb ? AppConfig.googleWebClientId : null,
-        serverClientId: AppConfig.googleWebClientId,
-      );
-      final account = await googleSignIn.signIn();
+      final account = await _googleSignIn.signIn();
       if (account == null || !mounted) return; // user cancelled
 
       final googleAuth = await account.authentication;
       final idToken = googleAuth.idToken;
       if (idToken == null || !mounted) return;
 
-      final success = await ref
-          .read(authControllerProvider.notifier)
-          .loginWithGoogle(idToken);
-
-      if (!mounted || !success) return;
-
-      final authState = ref.read(authControllerProvider);
-      if (authState.onboardingCompleted) {
-        context.go('/home');
-      } else {
-        context.go('/profile/dietary');
-      }
+      await _completeGoogleSignIn(idToken);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Unable to sign in with Google. Please try again.',
-            style: AppTypography.body1.copyWith(color: AppColors.white),
-          ),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          ),
-        ),
-      );
+      _showGoogleSignInError();
     }
+  }
+
+  Future<void> _completeGoogleSignIn(String idToken) async {
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .loginWithGoogle(idToken);
+
+    if (!mounted || !success) return;
+
+    final authState = ref.read(authControllerProvider);
+    if (authState.onboardingCompleted) {
+      context.go('/home');
+    } else {
+      context.go('/profile/dietary');
+    }
+  }
+
+  void _showGoogleSignInError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Unable to sign in with Google. Please try again.',
+          style: AppTypography.body1.copyWith(color: AppColors.white),
+        ),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+      ),
+    );
   }
 
   @override
@@ -252,12 +306,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                     const SizedBox(height: AppSpacing.lg),
 
-                    AppButton(
-                      label: 'Continue with Google',
-                      variant: AppButtonVariant.outlined,
-                      leadingIcon: Icons.g_mobiledata,
-                      onPressed: isLoading ? null : _onGoogleSignIn,
-                    ),
+                    if (kIsWeb)
+                      SizedBox(
+                        width: double.infinity,
+                        height: AppSpacing.touchTarget,
+                        child: buildGoogleSignInWebButton(),
+                      )
+                    else
+                      AppButton(
+                        label: 'Continue with Google',
+                        variant: AppButtonVariant.outlined,
+                        leadingIcon: Icons.g_mobiledata,
+                        onPressed: isLoading ? null : _onGoogleSignIn,
+                      ),
 
                     const SizedBox(height: AppSpacing.xxxl),
 
