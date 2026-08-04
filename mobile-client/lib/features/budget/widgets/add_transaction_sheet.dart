@@ -10,6 +10,7 @@ import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/toast_helpers.dart';
 import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/store_providers.dart';
+import '../../recommendations/providers/recommendation_provider.dart';
 import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
 
@@ -66,6 +67,17 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       _nameCtrl.text = e.storeName ?? '';
       _notesCtrl.text = e.notes ?? '';
       _selectedStoreId = e.storeId;
+    } else {
+      final recommended = ref.read(lastAcceptedRecommendationStoreProvider);
+      if (recommended != null &&
+          recommended.merchantType == StoreType.restaurant) {
+        _selectedStore = recommended;
+        _selectedStoreId = recommended.id;
+        _nameCtrl.text = recommended.businessName;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(lastAcceptedRecommendationStoreProvider.notifier).state = null;
+      });
     }
     _amountCtrl.addListener(() => setState(() {}));
     _nameCtrl.addListener(() => setState(() {}));

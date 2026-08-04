@@ -5,6 +5,7 @@ import 'package:mapetite/features/budget/models/budget_state.dart';
 import 'package:mapetite/features/budget/models/budget_transaction.dart';
 import 'package:mapetite/features/budget/providers/budget_provider.dart';
 import 'package:mapetite/features/budget/widgets/add_transaction_sheet.dart';
+import 'package:mapetite/features/recommendations/providers/recommendation_provider.dart';
 import 'package:mapetite/shared/providers/store_providers.dart';
 import 'package:mapetite/shared/models/store_model.dart';
 
@@ -251,5 +252,92 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(built.notifier.editedDraft?.storeId, '1');
+  });
+
+  testWidgets(
+      'pre-fills the recommended store when one was just accepted',
+      (tester) async {
+    final container = _buildContainer(stores: _fakeStores);
+    addTearDown(container.dispose);
+
+    container.read(lastAcceptedRecommendationStoreProvider.notifier).state =
+        _fakeStores[1]; // Nasi Lemak Corner
+
+    await _openSheet(tester, container);
+
+    final nameField = tester.widget<TextFormField>(_nameFieldFinder);
+    expect(nameField.controller?.text, 'Nasi Lemak Corner');
+  });
+
+  testWidgets(
+      'clears the recommended store after the sheet has read it once',
+      (tester) async {
+    final container = _buildContainer(stores: _fakeStores);
+    addTearDown(container.dispose);
+
+    container.read(lastAcceptedRecommendationStoreProvider.notifier).state =
+        _fakeStores[1];
+
+    await _openSheet(tester, container);
+
+    expect(container.read(lastAcceptedRecommendationStoreProvider), isNull);
+  });
+
+  testWidgets(
+      'ignores the recommended store when editing an existing transaction',
+      (tester) async {
+    final container = _buildContainer(stores: _fakeStores);
+    addTearDown(container.dispose);
+
+    container.read(lastAcceptedRecommendationStoreProvider.notifier).state =
+        _fakeStores[1];
+
+    final existing = BudgetTransaction(
+      id: 'tx1',
+      storeId: '1',
+      storeName: 'Jaya Grocer',
+      category: BudgetCategory.groceries,
+      amount: 25.50,
+      dateSpent: DateTime(2026, 7, 20),
+      createdAt: DateTime(2026, 7, 20),
+    );
+
+    await _openSheet(tester, container, existing: existing);
+
+    final nameField = tester.widget<TextFormField>(_nameFieldFinder);
+    expect(nameField.controller?.text, 'Jaya Grocer');
+    // Untouched, so it's still available for a later, fresh Add Transaction.
+    expect(
+      container.read(lastAcceptedRecommendationStoreProvider),
+      _fakeStores[1],
+    );
+  });
+
+  testWidgets(
+      'manually picking a different store after auto-fill overwrites it',
+      (tester) async {
+    final container = _buildContainer(stores: _fakeStores);
+    addTearDown(container.dispose);
+
+    container.read(lastAcceptedRecommendationStoreProvider.notifier).state =
+        _fakeStores[1]; // Nasi Lemak Corner
+
+    await _openSheet(tester, container);
+
+    // Once a store is selected, the picker row shows its name instead of
+    // "Link a store (optional)" — same text as the now-pre-filled name
+    // field, so find.text('Nasi Lemak Corner') would be ambiguous (it
+    // matches both the TextFormField and the picker row). Target the
+    // picker row specifically via its icon, which appears nowhere else.
+    await tester.tap(find.ancestor(
+      of: find.byIcon(Icons.storefront_outlined),
+      matching: find.byType(GestureDetector),
+    ));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Jaya Grocer'));
+    await tester.pumpAndSettle();
+
+    final nameField = tester.widget<TextFormField>(_nameFieldFinder);
+    expect(nameField.controller?.text, 'Jaya Grocer');
   });
 }
