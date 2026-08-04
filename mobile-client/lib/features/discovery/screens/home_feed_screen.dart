@@ -13,7 +13,6 @@ import '../../../core/errors/app_exception.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/app_drawer.dart';
 import '../../../shared/widgets/dietary_chip.dart';
-import '../../../shared/widgets/empty_feed_state.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/network_error_state.dart';
 import '../../../routes/app_router.dart';
@@ -30,6 +29,7 @@ import '../../../shared/widgets/sheets/navigate_sheet.dart';
 import '../../../shared/widgets/toast_helpers.dart';
 import '../../recommendations/providers/recommendation_provider.dart';
 import '../../recommendations/widgets/restaurant_recommendation_sheet.dart';
+import '../../../shared/widgets/custom_button.dart';
 
 class HomeFeedScreen extends ConsumerStatefulWidget {
   const HomeFeedScreen({super.key});
@@ -46,6 +46,153 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
   late Animation<Offset> _cardAnim2;
   double _radiusKm = AppConstants.defaultSearchRadiusKm;
   bool _isLoadingRecommendation = false;
+  bool _hasShownInitialRecommendation = false;
+
+  void _maybeShowInitialHomePopup({required bool hasNearbyStores}) {
+    if (_hasShownInitialRecommendation || _isLoadingRecommendation) {
+      return;
+    }
+
+    final location = ref.read(locationProvider).valueOrNull;
+
+    if (location == null) {
+      return;
+    }
+
+    _hasShownInitialRecommendation = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      if (hasNearbyStores) {
+        _showTopPickRecommendation(
+          openBrowseOnReject: false,
+          showErrorOnFailure: false,
+          requireLocation: true,
+        );
+      } else {
+        _showNoNearbySheet();
+      }
+    });
+  }
+
+  Future<void> _showNoNearbySheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.radiusXl),
+            ),
+          ),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.md,
+            AppSpacing.lg,
+            AppSpacing.xl,
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: AppColors.neutral200,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryLight,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.location_off_outlined,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Nothing nearby', style: AppTypography.headline3),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            'We could not find restaurants close to you yet.',
+                            style: AppTypography.body2.copyWith(
+                              color: AppColors.neutral600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Try expanding the search area to find more restaurant recommendations around your location.',
+                  style: AppTypography.body1.copyWith(
+                    color: AppColors.neutral700,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+                AppButton(
+                  label: 'Expand Radius',
+                  leadingIcon: Icons.zoom_out_map,
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (!mounted) return;
+                      _expandRadiusAndShowRecommendations();
+                    });
+                  },
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppButton(
+                  label: 'Not now',
+                  variant: AppButtonVariant.ghost,
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _expandRadiusAndShowRecommendations() async {
+    setState(() {
+      _radiusKm = AppConstants.maxSearchRadiusKm;
+    });
+
+    await _showTopPickRecommendation(
+      openBrowseOnReject: false,
+      showErrorOnFailure: true,
+      requireLocation: true,
+      radiusOverride: AppConstants.maxSearchRadiusKm,
+    );
+  }
 
   @override
   void initState() {
@@ -89,7 +236,12 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     }
   }
 
-  Future<void> _showTopPickRecommendation() async {
+  Future<void> _showTopPickRecommendation({
+    bool openBrowseOnReject = true,
+    bool showErrorOnFailure = true,
+    bool requireLocation = false,
+    double? radiusOverride,
+  }) async {
     if (_isLoadingRecommendation) return;
 
     setState(() {
@@ -98,19 +250,34 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
 
     try {
       final location = ref.read(locationProvider).valueOrNull;
+
+      if (requireLocation && location == null) {
+        return;
+      }
+
       final lat = location?.latitude ?? 3.0731;
       final lng = location?.longitude ?? 101.6069;
+      final searchRadius = radiusOverride ?? _radiusKm;
 
-      final recommendation = await ref
+      final recommendations = await ref
           .read(recommendationServiceProvider)
-          .getTopPick(lat: lat, lng: lng, radiusKm: _radiusKm);
+          .getRestaurantRecommendations(
+            lat: lat,
+            lng: lng,
+            limit: 3,
+            radiusKm: searchRadius,
+          );
 
       if (!mounted) return;
 
+      if (recommendations.isEmpty) {
+        throw Exception('No recommendations returned.');
+      }
+
       await showRestaurantRecommendationSheet(
         context,
-        recommendation: recommendation,
-        onAccept: () {
+        recommendations: recommendations,
+        onAccept: (recommendation) {
           final store = recommendation.store;
           final lat = store.latitude;
           final lng = store.longitude;
@@ -130,16 +297,22 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
             label: store.businessName,
           );
         },
-        onReject: () => context.push(AppRoutes.dineIn),
+        onReject: () {
+          if (openBrowseOnReject) {
+            context.push(AppRoutes.dineIn);
+          }
+        },
       );
     } catch (_) {
       if (!mounted) return;
 
-      showErrorSnackbar(
-        context,
-        'No recommendation available right now. Browse restaurants instead.',
-      );
-      context.push(AppRoutes.dineIn);
+      if (showErrorOnFailure) {
+        showErrorSnackbar(
+          context,
+          'No recommendation available right now. Browse restaurants instead.',
+        );
+        context.push(AppRoutes.dineIn);
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -175,6 +348,8 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     final location = ref.watch(locationProvider).valueOrNull;
     final lat = location?.latitude ?? 3.0731;
     final lng = location?.longitude ?? 101.6069;
+
+
     final restaurantQuery = NearbyStoresQuery(
       lat: lat,
       lng: lng,
@@ -237,21 +412,20 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                     ctaLabel: 'Retry',
                     onCta: () => ref.invalidate(nearbyStoresProvider(groceryQuery)),
                   ),
-            data: (groceries) => restaurants.isEmpty && groceries.isEmpty
-                ? EmptyFeedState(
-                    ctaLabel: 'Expand Radius',
-                    onCta: () => setState(
-                      () => _radiusKm = AppConstants.maxSearchRadiusKm,
-                    ),
-                  )
-                : CustomScrollView(
-                    slivers: [
-                      _buildAppBar(),
-                      SliverToBoxAdapter(
-                        child: _buildContent(restaurants, groceries),
-                      ),
-                    ],
+            data: (groceries) {
+              final hasNearbyStores = restaurants.isNotEmpty || groceries.isNotEmpty;
+
+              _maybeShowInitialHomePopup(hasNearbyStores: hasNearbyStores);
+
+              return CustomScrollView(
+                slivers: [
+                  _buildAppBar(),
+                  SliverToBoxAdapter(
+                    child: _buildContent(restaurants, groceries),
                   ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -621,7 +795,9 @@ class _DineInCard extends StatelessWidget {
                           ),
                           const SizedBox(height: AppSpacing.xxs),
                           Text(
-                            isLoading ? 'Finding your best match...' : 'Find a restaurant',
+                            isLoading
+                                ? 'Finding your best match...'
+                                : 'Find a restaurant',
                             style: AppTypography.body2.copyWith(
                               color: AppColors.white.withValues(alpha: 0.75),
                             ),
@@ -649,19 +825,23 @@ class _DineInCard extends StatelessWidget {
                               ),
                               const Spacer(),
                               isLoading
-                                ? SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: AppColors.white.withValues(alpha: 0.8),
+                                  ? SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.white.withValues(
+                                          alpha: 0.8,
+                                        ),
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.chevron_right,
+                                      size: 18,
+                                      color: AppColors.white.withValues(
+                                        alpha: 0.7,
+                                      ),
                                     ),
-                                  )
-                                : Icon(
-                                    Icons.chevron_right,
-                                    size: 18,
-                                    color: AppColors.white.withValues(alpha: 0.7),
-                                  ),
                             ],
                           ),
                         ],
@@ -867,14 +1047,20 @@ class _NearbyRow extends StatelessWidget {
                         ),
                         errorWidget: (context, url, err) => Container(
                           color: AppColors.neutral100,
-                          child: const Icon(Icons.restaurant,
-                              size: 24, color: AppColors.neutral400),
+                          child: const Icon(
+                            Icons.restaurant,
+                            size: 24,
+                            color: AppColors.neutral400,
+                          ),
                         ),
                       )
                     : Container(
                         color: AppColors.neutral100,
-                        child: const Icon(Icons.restaurant,
-                            size: 24, color: AppColors.neutral400),
+                        child: const Icon(
+                          Icons.restaurant,
+                          size: 24,
+                          color: AppColors.neutral400,
+                        ),
                       ),
               ),
             ),
@@ -977,14 +1163,20 @@ class _GroceryRow extends StatelessWidget {
                         ),
                         errorWidget: (context, url, err) => Container(
                           color: AppColors.neutral100,
-                          child: const Icon(Icons.local_grocery_store,
-                              size: 24, color: AppColors.neutral400),
+                          child: const Icon(
+                            Icons.local_grocery_store,
+                            size: 24,
+                            color: AppColors.neutral400,
+                          ),
                         ),
                       )
                     : Container(
                         color: AppColors.neutral100,
-                        child: const Icon(Icons.local_grocery_store,
-                            size: 24, color: AppColors.neutral400),
+                        child: const Icon(
+                          Icons.local_grocery_store,
+                          size: 24,
+                          color: AppColors.neutral400,
+                        ),
                       ),
               ),
             ),
@@ -1087,4 +1279,3 @@ class _BellButton extends ConsumerWidget {
     );
   }
 }
-

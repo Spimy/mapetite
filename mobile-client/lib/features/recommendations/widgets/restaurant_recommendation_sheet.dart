@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_spacing.dart';
@@ -8,8 +10,8 @@ import '../models/restaurant_recommendation_model.dart';
 
 Future<void> showRestaurantRecommendationSheet(
   BuildContext context, {
-  required RestaurantRecommendation recommendation,
-  required VoidCallback onAccept,
+  required List<RestaurantRecommendation> recommendations,
+  required ValueChanged<RestaurantRecommendation> onAccept,
   required VoidCallback onReject,
 }) {
   return showModalBottomSheet<void>(
@@ -18,30 +20,58 @@ Future<void> showRestaurantRecommendationSheet(
     useSafeArea: true,
     backgroundColor: Colors.transparent,
     builder: (_) => RestaurantRecommendationSheet(
-      recommendation: recommendation,
+      recommendations: recommendations,
       onAccept: onAccept,
       onReject: onReject,
     ),
   );
 }
 
-class RestaurantRecommendationSheet extends StatelessWidget {
-  final RestaurantRecommendation recommendation;
-  final VoidCallback onAccept;
+class RestaurantRecommendationSheet extends StatefulWidget {
+  final List<RestaurantRecommendation> recommendations;
+  final ValueChanged<RestaurantRecommendation> onAccept;
   final VoidCallback onReject;
 
   const RestaurantRecommendationSheet({
     super.key,
-    required this.recommendation,
+    required this.recommendations,
     required this.onAccept,
     required this.onReject,
   });
+
+  @override
+  State<RestaurantRecommendationSheet> createState() =>
+      _RestaurantRecommendationSheetState();
+}
+
+class _RestaurantRecommendationSheetState
+    extends State<RestaurantRecommendationSheet> {
+  final Random _random = Random();
+  int _currentIndex = 0;
+
+  RestaurantRecommendation get recommendation =>
+      widget.recommendations[_currentIndex];
+
+  void _shuffleRecommendation() {
+    if (widget.recommendations.length <= 1) return;
+
+    setState(() {
+      var nextIndex = _random.nextInt(widget.recommendations.length);
+
+      if (nextIndex == _currentIndex) {
+        nextIndex = (nextIndex + 1) % widget.recommendations.length;
+      }
+
+      _currentIndex = nextIndex;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final store = recommendation.store;
     final distanceKm = recommendation.distanceKm ?? store.distanceKm;
     final reason = recommendation.recommendationReason?.trim();
+    final hasMultipleRecommendations = widget.recommendations.length > 1;
 
     return Container(
       decoration: const BoxDecoration(
@@ -104,8 +134,29 @@ class RestaurantRecommendationSheet extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (hasMultipleRecommendations)
+                  TextButton.icon(
+                    onPressed: _shuffleRecommendation,
+                    icon: const Icon(Icons.shuffle, size: 16),
+                    label: const Text('Shuffle'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                      ),
+                    ),
+                  ),
               ],
             ),
+            if (hasMultipleRecommendations) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Showing pick ${_currentIndex + 1} of ${widget.recommendations.length}',
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.neutral600,
+                ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.lg),
             Text(store.businessName, style: AppTypography.headline2),
             const SizedBox(height: AppSpacing.xs),
@@ -182,7 +233,10 @@ class RestaurantRecommendationSheet extends StatelessWidget {
               leadingIcon: Icons.navigation_outlined,
               onPressed: () {
                 Navigator.of(context).pop();
-                onAccept();
+
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  widget.onAccept(recommendation);
+                });
               },
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -191,7 +245,7 @@ class RestaurantRecommendationSheet extends StatelessWidget {
               variant: AppButtonVariant.ghost,
               onPressed: () {
                 Navigator.of(context).pop();
-                onReject();
+                widget.onReject();
               },
             ),
           ],

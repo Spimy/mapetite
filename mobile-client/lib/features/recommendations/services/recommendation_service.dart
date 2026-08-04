@@ -25,4 +25,38 @@ class RecommendationService {
       response.data as Map<String, dynamic>,
     );
   }
+
+  Future<List<RestaurantRecommendation>> getRestaurantRecommendations({
+    required double lat,
+    required double lng,
+    int limit = 3,
+    double? radiusKm,
+    bool? openNow,
+    bool? strict,
+  }) async {
+    final response = await ApiClient.get(
+      ApiEndpoints.restaurantRecommendations,
+      params: {
+        'lat': lat,
+        'lng': lng,
+        'limit': limit,
+        if (radiusKm != null) 'radius': radiusKm,
+        if (openNow != null) 'open_now': openNow,
+        if (strict != null) 'strict': strict,
+      },
+    );
+
+    final data = response.data;
+    final rawList = data is List
+        ? data
+        : data is Map<String, dynamic>
+            ? data['results'] as List<dynamic>? ?? const <dynamic>[]
+            : const <dynamic>[];
+
+    return rawList
+        .whereType<Map<String, dynamic>>()
+        .map(RestaurantRecommendation.fromJson)
+        .take(limit)
+        .toList();
+  }
 }
