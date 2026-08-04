@@ -327,6 +327,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                   label: 'Dining Out',
                   selected: _category == BudgetCategory.dining,
                   onTap: () => setState(() {
+                    if (_nameCtrl.text == _selectedStore?.businessName) {
+                      _nameCtrl.clear();
+                    }
                     _category = BudgetCategory.dining;
                     _selectedStore = null;
                     _selectedStoreId = null;
@@ -339,6 +342,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                   label: 'Cook-In',
                   selected: _category == BudgetCategory.groceries,
                   onTap: () => setState(() {
+                    if (_nameCtrl.text == _selectedStore?.businessName) {
+                      _nameCtrl.clear();
+                    }
                     _category = BudgetCategory.groceries;
                     _selectedStore = null;
                     _selectedStoreId = null;

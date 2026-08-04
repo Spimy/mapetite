@@ -340,4 +340,41 @@ void main() {
     final nameField = tester.widget<TextFormField>(_nameFieldFinder);
     expect(nameField.controller?.text, 'Jaya Grocer');
   });
+
+  testWidgets(
+      'switching category after auto-fill clears the stale auto-filled name',
+      (tester) async {
+    final container = _buildContainer(stores: _fakeStores);
+    addTearDown(container.dispose);
+
+    container.read(lastAcceptedRecommendationStoreProvider.notifier).state =
+        _fakeStores[1]; // Nasi Lemak Corner
+
+    await _openSheet(tester, container);
+
+    // Switch away from Dining (the default, and the auto-filled category).
+    await tester.tap(find.text('Cook-In'));
+    await tester.pumpAndSettle();
+
+    final nameField = tester.widget<TextFormField>(_nameFieldFinder);
+    expect(nameField.controller?.text, isEmpty);
+  });
+
+  testWidgets(
+      'switching category does not clear a name the user typed themselves',
+      (tester) async {
+    final container = _buildContainer(stores: _fakeStores);
+    addTearDown(container.dispose);
+
+    await _openSheet(tester, container);
+
+    await tester.enterText(_nameFieldFinder, 'My own note');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Cook-In'));
+    await tester.pumpAndSettle();
+
+    final nameField = tester.widget<TextFormField>(_nameFieldFinder);
+    expect(nameField.controller?.text, 'My own note');
+  });
 }

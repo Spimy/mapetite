@@ -12,6 +12,7 @@ import 'package:mapetite/features/auth/services/auth_service.dart';
 import 'package:mapetite/features/budget/models/budget_state.dart';
 import 'package:mapetite/features/budget/models/budget_summary.dart';
 import 'package:mapetite/features/budget/providers/budget_provider.dart';
+import 'package:mapetite/features/budget/widgets/add_transaction_sheet.dart';
 import 'package:mapetite/features/discovery/models/home_feed_models.dart';
 import 'package:mapetite/features/discovery/screens/home_feed_screen.dart';
 import 'package:mapetite/features/recommendations/models/restaurant_recommendation_model.dart';
@@ -770,6 +771,32 @@ void main() {
         container.read(lastAcceptedRecommendationStoreProvider),
         _testRestaurantStore,
       );
+    });
+
+    testWidgets(
+        'accepting a recommendation on the home feed pre-fills a later Add '
+        'Transaction sheet opened from the same app scope',
+        (tester) async {
+      await tester.pumpWidget(_routerWrap(
+        recommendationService: _FakeRecommendationService(_testRecommendation),
+      ));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Dine-In'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.tap(find.text('Accept and Navigate'));
+      await tester.pumpAndSettle();
+
+      final homeFeedContext = tester.element(find.byType(HomeFeedScreen));
+      showAddTransactionSheet(homeFeedContext);
+      await tester.pumpAndSettle();
+
+      final nameField = tester.widget<TextFormField>(find.byType(TextFormField));
+      expect(nameField.controller?.text, _testRestaurantStore.businessName);
     });
 
     testWidgets('Cook-In card tap navigates to /cook-in', (tester) async {
