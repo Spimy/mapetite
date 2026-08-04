@@ -26,6 +26,10 @@ import '../../../shared/widgets/location_sheet.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../budget/providers/budget_provider.dart';
+import '../../../shared/widgets/sheets/navigate_sheet.dart';
+import '../../../shared/widgets/toast_helpers.dart';
+import '../../recommendations/providers/recommendation_provider.dart';
+import '../../recommendations/widgets/restaurant_recommendation_sheet.dart';
 
 class HomeFeedScreen extends ConsumerStatefulWidget {
   const HomeFeedScreen({super.key});
@@ -41,6 +45,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
   late Animation<Offset> _cardAnim1;
   late Animation<Offset> _cardAnim2;
   double _radiusKm = AppConstants.defaultSearchRadiusKm;
+  bool _isLoadingRecommendation = false;
 
   @override
   void initState() {
@@ -81,6 +86,66 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.unableToDetermine) {
       showLocationPermissionDialog(context);
+    }
+  }
+
+  Future<void> _showTopPickRecommendation() async {
+    if (_isLoadingRecommendation) return;
+
+    setState(() {
+      _isLoadingRecommendation = true;
+    });
+
+    try {
+      final location = ref.read(locationProvider).valueOrNull;
+      final lat = location?.latitude ?? 3.0731;
+      final lng = location?.longitude ?? 101.6069;
+
+      final recommendation = await ref
+          .read(recommendationServiceProvider)
+          .getTopPick(lat: lat, lng: lng, radiusKm: _radiusKm);
+
+      if (!mounted) return;
+
+      await showRestaurantRecommendationSheet(
+        context,
+        recommendation: recommendation,
+        onAccept: () {
+          final store = recommendation.store;
+          final lat = store.latitude;
+          final lng = store.longitude;
+
+          if (lat == null || lng == null) {
+            showErrorSnackbar(
+              context,
+              'This recommendation does not have map coordinates yet.',
+            );
+            return;
+          }
+
+          showNavigateSheet(
+            context,
+            latitude: lat,
+            longitude: lng,
+            label: store.businessName,
+          );
+        },
+        onReject: () => context.push(AppRoutes.dineIn),
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      showErrorSnackbar(
+        context,
+        'No recommendation available right now. Browse restaurants instead.',
+      );
+      context.push(AppRoutes.dineIn);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingRecommendation = false;
+        });
+      }
     }
   }
 
@@ -354,9 +419,10 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
                 position: _cardAnim1,
                 child: _DineInCard(
                   nearbyCount: restaurants.length,
+                  isLoading: _isLoadingRecommendation,
                   onTap: () {
                     HapticFeedback.lightImpact();
-                    context.push(AppRoutes.dineIn);
+                    _showTopPickRecommendation();
                   },
                 ),
               ),
@@ -463,8 +529,14 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
 
 class _DineInCard extends StatelessWidget {
   final int nearbyCount;
+  final bool isLoading;
   final VoidCallback onTap;
-  const _DineInCard({required this.nearbyCount, required this.onTap});
+
+  const _DineInCard({
+    required this.nearbyCount,
+    required this.isLoading,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -549,7 +621,7 @@ class _DineInCard extends StatelessWidget {
                           ),
                           const SizedBox(height: AppSpacing.xxs),
                           Text(
-                            'Find a restaurant',
+                            isLoading ? 'Finding your best match...' : 'Find a restaurant',
                             style: AppTypography.body2.copyWith(
                               color: AppColors.white.withValues(alpha: 0.75),
                             ),
@@ -576,11 +648,20 @@ class _DineInCard extends StatelessWidget {
                                 ),
                               ),
                               const Spacer(),
-                              Icon(
-                                Icons.chevron_right,
-                                size: 18,
-                                color: AppColors.white.withValues(alpha: 0.7),
-                              ),
+                              isLoading
+                                ? SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.white.withValues(alpha: 0.8),
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.chevron_right,
+                                    size: 18,
+                                    color: AppColors.white.withValues(alpha: 0.7),
+                                  ),
                             ],
                           ),
                         ],
