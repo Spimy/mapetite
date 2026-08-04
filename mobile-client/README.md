@@ -81,3 +81,25 @@ Tests live under `test/`, mirroring the structure of `lib/` (e.g. `test/features
 ## Routing
 
 Navigation is defined in a single `go_router` config at `lib/routes/app_router.dart`. A `StatefulShellRoute` provides the bottom-nav shell for Home, Explore, Map, and Budget; every other screen (auth, profile setup, recipes, restaurants, settings, etc.) is pushed on top of it.
+
+## 🔐 Google Sign-In Setup
+
+For the backend side (Web OAuth client, Django `SocialApp`), see the **🔐 Google Authentication Setup** section in [`server/README.md`](../server/README.md) — do that first. This section covers wiring the mobile client itself to those credentials. Scope: iOS + Web (Android not set up yet — add later following the same pattern).
+
+**Architecture:** two OAuth client IDs exist in Google Cloud Console, but only the **Web** one is ever registered with Django. The Web client is used directly by the Flutter web build and is what `GoogleLoginView` (`server/apps/users/views_api.py`) validates tokens against. The **iOS** client only exists to let the native Google Sign-In sheet launch (tied to the bundle ID `com.mapetite.mapetite`) — the iOS app requests its ID token with `serverClientId` set to the Web client ID, so the token it actually sends to Django is audienced to the Web client. Without `serverClientId`, iOS tokens would be rejected by the backend.
+
+**Already wired up** in this codebase (client IDs are public identifiers, safe to commit — no secret lives here):
+- `ios/Runner/Info.plist` — `GIDClientID` + URL scheme (reversed iOS client ID). This one **is** shared across the team: it's tied to the app's bundle ID, and the URL scheme has to be baked into `Info.plist` at build time, so it can't reasonably differ per developer.
+- `lib/features/auth/screens/login_screen.dart` — `clientId` (web only) and `serverClientId` both come from `AppConfig.googleWebClientId` (`lib/core/config/app_config.dart`), **not** hardcoded.
+
+**The Web client ID is per-developer**, not shared — per the backend setup steps, each teammate generates their own and registers it against their own local `SocialApp`. So `AppConfig.googleWebClientId` follows the same `String.fromEnvironment` pattern as `baseUrl`: it has a default value checked in so the app runs out of the box, but if you generate your own Web client, override it at run time so it matches whatever you registered in your own local Django admin:
+
+```bash
+flutter run --dart-define=GOOGLE_WEB_CLIENT_ID=your-client-id.apps.googleusercontent.com
+```
+
+**For staging/prod:**
+- If reusing the same Web client as dev, add the prod domain to its **Authorized JavaScript origins** in Console — Google's Identity Services library enforces this for web sign-in, so a domain not listed there fails even with a valid client ID.
+- The iOS client doesn't need to change per environment — it's tied to the bundle ID, not a domain.
+- If the OAuth consent screen is still in **Testing** publishing status, only accounts added as test users can sign in — move it to **Production** (or add test users) before QA/demo with non-team accounts.
+- If a different Web client ID is used for that environment, update `AppConfig.googleWebClientId`'s default (or pass it via `--dart-define` at build time).

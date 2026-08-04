@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
@@ -62,7 +64,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(authControllerProvider.notifier).clearMessages();
 
     try {
-      final googleSignIn = GoogleSignIn(scopes: ['email']);
+      final googleSignIn = GoogleSignIn(
+        scopes: ['email'],
+        // Web has no native client config to fall back on, so it needs the
+        // client ID passed explicitly; iOS reads its client ID from
+        // Info.plist and only needs serverClientId to audience its token
+        // correctly for the backend.
+        clientId: kIsWeb ? AppConfig.googleWebClientId : null,
+        serverClientId: AppConfig.googleWebClientId,
+      );
       final account = await googleSignIn.signIn();
       if (account == null || !mounted) return; // user cancelled
 

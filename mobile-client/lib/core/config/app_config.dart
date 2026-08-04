@@ -4,6 +4,15 @@ abstract class AppConfig {
     defaultValue: 'http://localhost:8000/api/',
   );
 
+  /// The Web OAuth client is per-developer: each teammate registers their own
+  /// in their local Django admin (see server/README.md), so this must be
+  /// overridable rather than hardcoded for everyone.
+  static const String googleWebClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+    defaultValue:
+        '823401679057-apgal0kbg12j629mpjo49dncnvea3bi4.apps.googleusercontent.com',
+  );
+
   static const bool isProduction = bool.fromEnvironment('dart.vm.product');
   static const bool enableLogging = !isProduction;
 
