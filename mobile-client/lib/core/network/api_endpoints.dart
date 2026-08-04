@@ -26,6 +26,10 @@ abstract class ApiEndpoints {
   static String storeDetail(String id) => 'stores/$id/';
   static String storeItems(String id) => 'stores/$id/items/';
 
+  // Recommendations
+  static const String restaurantRecommendations = 'recommendations/restaurants/';
+  static const String recommendationTopPick = 'recommendations/top-pick/';
+
   // Other feature endpoints
   static const String discover = 'discovery/';
   static const String recipes = 'recipes/';
