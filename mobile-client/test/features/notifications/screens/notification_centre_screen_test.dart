@@ -22,6 +22,18 @@ class _FixedNotificationNotifier extends NotificationNotifier {
   Future<List<AppNotification>> build() async => _state;
 }
 
+class _CountingNotificationNotifier extends NotificationNotifier {
+  final List<AppNotification> _state;
+  int buildCount = 0;
+  _CountingNotificationNotifier(this._state);
+
+  @override
+  Future<List<AppNotification>> build() async {
+    buildCount++;
+    return _state;
+  }
+}
+
 Widget _wrap(List<AppNotification> notifications) => ProviderScope(
       overrides: [
         notificationProvider.overrideWith(() => _FixedNotificationNotifier(notifications)),
@@ -53,5 +65,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Mark all read'), findsNothing);
+  });
+
+  testWidgets('refetches notifications when the screen is opened', (tester) async {
+    final notifier = _CountingNotificationNotifier([_n('a')]);
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        notificationProvider.overrideWith(() => notifier),
+      ],
+      child: const MaterialApp(home: NotificationCentreScreen()),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(notifier.buildCount, 2);
   });
 }

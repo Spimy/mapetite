@@ -10,16 +10,35 @@ import '../../../shared/widgets/toast_helpers.dart';
 import '../models/notification_model.dart';
 import '../providers/notification_provider.dart';
 
-class NotificationCentreScreen extends ConsumerWidget {
+class NotificationCentreScreen extends ConsumerStatefulWidget {
   const NotificationCentreScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationCentreScreen> createState() =>
+      _NotificationCentreScreenState();
+}
+
+class _NotificationCentreScreenState
+    extends ConsumerState<NotificationCentreScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Refetch whenever the notification centre is opened — the provider is
+    // otherwise created once (on first home-feed build) and never
+    // refreshed, so notifications created after that would never appear
+    // without this.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => ref.invalidate(notificationProvider),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final notificationsAsync = ref.watch(notificationProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: _buildAppBar(context, ref, notificationsAsync),
+      appBar: _buildAppBar(context, notificationsAsync),
       body: SafeArea(
         top: false,
         child: notificationsAsync.when(
@@ -53,8 +72,8 @@ class NotificationCentreScreen extends ConsumerWidget {
                       final n = notifications[index];
                       return _NotificationRow(
                         notification: n,
-                        onDismiss: () => _dismiss(context, ref, n.id),
-                        onTap: () => _markRead(context, ref, n.id),
+                        onDismiss: () => _dismiss(context, n.id),
+                        onTap: () => _markRead(context, n.id),
                       );
                     },
                   ),
@@ -64,7 +83,7 @@ class NotificationCentreScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _markRead(BuildContext context, WidgetRef ref, String id) async {
+  Future<void> _markRead(BuildContext context, String id) async {
     try {
       await ref.read(notificationProvider.notifier).markRead(id);
     } catch (_) {
@@ -74,7 +93,7 @@ class NotificationCentreScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _dismiss(BuildContext context, WidgetRef ref, String id) async {
+  Future<void> _dismiss(BuildContext context, String id) async {
     try {
       await ref.read(notificationProvider.notifier).dismiss(id);
     } catch (_) {
@@ -86,7 +105,6 @@ class NotificationCentreScreen extends ConsumerWidget {
 
   PreferredSizeWidget _buildAppBar(
     BuildContext context,
-    WidgetRef ref,
     AsyncValue<List<AppNotification>> notificationsAsync,
   ) {
     final hasUnread = notificationsAsync.value?.any((n) => !n.isRead) ?? false;
