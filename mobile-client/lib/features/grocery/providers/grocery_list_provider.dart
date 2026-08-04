@@ -56,6 +56,29 @@ class GroceryListNotifier extends StateNotifier<List<GroceryListItem>> {
   void addFromList(List<GroceryListItem> items) {
     state = [...state, ...items];
   }
+
+  void linkItemsToStore({
+    required Set<String> itemNames,
+    required String storeId,
+    required String storeName,
+    required double? storeLatitude,
+    required double? storeLongitude,
+  }) {
+    final normalisedNames = itemNames.map(_normaliseItemName).toSet();
+
+    state = state.map((item) {
+      if (!normalisedNames.contains(_normaliseItemName(item.name))) {
+        return item;
+      }
+
+      return item.copyWith(
+        storeName: storeName,
+        storeId: storeId,
+        storeLatitude: storeLatitude,
+        storeLongitude: storeLongitude,
+      );
+    }).toList();
+  }
 }
 
 final groceryListProvider =
@@ -74,3 +97,7 @@ final groceryBudgetAlertProvider = Provider<bool>((ref) {
 
   return total >= GroceryListMocks.weeklyBudgetLimit * 0.80;
 });
+
+String _normaliseItemName(String value) {
+  return value.trim().toLowerCase();
+}

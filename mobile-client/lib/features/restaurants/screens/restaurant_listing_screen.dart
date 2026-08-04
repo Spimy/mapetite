@@ -31,6 +31,26 @@ class RestaurantListingScreen extends ConsumerStatefulWidget {
 
 enum _DineInQuickFilter { halal, openNow, vegan, nearest }
 
+String _normaliseCuisineValue(String? value) {
+  return value?.trim().toLowerCase() ?? '';
+}
+
+String? _canonicalCuisine(String? value) {
+  final normalised = _normaliseCuisineValue(value);
+
+  if (normalised.isEmpty) {
+    return null;
+  }
+
+  for (final cuisine in AppConstants.cuisineCategories) {
+    if (_normaliseCuisineValue(cuisine) == normalised) {
+      return cuisine;
+    }
+  }
+
+  return value?.trim();
+}
+
 class _RestaurantListingScreenState
     extends ConsumerState<RestaurantListingScreen> {
   final Set<_DineInQuickFilter> _quickFilters = {};
@@ -41,7 +61,7 @@ class _RestaurantListingScreenState
   @override
   void initState() {
     super.initState();
-    final cuisine = widget.initialCuisine;
+    final cuisine = _canonicalCuisine(widget.initialCuisine);
     if (cuisine != null && cuisine.isNotEmpty) {
       _filters = _RestaurantFilters(cuisines: {cuisine});
     } else {
@@ -61,9 +81,11 @@ class _RestaurantListingScreenState
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       list = list
-          .where((s) =>
-              s.businessName.toLowerCase().contains(q) ||
-              (s.category?.toLowerCase().contains(q) ?? false))
+          .where(
+            (s) =>
+                s.businessName.toLowerCase().contains(q) ||
+                (s.category?.toLowerCase().contains(q) ?? false),
+          )
           .toList();
     }
 
@@ -81,11 +103,22 @@ class _RestaurantListingScreenState
     }
 
     if (_filters.cuisines.isNotEmpty) {
-      list = list.where((s) => _filters.cuisines.contains(s.category)).toList();
+      final selectedCuisines =
+          _filters.cuisines.map(_normaliseCuisineValue).toSet();
+
+      list = list
+          .where(
+            (s) => selectedCuisines.contains(
+              _normaliseCuisineValue(s.category),
+            ),
+          )
+          .toList();
     }
+
     for (final d in _filters.dietary) {
       list = list.where((s) => s.dietaryTags.contains(d)).toList();
     }
+
     if (_filters.underThirtyMinWalk) {
       list = list.where((s) => (s.walkMinutesEstimate ?? 999) <= 30).toList();
     }

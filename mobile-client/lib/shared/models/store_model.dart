@@ -85,11 +85,18 @@ class StoreModel {
           .cast<Map<String, dynamic>>()
           .map(OperatingHourModel.fromJson)
           .toList(),
-      latitude: (json['latitude'] as num?)?.toDouble(),
-      longitude: (json['longitude'] as num?)?.toDouble(),
-      distanceKm: (json['distance_km'] as num?)?.toDouble(),
+      latitude: _doubleFromJson(json['latitude']),
+      longitude: _doubleFromJson(json['longitude']),
+      distanceKm: _doubleFromJson(json['distance_km']),
       phone: json['phone'] as String?,
       category: json['category'] as String?,
     );
   }
+}
+
+double? _doubleFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
 }
