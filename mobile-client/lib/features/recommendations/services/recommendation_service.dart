@@ -7,8 +7,8 @@ class RecommendationService {
     required double lat,
     required double lng,
     double? radiusKm,
-    bool? openNow,
-    bool? strict,
+    bool openNow = true,
+    bool strict = true,
   }) async {
     final response = await ApiClient.get(
       ApiEndpoints.recommendationTopPick,

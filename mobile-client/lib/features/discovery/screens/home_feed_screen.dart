@@ -260,13 +260,14 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen>
       final searchRadius = radiusOverride ?? _radiusKm;
 
       final recommendations = await ref
-          .read(recommendationServiceProvider)
-          .getRestaurantRecommendations(
-            lat: lat,
-            lng: lng,
-            limit: 3,
-            radiusKm: searchRadius,
-          );
+        .read(recommendationServiceProvider)
+        .getRestaurantRecommendations(
+          lat: lat,
+          lng: lng,
+          limit: 3,
+          radiusKm: searchRadius,
+          openNow: true,
+        );
 
       if (!mounted) return;
 
