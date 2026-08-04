@@ -42,7 +42,7 @@ class NotificationListAPIView(generics.ListAPIView):
         description="Partially update a specific notification. Only the `is_read` status can be modified.",
     ),
 )
-class NotificationDetailAPIView(generics.RetrieveUpdateAPIView):
+class NotificationDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
     API view to retrieve a specific notification for the authenticated user.
     """
@@ -50,7 +50,7 @@ class NotificationDetailAPIView(generics.RetrieveUpdateAPIView):
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "patch", "head", "options"]
+    http_method_names = ["get", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
         """
