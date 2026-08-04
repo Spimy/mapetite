@@ -5,48 +5,110 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_empty_state.dart';
+import '../../../shared/widgets/loading_indicator.dart';
+import '../../../shared/widgets/toast_helpers.dart';
 import '../models/notification_model.dart';
 import '../providers/notification_provider.dart';
 
-class NotificationCentreScreen extends ConsumerWidget {
+class NotificationCentreScreen extends ConsumerStatefulWidget {
   const NotificationCentreScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notifications = ref.watch(notificationProvider);
-    final notifier = ref.read(notificationProvider.notifier);
+  ConsumerState<NotificationCentreScreen> createState() =>
+      _NotificationCentreScreenState();
+}
+
+class _NotificationCentreScreenState
+    extends ConsumerState<NotificationCentreScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Refetch whenever the notification centre is opened — the provider is
+    // otherwise created once (on first home-feed build) and never
+    // refreshed, so notifications created after that would never appear
+    // without this.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => ref.invalidate(notificationProvider),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final notificationsAsync = ref.watch(notificationProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: _buildAppBar(context, notifications, notifier),
+      appBar: _buildAppBar(context, notificationsAsync),
       body: SafeArea(
         top: false,
-        child: notifications.isEmpty
-            ? const AppEmptyState(
-                icon: Icons.notifications_none,
-                title: 'All caught up',
-                description: 'No new notifications.',
-              )
-            : ListView.builder(
-                itemCount: notifications.length,
-                itemBuilder: (context, index) {
-                  final n = notifications[index];
-                  return _NotificationRow(
-                    notification: n,
-                    onDismiss: () => notifier.dismiss(n.id),
-                    onTap: () => notifier.markRead(n.id),
-                  );
-                },
-              ),
+        child: notificationsAsync.when(
+          loading: () => ListView.separated(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            itemCount: 6,
+            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+            itemBuilder: (_, _) =>
+                const ShimmerLoader(width: double.infinity, height: 72),
+          ),
+          error: (_, _) => AppEmptyState(
+            icon: Icons.error_outline,
+            title: 'Something went wrong',
+            description: 'Unable to load notifications. Please try again.',
+            ctaLabel: 'Retry',
+            onCta: () => ref.invalidate(notificationProvider),
+          ),
+          data: (notifications) => notifications.isEmpty
+              ? const AppEmptyState(
+                  icon: Icons.notifications_none,
+                  title: 'All caught up',
+                  description: 'No new notifications.',
+                )
+              : RefreshIndicator(
+                  color: AppColors.primary,
+                  onRefresh: () => ref.refresh(notificationProvider.future),
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: notifications.length,
+                    itemBuilder: (context, index) {
+                      final n = notifications[index];
+                      return _NotificationRow(
+                        notification: n,
+                        onDismiss: () => _dismiss(context, n.id),
+                        onTap: () => _markRead(context, n.id),
+                      );
+                    },
+                  ),
+                ),
+        ),
       ),
     );
   }
 
+  Future<void> _markRead(BuildContext context, String id) async {
+    try {
+      await ref.read(notificationProvider.notifier).markRead(id);
+    } catch (_) {
+      if (context.mounted) {
+        showErrorSnackbar(context, 'Could not update notification. Please try again.');
+      }
+    }
+  }
+
+  Future<void> _dismiss(BuildContext context, String id) async {
+    try {
+      await ref.read(notificationProvider.notifier).dismiss(id);
+    } catch (_) {
+      if (context.mounted) {
+        showErrorSnackbar(context, 'Could not dismiss notification. Please try again.');
+      }
+    }
+  }
+
   PreferredSizeWidget _buildAppBar(
     BuildContext context,
-    List<AppNotification> notifications,
-    NotificationNotifier notifier,
+    AsyncValue<List<AppNotification>> notificationsAsync,
   ) {
+    final hasUnread = notificationsAsync.valueOrNull?.any((n) => !n.isRead) ?? false;
+
     return AppBar(
       backgroundColor: AppColors.white,
       surfaceTintColor: AppColors.white,
@@ -68,9 +130,17 @@ class NotificationCentreScreen extends ConsumerWidget {
       ),
       centerTitle: true,
       actions: [
-        if (notifications.any((n) => !n.isRead))
+        if (hasUnread)
           TextButton(
-            onPressed: notifier.markAllRead,
+            onPressed: () async {
+              try {
+                await ref.read(notificationProvider.notifier).markAllRead();
+              } catch (_) {
+                if (context.mounted) {
+                  showErrorSnackbar(context, 'Could not mark all as read. Please try again.');
+                }
+              }
+            },
             style: TextButton.styleFrom(foregroundColor: AppColors.secondary),
             child: Text(
               'Mark all read',
