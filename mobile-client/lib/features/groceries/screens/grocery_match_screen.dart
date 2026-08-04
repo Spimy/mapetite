@@ -15,7 +15,6 @@ import '../../grocery/providers/grocery_list_provider.dart';
 import '../../../shared/providers/store_providers.dart';
 import '../../../shared/models/store_model.dart';
 import '../../../shared/models/store_item_model.dart';
-import '../../../shared/models/store_model.dart';
 
 class GroceryMatchScreen extends ConsumerStatefulWidget {
   final String recipeId;
@@ -245,49 +244,54 @@ class _GroceryMatchScreenState extends ConsumerState<GroceryMatchScreen> {
     List<String> ingredientNames,
     List<StoreModel> nearbyGroceryStores,
   ) async {
-    final matches = <_GroceryStoreMatch>[];
+    final matches = await Future.wait(
+      nearbyGroceryStores.map(
+        (store) => _matchStoreInventory(store, ingredientNames),
+      ),
+    );
 
-    for (final store in nearbyGroceryStores) {
-      try {
-        final storeItems = await ref.read(storeItemsProvider(store.id).future);
+    return matches.whereType<_GroceryStoreMatch>().toList();
+  }
 
-        final availableItems = storeItems.where(_isPurchasableItem).toList();
+  Future<_GroceryStoreMatch?> _matchStoreInventory(
+    StoreModel store,
+    List<String> ingredientNames,
+  ) async {
+    try {
+      final storeItems = await ref.read(storeItemsProvider(store.id).future);
 
-        final matchedIngredients = ingredientNames.where((ingredient) {
-          return availableItems.any(
-            (item) => _ingredientMatchesStoreItem(ingredient, item),
-          );
-        }).toList();
+      final availableItems = storeItems.where(_isPurchasableItem).toList();
 
-        if (matchedIngredients.isEmpty) {
-          continue;
-        }
-
-        final matchedNames = matchedIngredients
-            .map(_normaliseIngredientName)
-            .toSet();
-
-        final missingIngredients = ingredientNames.where((ingredient) {
-          return !matchedNames.contains(_normaliseIngredientName(ingredient));
-        }).toList();
-
-        matches.add(
-          _GroceryStoreMatch(
-            id: store.id,
-            name: store.businessName,
-            imageUrl: store.imageUrl,
-            distanceKm: store.distanceKm,
-            matchedIngredients: matchedIngredients,
-            missingIngredients: missingIngredients,
-            matchScore: matchedIngredients.length,
-          ),
+      final matchedIngredients = ingredientNames.where((ingredient) {
+        return availableItems.any(
+          (item) => _ingredientMatchesStoreItem(ingredient, item),
         );
-      } catch (_) {
-        continue;
-      }
-    }
+      }).toList();
 
-    return matches;
+      if (matchedIngredients.isEmpty) {
+        return null;
+      }
+
+      final matchedNames = matchedIngredients
+          .map(_normaliseIngredientName)
+          .toSet();
+
+      final missingIngredients = ingredientNames.where((ingredient) {
+        return !matchedNames.contains(_normaliseIngredientName(ingredient));
+      }).toList();
+
+      return _GroceryStoreMatch(
+        id: store.id,
+        name: store.businessName,
+        imageUrl: store.imageUrl,
+        distanceKm: store.distanceKm,
+        matchedIngredients: matchedIngredients,
+        missingIngredients: missingIngredients,
+        matchScore: matchedIngredients.length,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   void _openStoreDetails(BuildContext context, _GroceryStoreMatch store) {
