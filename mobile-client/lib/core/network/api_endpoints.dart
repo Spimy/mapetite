@@ -37,5 +37,6 @@ abstract class ApiEndpoints {
   static String budgetDetail(String id) => 'spending-records/$id/';
   static const String budgetSummary = 'spending-records/summary/';
   static const String notifications = 'notifications/';
+  static String notificationDetail(String id) => 'notifications/$id/';
   static const String routing = 'routing/';
 }
