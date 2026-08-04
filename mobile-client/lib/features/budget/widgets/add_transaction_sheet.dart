@@ -75,8 +75,14 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
         _selectedStoreId = recommended.id;
         _nameCtrl.text = recommended.businessName;
       }
+      // Defer provider mutation to post-frame callback: Riverpod disallows
+      // modifying providers during widget build phase (initState runs as part
+      // of the build for ConsumerStatefulWidget children inside showModalBottomSheet).
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(lastAcceptedRecommendationStoreProvider.notifier).state = null;
+        if (mounted) {
+          ref.read(lastAcceptedRecommendationStoreProvider.notifier).state =
+              null;
+        }
       });
     }
     _amountCtrl.addListener(() => setState(() {}));
