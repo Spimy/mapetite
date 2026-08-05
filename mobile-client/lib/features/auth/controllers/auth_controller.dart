@@ -44,6 +44,7 @@ class AuthController extends StateNotifier<AuthState> {
         isLoading: false,
         successMessage: 'Signed in successfully.',
         currentUser: currentUser,
+        hasCheckedSession: true,
       );
 
       return true;
@@ -83,6 +84,7 @@ class AuthController extends StateNotifier<AuthState> {
         isLoading: false,
         successMessage: 'Signed in successfully.',
         currentUser: currentUser,
+        hasCheckedSession: true,
       );
 
       return true;
@@ -102,7 +104,11 @@ class AuthController extends StateNotifier<AuthState> {
 
   Future<bool> loadCurrentUser() async {
     if (!AuthTokenService.hasTokens) {
-      state = state.copyWith(clearUser: true);
+      state = state.copyWith(
+        clearUser: true,
+        sessionExpired: false,
+        hasCheckedSession: true,
+      );
       return false;
     }
 
@@ -111,14 +117,22 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       final currentUser = await _authService.getCurrentUser();
 
-      state = AuthState(isLoading: false, currentUser: currentUser);
+      state = AuthState(
+        isLoading: false,
+        currentUser: currentUser,
+        hasCheckedSession: true,
+      );
 
       return true;
     } on AppException catch (error) {
       if (error.statusCode == 401 || error.statusCode == 403) {
         await AuthTokenService.clearTokens();
 
-        state = const AuthState(isLoading: false, sessionExpired: true);
+        state = const AuthState(
+          isLoading: false,
+          sessionExpired: true,
+          hasCheckedSession: true,
+        );
 
         return false;
       }
@@ -127,6 +141,8 @@ class AuthController extends StateNotifier<AuthState> {
         isLoading: false,
         errorMessage: error.message,
         currentUser: state.currentUser,
+        sessionExpired: true,
+        hasCheckedSession: true,
       );
 
       return false;
@@ -135,6 +151,8 @@ class AuthController extends StateNotifier<AuthState> {
         isLoading: false,
         errorMessage: 'Unable to load your session. Please try again.',
         currentUser: state.currentUser,
+        sessionExpired: true,
+        hasCheckedSession: true,
       );
 
       return false;
@@ -144,7 +162,10 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> logout() async {
     await AuthTokenService.clearTokens();
 
-    state = const AuthState(successMessage: 'Signed out successfully.');
+    state = const AuthState(
+      successMessage: 'Signed out successfully.',
+      hasCheckedSession: true,
+    );
   }
 
   Future<bool> resendVerificationEmail() async {
