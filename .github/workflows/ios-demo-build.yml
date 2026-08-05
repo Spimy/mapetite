@@ -1,0 +1,43 @@
+name: iOS Demo Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Backend base URL (include the current Mac LAN IP), e.g. http://192.168.100.238:8000/api/'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: mobile-client
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.9'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build unsigned iOS release
+        run: flutter build ios --release --no-codesign --dart-define=BASE_URL=${{ inputs.base_url }}
+
+      - name: Package into .ipa
+        run: |
+          mkdir -p Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r Runner.ipa Payload
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Runner-ipa
+          path: mobile-client/Runner.ipa
