@@ -1,5 +1,6 @@
 {% extends "main/base.html" %}
 {% load static %}
+{% load greeting_tags %}
 
 {% block styles %}
   <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
@@ -113,8 +114,8 @@
 
           <li class="sidebar__nav-item">
             <a class="sidebar__nav-link"
-                href="{% url 'merchants:onboarding' %}"
-                {% if request.resolver_match.view_name == 'merchants:onboarding' %}aria-current="page"{% endif %}>
+               href="{% url 'merchants:onboarding' %}"
+               {% if request.resolver_match.view_name == 'merchants:onboarding' %}aria-current="page"{% endif %}>
               <span class="sidebar__nav-icon">{% include "icons/store.html" %}</span>
               <span class="sidebar__nav-text">Unclaimed Stores</span>
             </a>
@@ -122,8 +123,8 @@
 
           <li class="sidebar__nav-item">
             <a class="sidebar__nav-link"
-                href="{% url 'merchants:claim_requests' %}"
-                {% if request.resolver_match.view_name == 'merchants:claim_requests' %}aria-current="page"{% endif %}>
+               href="{% url 'merchants:claim_requests' %}"
+               {% if request.resolver_match.view_name == 'merchants:claim_requests' %}aria-current="page"{% endif %}>
               <span class="sidebar__nav-icon">{% include "icons/inbox.html" %}</span>
               <span class="sidebar__nav-text">Claim Requests</span>
             </a>
@@ -185,8 +186,7 @@
 
     <section class="dashboard">
       <header class="dashboard__header">
-        <h2 class="dashboard__title">Good morning, {% firstof user.username user.first_name user.email %}</h2>
-
+        <h2 class="dashboard__title">{% time_greeting %}, {% firstof user.username user.first_name user.email %}</h2>
         <div class="dashboard__user-info">
           <div class="dashboard__user-details">
             <span class="dashboard__user-name">{% firstof user.username user.first_name user.email %}</span>
