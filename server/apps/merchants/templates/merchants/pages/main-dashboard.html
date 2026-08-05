@@ -1,32 +1,171 @@
 {% extends "merchants/dashboard.html" %}
 {% load static %}
 
-{% comment %} Page Meta {% endcomment %}
+{% block styles %}
+  <link rel="stylesheet" href="{% static 'merchants/css/dashboard.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'merchants/css/pages/main-dashboard.css' %}" />
+{% endblock styles %}
+
 {% block title %}
   Dashboard - {{ store.business_name }}
 {% endblock title %}
 
 {% block description %}
-  Welcome to your Mapetite dashboard, {{ store.business_name }}. Manage your store's location, hours, menu, and promotions all in one place.
+  Welcome to your Mapetite dashboard, {{ store.business_name }}. See a quick snapshot of sales, top items, peak hours, and store health.
 {% endblock description %}
 
 {% block keywords %}
-  merchant dashboard, store management, business analytics, Mapetite merchant tools
+  merchant dashboard, store analytics, sales overview, Mapetite merchant tools
 {% endblock keywords %}
-{% comment %} End Page Meta {% endcomment %}
 
 {% block dashboard_content %}
-  <style>
-    .dashboard-section {
-      max-width: 800px;
-      text-align: justify;
-    }
-  </style>
+  <section class="merchant-overview">
+    <header class="merchant-overview__hero">
+      <div class="merchant-overview__hero-copy">
+        <p class="merchant-overview__eyebrow">Overview</p>
+        <h3 class="merchant-overview__title">Welcome back, {{ store.business_name }}</h3>
+        <p class="merchant-overview__subtitle">
+          This dashboard shows an estimated snapshot of your store’s performance, including revenue trends, top-selling items, and operational insights based on the store's acceptance rate from users using the recommendation engine. Please note that the data is for demonstration purposes only.
+        </p>
+      </div>
 
-  <section class="dashboard-section">
-    <h1>Welcome to your Dashboard, {{ store.business_name }}!</h1>
-    <p>
-      This page is under construction as it requires additional data integration and development. Come back soon! In the meantime, you can manage your store's location and operating hours using the links in the sidebar.
-    </p>
+      <div class="merchant-overview__hero-card">
+        <span class="merchant-overview__hero-card-label">Today vs yesterday</span>
+        <strong class="merchant-overview__hero-card-value">+18.4%</strong>
+        <span class="merchant-overview__hero-card-note">Revenue is trending above the last 7-day average.</span>
+      </div>
+    </header>
+
+    <section class="merchant-kpis" aria-label="Merchant summary metrics">
+      <article class="merchant-kpi-card">
+        <span class="merchant-kpi-card__label">Today’s Revenue</span>
+        <strong class="merchant-kpi-card__value">RM 1,820</strong>
+        <span class="merchant-kpi-card__meta">Target: RM 1,600</span>
+      </article>
+
+      <article class="merchant-kpi-card">
+        <span class="merchant-kpi-card__label">Weekly Orders</span>
+        <strong class="merchant-kpi-card__value">932</strong>
+        <span class="merchant-kpi-card__meta">+12% from last week</span>
+      </article>
+
+      <article class="merchant-kpi-card">
+        <span class="merchant-kpi-card__label">Average Order Value</span>
+        <strong class="merchant-kpi-card__value">RM 14.20</strong>
+        <span class="merchant-kpi-card__meta">Best category: Proteins</span>
+      </article>
+
+      <article class="merchant-kpi-card">
+        <span class="merchant-kpi-card__label">Active Promotions</span>
+        <strong class="merchant-kpi-card__value">3</strong>
+        <span class="merchant-kpi-card__meta">2 promos expiring this week</span>
+      </article>
+    </section>
+
+    <section class="merchant-grid">
+      <article class="merchant-panel merchant-panel--wide">
+        <div class="merchant-panel__header">
+          <div>
+            <p class="merchant-panel__eyebrow">Revenue trend</p>
+            <h4 class="merchant-panel__title">7-day sales performance</h4>
+          </div>
+        </div>
+        <div class="merchant-chart-wrap">
+          <canvas id="revenueChart" height="120"></canvas>
+        </div>
+      </article>
+
+      <article class="merchant-panel">
+        <div class="merchant-panel__header">
+          <div>
+            <p class="merchant-panel__eyebrow">Peak activity</p>
+            <h4 class="merchant-panel__title">Orders by hour</h4>
+          </div>
+        </div>
+        <div class="merchant-chart-wrap merchant-chart-wrap--compact">
+          <canvas id="hoursChart" height="220"></canvas>
+        </div>
+      </article>
+
+      <article class="merchant-panel">
+        <div class="merchant-panel__header">
+          <div>
+            <p class="merchant-panel__eyebrow">Top items</p>
+            <h4 class="merchant-panel__title">Best performing products</h4>
+          </div>
+        </div>
+        <div class="merchant-chart-wrap merchant-chart-wrap--compact">
+          <canvas id="itemsChart" height="220"></canvas>
+        </div>
+      </article>
+
+      <article class="merchant-panel merchant-panel--wide">
+        <div class="merchant-panel__header">
+          <div>
+            <p class="merchant-panel__eyebrow">Operational snapshot</p>
+            <h4 class="merchant-panel__title">What a merchant would care about today</h4>
+          </div>
+        </div>
+
+        <div class="merchant-insights">
+          <div class="merchant-insight">
+            <span class="merchant-insight__label">Store rating</span>
+            <strong class="merchant-insight__value">4.7 / 5</strong>
+            <span class="merchant-insight__note">Based on 148 recent ratings</span>
+          </div>
+
+          <div class="merchant-insight">
+            <span class="merchant-insight__label">Repeat customers</span>
+            <strong class="merchant-insight__value">31%</strong>
+            <span class="merchant-insight__note">Healthy returning customer base</span>
+          </div>
+
+          <div class="merchant-insight">
+            <span class="merchant-insight__label">Low-stock alerts</span>
+            <strong class="merchant-insight__value">2</strong>
+            <span class="merchant-insight__note">Likely to affect lunch-hour sales</span>
+          </div>
+
+          <div class="merchant-insight">
+            <span class="merchant-insight__label">Promo engagement</span>
+            <strong class="merchant-insight__value">8.9%</strong>
+            <span class="merchant-insight__note">Click-through on current campaign</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="merchant-panel merchant-panel--wide">
+        <div class="merchant-panel__header">
+          <div>
+            <p class="merchant-panel__eyebrow">Suggested actions</p>
+            <h4 class="merchant-panel__title">Next steps for the merchant</h4>
+          </div>
+        </div>
+
+        <div class="merchant-actions">
+          <div class="merchant-action">
+            <strong>Review store hours</strong>
+            <p>Make sure today's opening times and weekly schedule are accurate before customers start browsing.</p>
+          </div>
+          <div class="merchant-action">
+            <strong>Check active promotions</strong>
+            <p>Update or pause offers so the dashboard stays aligned with what customers will see.</p>
+          </div>
+          <div class="merchant-action">
+            <strong>Refresh store details</strong>
+            <p>Keep your address, contact info, and profile description up to date for a better first impression.</p>
+          </div>
+        </div>
+      </article>
+    </section>
   </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{% static 'merchants/js/pages/main-dashboard.js' %}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      initMerchantDashboard();
+    });
+  </script>
 {% endblock dashboard_content %}
