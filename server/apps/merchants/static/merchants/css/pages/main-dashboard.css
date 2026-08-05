@@ -1,0 +1,223 @@
+.merchant-overview {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.merchant-overview__hero {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 14%, transparent), transparent 34%),
+    linear-gradient(135deg, color-mix(in srgb, var(--color-white) 92%, var(--color-grey-100)), var(--color-white));
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--color-neutral) 8%, transparent);
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1.6fr 0.9fr;
+    align-items: stretch;
+  }
+}
+
+.merchant-overview__hero-copy {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.merchant-overview__eyebrow,
+.merchant-panel__eyebrow {
+  margin: 0;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: var(--font-weight-heading);
+  color: var(--color-grey-400);
+}
+
+.merchant-overview__title {
+  margin: 0;
+  font-size: clamp(1.9rem, 3vw, 2.75rem);
+  font-weight: var(--font-weight-heading);
+  color: var(--color-neutral);
+}
+
+.merchant-overview__subtitle {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--color-grey-600);
+  line-height: 1.6;
+}
+
+.merchant-overview__hero-card {
+  display: grid;
+  gap: 0.5rem;
+  align-content: center;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-white));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+}
+
+.merchant-overview__hero-card-label,
+.merchant-kpi-card__label,
+.merchant-insight__label {
+  font-size: 0.9rem;
+  color: var(--color-grey-600);
+}
+
+.merchant-overview__hero-card-value {
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: var(--color-primary);
+}
+
+.merchant-overview__hero-card-note,
+.merchant-kpi-card__meta,
+.merchant-insight__note,
+.merchant-action p {
+  margin: 0;
+  color: var(--color-grey-600);
+  line-height: 1.5;
+}
+
+.merchant-kpis {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 1100px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.merchant-kpi-card {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-neutral) 6%, transparent);
+}
+
+.merchant-kpi-card__value {
+  font-size: 1.8rem;
+  line-height: 1.1;
+  color: var(--color-neutral);
+}
+
+.merchant-grid {
+  display: grid;
+  gap: 1rem;
+
+  @media (min-width: 960px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.merchant-panel {
+  padding: 1.25rem;
+  border-radius: 1rem;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-neutral) 6%, transparent);
+  display: grid;
+  gap: 1rem;
+}
+
+.merchant-panel--wide {
+  @media (min-width: 960px) {
+    grid-column: span 2;
+  }
+}
+
+.merchant-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.merchant-panel__title {
+  margin: 0.2rem 0 0;
+  font-size: 1.15rem;
+  color: var(--color-neutral);
+}
+
+.merchant-chart-wrap {
+  position: relative;
+  min-height: 280px;
+}
+
+.merchant-chart-wrap--compact {
+  min-height: 240px;
+}
+
+.merchant-insights {
+  display: grid;
+  gap: 1rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.merchant-insight {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border-radius: 0.9rem;
+  background-color: color-mix(in srgb, var(--color-grey-100) 40%, var(--color-white));
+}
+
+.merchant-insight__value {
+  font-size: 1.5rem;
+  color: var(--color-neutral);
+}
+
+.merchant-actions {
+  display: grid;
+  gap: 1rem;
+
+  @media (min-width: 800px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.merchant-action {
+  padding: 1rem;
+  border-radius: 0.9rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 5%, var(--color-white)), var(--color-white));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border));
+}
+
+.merchant-action strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-neutral);
+}
+
+.merchant-overview,
+.merchant-kpis,
+.merchant-grid,
+.merchant-panel,
+.merchant-insights,
+.merchant-actions,
+.merchant-panel__header>div {
+  min-width: 0;
+}
+
+.merchant-chart-wrap,
+.merchant-chart-wrap canvas {
+  max-width: 100%;
+}
+
+.dashboard__content {
+  overflow-x: clip;
+}
