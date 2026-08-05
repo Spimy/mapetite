@@ -18,6 +18,7 @@ __pycache__/
 skills-lock.json
 MOBILE_FRONTEND.md
 docs/superpowers/
+.worktrees/
 
 # Mobile (assuming it's a Flutter project)
 mobile-client/build/

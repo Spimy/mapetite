@@ -10,6 +10,7 @@ import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/toast_helpers.dart';
 import '../../../shared/models/store_model.dart';
 import '../../../shared/providers/store_providers.dart';
+import '../../recommendations/providers/recommendation_provider.dart';
 import '../models/budget_transaction.dart';
 import '../providers/budget_provider.dart';
 
@@ -66,6 +67,23 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       _nameCtrl.text = e.storeName ?? '';
       _notesCtrl.text = e.notes ?? '';
       _selectedStoreId = e.storeId;
+    } else {
+      final recommended = ref.read(lastAcceptedRecommendationStoreProvider);
+      if (recommended != null &&
+          recommended.merchantType == StoreType.restaurant) {
+        _selectedStore = recommended;
+        _selectedStoreId = recommended.id;
+        _nameCtrl.text = recommended.businessName;
+      }
+      // Defer provider mutation to post-frame callback: Riverpod disallows
+      // modifying providers during widget build phase (initState runs as part
+      // of the build for ConsumerStatefulWidget children inside showModalBottomSheet).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(lastAcceptedRecommendationStoreProvider.notifier).state =
+              null;
+        }
+      });
     }
     _amountCtrl.addListener(() => setState(() {}));
     _nameCtrl.addListener(() => setState(() {}));
@@ -309,6 +327,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                   label: 'Dining Out',
                   selected: _category == BudgetCategory.dining,
                   onTap: () => setState(() {
+                    if (_nameCtrl.text == _selectedStore?.businessName) {
+                      _nameCtrl.clear();
+                    }
                     _category = BudgetCategory.dining;
                     _selectedStore = null;
                     _selectedStoreId = null;
@@ -321,6 +342,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                   label: 'Cook-In',
                   selected: _category == BudgetCategory.groceries,
                   onTap: () => setState(() {
+                    if (_nameCtrl.text == _selectedStore?.businessName) {
+                      _nameCtrl.clear();
+                    }
                     _category = BudgetCategory.groceries;
                     _selectedStore = null;
                     _selectedStoreId = null;
