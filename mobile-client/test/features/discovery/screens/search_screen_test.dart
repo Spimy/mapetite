@@ -1,12 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mapetite/features/discovery/screens/search_screen.dart';
+import 'package:mapetite/features/recipes/models/recipe_model.dart';
+import 'package:mapetite/features/recipes/providers/recipe_provider.dart';
+import 'package:mapetite/features/recipes/services/recipe_service.dart';
+import 'package:mapetite/features/recipes/widgets/recipe_card.dart';
 import 'package:mapetite/shared/models/location_model.dart';
 import 'package:mapetite/shared/models/store_model.dart';
 import 'package:mapetite/shared/providers/location_provider.dart';
 import 'package:mapetite/shared/providers/store_providers.dart';
+import 'package:shimmer/shimmer.dart';
 
 // ─── Test fixtures ─────────────────────────────────────────────────────────
 
@@ -36,6 +43,40 @@ const _testGrocery = StoreModel(
 
 const _defaultRestaurants = [_testRestaurant];
 const _defaultGroceries = [_testGrocery];
+
+class _FakeRecipeService extends RecipeService {
+  _FakeRecipeService(this._builder);
+
+  final Future<List<RecipeModel>> Function() _builder;
+
+  @override
+  Future<List<RecipeModel>> getRecipes({
+    String? query,
+    int? currentUserId,
+  }) {
+    return _builder();
+  }
+}
+
+RecipeModel _testRecipe(String id, String title) => RecipeModel(
+  id: id,
+  title: title,
+  authorName: 'Chef Hafiz',
+  authorInitial: 'C',
+  cookMinutes: 25,
+  calories: 450,
+  servings: 2,
+  ingredients: const [],
+  steps: const [],
+  createdAt: DateTime(2026, 1, 1),
+);
+
+final _defaultRecipes = [
+  _testRecipe('rec1', 'Nasi Goreng Kampung'),
+  _testRecipe('rec2', 'Mee Goreng Mamak'),
+];
+
+final _sixRecipes = List.generate(6, (i) => _testRecipe('rec$i', 'Recipe $i'));
 
 /// No location so the screen doesn't depend on a real Geolocator platform
 /// channel being available in the test environment — mirrors the pattern
@@ -81,6 +122,12 @@ GoRouter _testRouter() => GoRouter(
       path: '/cook-in',
       builder: (_, _) => const Scaffold(body: Text('CookIn')),
     ),
+    GoRoute(
+      path: '/recipes/:id',
+      builder: (_, state) => Scaffold(
+        body: Text('RecipeDetail:${state.pathParameters['id']}'),
+      ),
+    ),
   ],
 );
 
@@ -93,12 +140,18 @@ Future<List<StoreModel>> _defaultStoresBuilder(NearbyStoresQuery query) async {
       : _defaultRestaurants;
 }
 
-Widget _routerWrap({_StoresBuilder? storesBuilder}) => ProviderScope(
+Widget _routerWrap({
+  _StoresBuilder? storesBuilder,
+  Future<List<RecipeModel>> Function()? recipesBuilder,
+}) => ProviderScope(
   overrides: [
     nearbyStoresProvider.overrideWith(
       (ref, query) => (storesBuilder ?? _defaultStoresBuilder)(query),
     ),
     locationProvider.overrideWith(_FixedLocationNotifier.new),
+    recipeServiceProvider.overrideWithValue(
+      _FakeRecipeService(recipesBuilder ?? () async => const <RecipeModel>[]),
+    ),
   ],
   child: MaterialApp.router(routerConfig: _testRouter()),
 );
@@ -354,6 +407,103 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('GroceryDetail:g1'), findsOneWidget);
+      },
+    );
+  });
+
+  group('SearchScreen — recipes teaser', () {
+    testWidgets('renders real recipe cards from recipeListProvider', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _routerWrap(recipesBuilder: () async => _defaultRecipes),
+      );
+      await tester.pumpAndSettle();
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -800));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RecipeCard), findsNWidgets(2));
+      expect(find.text('Nasi Goreng Kampung'), findsOneWidget);
+      expect(find.text('Mee Goreng Mamak'), findsOneWidget);
+    });
+
+    testWidgets(
+      'tapping a recipe card in the teaser routes to /recipes/<id>',
+      (tester) async {
+        await tester.pumpWidget(
+          _routerWrap(recipesBuilder: () async => _defaultRecipes),
+        );
+        await tester.pumpAndSettle();
+        await tester.drag(
+          find.byType(CustomScrollView),
+          const Offset(0, -800),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.ensureVisible(find.text('Nasi Goreng Kampung'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Nasi Goreng Kampung'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('RecipeDetail:rec1'), findsOneWidget);
+      },
+    );
+
+    testWidgets('shows at most 5 recipes even when more are returned', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _routerWrap(recipesBuilder: () async => _sixRecipes),
+      );
+      await tester.pumpAndSettle();
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -800));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RecipeCard), findsNWidgets(5));
+    });
+
+    testWidgets('hides the recipes section when the fetch errors', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _routerWrap(
+          recipesBuilder: () async => throw Exception('network error'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Recipes to Try'), findsNothing);
+      expect(find.byType(RecipeCard), findsNothing);
+      // The rest of the page must still render — a broken teaser is
+      // non-blocking, matching the restaurant/grocery fetches on this
+      // same screen.
+      expect(find.text('Browse by Category'), findsOneWidget);
+    });
+
+    testWidgets(
+      'shows shimmer placeholders while the recipe fetch is in flight',
+      (tester) async {
+        final completer = Completer<List<RecipeModel>>();
+        await tester.pumpWidget(
+          _routerWrap(recipesBuilder: () => completer.future),
+        );
+        // Two pumps: the first lets initState's addPostFrameCallback fire
+        // (which sets recipeLoadingProvider), the second reflects that
+        // state change in the rebuilt tree. If this is still flaky, add a
+        // third pump() here rather than switching to pumpAndSettle (which
+        // would hang on the never-completing future).
+        await tester.pump();
+        await tester.pump();
+        await tester.drag(find.byType(CustomScrollView), const Offset(0, -800));
+        await tester.pump();
+
+        expect(find.byType(Shimmer), findsWidgets);
+        expect(find.byType(RecipeCard), findsNothing);
+
+        completer.complete(_defaultRecipes);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(RecipeCard), findsNWidgets(2));
       },
     );
   });
