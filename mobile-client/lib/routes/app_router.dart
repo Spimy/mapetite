@@ -33,6 +33,11 @@ import '../features/settings/screens/app_settings_screen.dart';
 import '../features/settings/screens/about_screen.dart';
 import '../features/settings/legal_content.dart';
 import '../shared/screens/legal_document_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../features/auth/controllers/auth_controller.dart';
+import '../features/auth/models/auth_state.dart';
+import '../features/auth/services/auth_token_service.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -83,9 +88,75 @@ abstract class AppRoutes {
   static const String settingsPrivacy = '/settings/privacy';
 }
 
-final GoRouter appRouter = GoRouter(
-  navigatorKey: appNavigatorKey,
-  initialLocation: AppRoutes.splash,
+final Set<String> _authRoutes = {
+  AppRoutes.login,
+  AppRoutes.register,
+  AppRoutes.forgotPassword,
+};
+
+bool _isPublicRoute(String path) {
+  return path == AppRoutes.splash ||
+      path == AppRoutes.onboarding ||
+      _authRoutes.contains(path) ||
+      path == AppRoutes.about ||
+      path.startsWith('${AppRoutes.about}/');
+}
+
+bool _isProfileSetupRoute(String path) {
+  return path == AppRoutes.profileSetup ||
+      path == AppRoutes.profileDietary ||
+      path == AppRoutes.profileBudgetSetup ||
+      path == AppRoutes.profileHealthGoals;
+}
+
+String? _redirectForAuth(AuthState authState, GoRouterState state) {
+  final path = state.uri.path;
+
+  if (path == AppRoutes.splash) {
+    return null;
+  }
+
+  if (authState.isAuthenticated) {
+    if (_authRoutes.contains(path) || path == AppRoutes.onboarding) {
+      return authState.onboardingCompleted
+          ? AppRoutes.home
+          : AppRoutes.profileDietary;
+    }
+
+    if (!authState.onboardingCompleted && !_isProfileSetupRoute(path)) {
+      return AppRoutes.profileDietary;
+    }
+
+    return null;
+  }
+
+  if (AuthTokenService.hasTokens && !authState.hasCheckedSession) {
+    return AppRoutes.splash;
+  }
+
+  if (!_isPublicRoute(path)) {
+    return AppRoutes.login;
+  }
+
+  return null;
+}
+
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final routerRefresh = ValueNotifier<int>(0);
+
+  ref.listen<AuthState>(authControllerProvider, (_, __) {
+    routerRefresh.value++;
+  });
+
+  ref.onDispose(routerRefresh.dispose);
+
+  return GoRouter(
+    navigatorKey: appNavigatorKey,
+    initialLocation: AppRoutes.splash,
+    refreshListenable: routerRefresh,
+    redirect: (context, state) {
+      return _redirectForAuth(ref.read(authControllerProvider), state);
+    },
   routes: [
     GoRoute(
       path: AppRoutes.splash,
@@ -329,6 +400,7 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
+});
 
 // ─── Main Shell ───────────────────────────────────────────────────────────────
 

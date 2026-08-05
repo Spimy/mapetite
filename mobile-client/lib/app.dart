@@ -28,7 +28,7 @@ class MapetiteApp extends ConsumerWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           themeMode: ThemeMode.light,
-          routerConfig: appRouter,
+          routerConfig: ref.watch(appRouterProvider),
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,

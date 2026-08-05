@@ -34,12 +34,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       return;
     }
 
+    final authState = ref.read(authControllerProvider);
+
     if (!hasActiveSession) {
-      context.go(AppRoutes.onboarding);
+      context.go(
+        authState.sessionExpired ? AppRoutes.login : AppRoutes.onboarding,
+      );
       return;
     }
-
-    final authState = ref.read(authControllerProvider);
 
     if (authState.onboardingCompleted) {
       context.go(AppRoutes.home);
