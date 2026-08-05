@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/network/api_client.dart';
@@ -10,6 +11,10 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../recipes/providers/selected_ingredients_provider.dart';
 import '../../../shared/providers/location_provider.dart';
+import '../../grocery/providers/grocery_list_provider.dart';
+import '../../../shared/providers/store_providers.dart';
+import '../../../shared/models/store_model.dart';
+import '../../../shared/models/store_item_model.dart';
 
 class GroceryMatchScreen extends ConsumerStatefulWidget {
   final String recipeId;
@@ -24,7 +29,7 @@ class GroceryMatchScreen extends ConsumerStatefulWidget {
 }
 
 class _GroceryMatchScreenState extends ConsumerState<GroceryMatchScreen> {
-  static const double _defaultRadiusKm = 5.0;
+  static const double _defaultRadiusKm = AppConstants.maxSearchRadiusKm;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -66,23 +71,56 @@ class _GroceryMatchScreenState extends ConsumerState<GroceryMatchScreen> {
     });
 
     try {
-      final response = await ApiClient.post(
-        ApiEndpoints.ingredientSearchNearbyStores,
-        data: {
-          'ingredients': ingredientNames,
-          'latitude': latitude,
-          'longitude': longitude,
-          'radius_km': _defaultRadiusKm,
-        },
+      final nearbyGroceryStores = await ref.read(
+        nearbyStoresProvider(
+          NearbyStoresQuery(
+            lat: latitude,
+            lng: longitude,
+            radiusKm: _defaultRadiusKm,
+            type: StoreType.grocery,
+          ),
+        ).future,
       );
 
-      final data = response.data as Map<String, dynamic>;
-      final storesJson = data['stores'] as List<dynamic>? ?? [];
+      var stores = <_GroceryStoreMatch>[];
+      String? aiRecommendation;
 
-      final stores = storesJson
-          .whereType<Map<String, dynamic>>()
-          .map(_GroceryStoreMatch.fromJson)
-          .toList();
+      try {
+        final response = await ApiClient.post(
+          ApiEndpoints.ingredientSearchNearbyStores,
+          data: {
+            'ingredients': ingredientNames,
+            'latitude': latitude,
+            'longitude': longitude,
+            'radius_km': _defaultRadiusKm,
+          },
+        );
+
+        final data = response.data as Map<String, dynamic>;
+        final storesJson = data['stores'] as List<dynamic>? ?? [];
+
+        stores = storesJson
+            .whereType<Map<String, dynamic>>()
+            .map(_GroceryStoreMatch.fromJson)
+            .toList();
+
+        aiRecommendation = data['ai_recommendation']?.toString();
+      } catch (_) {
+        stores = [];
+        aiRecommendation = null;
+      }
+
+      if (stores.isEmpty) {
+        stores = await _buildInventoryFallbackMatches(
+          ingredientNames,
+          nearbyGroceryStores,
+        );
+
+        if (stores.isNotEmpty) {
+          aiRecommendation =
+              'I found nearby grocery stores that stock your selected ingredients.';
+        }
+      }
 
       stores.sort((a, b) {
         final coverageCompare = b.coverage.compareTo(a.coverage);
@@ -97,14 +135,21 @@ class _GroceryMatchScreenState extends ConsumerState<GroceryMatchScreen> {
         return aDistance.compareTo(bDistance);
       });
 
+      await _linkMatchedItemsToGroceryList(
+        stores,
+        nearbyGroceryStores,
+      );
+
       if (!mounted) {
         return;
       }
 
       setState(() {
         _stores = stores;
-        _aiRecommendation = data['ai_recommendation']?.toString();
-        _errorMessage = stores.isEmpty ? 'No nearby store matches found.' : null;
+        _aiRecommendation = aiRecommendation;
+        _errorMessage = stores.isEmpty
+            ? 'No nearby grocery stores stock the selected ingredients.'
+            : null;
       });
     } catch (_) {
       if (!mounted) {
@@ -123,6 +168,129 @@ class _GroceryMatchScreenState extends ConsumerState<GroceryMatchScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<void> _linkMatchedItemsToGroceryList(
+    List<_GroceryStoreMatch> stores,
+    List<StoreModel> nearbyGroceryStores,
+  ) async {
+    if (stores.isEmpty) {
+      return;
+    }
+
+    final selectedItems = ref.read(selectedIngredientsProvider);
+    final groceryListItems = ref.read(groceryListProvider);
+
+    if (selectedItems.isEmpty || groceryListItems.isEmpty) {
+      return;
+    }
+
+    final storesById = {
+      for (final store in nearbyGroceryStores) store.id: store,
+    };
+
+    final selectedNames = selectedItems
+        .map((item) => _normaliseIngredientName(item.name))
+        .toSet();
+
+    final alreadyLinkedNames = <String>{};
+
+    for (final matchedStore in stores) {
+      if (matchedStore.id.isEmpty) {
+        continue;
+      }
+
+      final store = storesById[matchedStore.id];
+
+      if (store == null || store.latitude == null || store.longitude == null) {
+        continue;
+      }
+
+      final matchedIngredientNames = matchedStore.matchedIngredients
+          .map(_normaliseIngredientName)
+          .toSet();
+
+      final itemNamesToLink = groceryListItems
+          .where((item) {
+            final name = _normaliseIngredientName(item.name);
+
+            return selectedNames.contains(name) &&
+                matchedIngredientNames.contains(name) &&
+                !alreadyLinkedNames.contains(name);
+          })
+          .map((item) => item.name)
+          .toSet();
+
+      if (itemNamesToLink.isEmpty) {
+        continue;
+      }
+
+      ref.read(groceryListProvider.notifier).linkItemsToStore(
+            itemNames: itemNamesToLink,
+            storeId: store.id,
+            storeName: store.businessName,
+            storeLatitude: store.latitude,
+            storeLongitude: store.longitude,
+          );
+
+      alreadyLinkedNames.addAll(
+        itemNamesToLink.map(_normaliseIngredientName),
+      );
+    }
+  }
+
+  Future<List<_GroceryStoreMatch>> _buildInventoryFallbackMatches(
+    List<String> ingredientNames,
+    List<StoreModel> nearbyGroceryStores,
+  ) async {
+    final matches = await Future.wait(
+      nearbyGroceryStores.map(
+        (store) => _matchStoreInventory(store, ingredientNames),
+      ),
+    );
+
+    return matches.whereType<_GroceryStoreMatch>().toList();
+  }
+
+  Future<_GroceryStoreMatch?> _matchStoreInventory(
+    StoreModel store,
+    List<String> ingredientNames,
+  ) async {
+    try {
+      final storeItems = await ref.read(storeItemsProvider(store.id).future);
+
+      final availableItems = storeItems.where(_isPurchasableItem).toList();
+
+      final matchedIngredients = ingredientNames.where((ingredient) {
+        return availableItems.any(
+          (item) => _ingredientMatchesStoreItem(ingredient, item),
+        );
+      }).toList();
+
+      if (matchedIngredients.isEmpty) {
+        return null;
+      }
+
+      final matchedNames = matchedIngredients
+          .map(_normaliseIngredientName)
+          .toSet();
+
+      final missingIngredients = ingredientNames.where((ingredient) {
+        return !matchedNames.contains(_normaliseIngredientName(ingredient));
+      }).toList();
+
+      return _GroceryStoreMatch(
+        id: store.id,
+        name: store.businessName,
+        imageUrl: store.imageUrl,
+        distanceKm: store.distanceKm,
+        matchedIngredients: matchedIngredients,
+        missingIngredients: missingIngredients,
+        matchScore: matchedIngredients.length,
+      );
+    } catch (_) {
+      return null;
     }
   }
 
@@ -727,6 +895,25 @@ class _GroceryStoreMatch {
 
     return '${distance.toStringAsFixed(1)} km away';
   }
+}
+
+bool _isPurchasableItem(StoreItemModel item) {
+  final status = item.stockStatus.toUpperCase();
+
+  return status == 'IN_STOCK' || status == 'LOW_STOCK';
+}
+
+bool _ingredientMatchesStoreItem(String ingredient, StoreItemModel item) {
+  final ingredientName = _normaliseIngredientName(ingredient);
+  final itemName = _normaliseIngredientName(item.name);
+
+  return itemName == ingredientName ||
+      itemName.contains(ingredientName) ||
+      ingredientName.contains(itemName);
+}
+
+String _normaliseIngredientName(String value) {
+  return value.trim().toLowerCase();
 }
 
 List<String> _stringListFromJson(List<dynamic>? values) {

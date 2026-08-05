@@ -21,7 +21,36 @@ class GroceryListItem {
     this.isChecked = false,
   });
 
-  bool get hasLinkedStore => storeId != null && storeLatitude != null && storeLongitude != null;
+  factory GroceryListItem.fromJson(Map<String, dynamic> json) {
+    return GroceryListItem(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      quantity: json['quantity']?.toString() ?? '',
+      storeName: json['storeName']?.toString() ?? 'Unknown Store',
+      storeId: json['storeId']?.toString(),
+      storeLatitude: _doubleFromJson(json['storeLatitude']),
+      storeLongitude: _doubleFromJson(json['storeLongitude']),
+      estimatedPrice: _doubleFromJson(json['estimatedPrice']) ?? 0,
+      isChecked: json['isChecked'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'quantity': quantity,
+      'storeName': storeName,
+      'storeId': storeId,
+      'storeLatitude': storeLatitude,
+      'storeLongitude': storeLongitude,
+      'estimatedPrice': estimatedPrice,
+      'isChecked': isChecked,
+    };
+  }
+
+  bool get hasLinkedStore =>
+      storeId != null && storeLatitude != null && storeLongitude != null;
 
   GroceryListItem copyWith({
     String? id,
@@ -46,4 +75,11 @@ class GroceryListItem {
       isChecked: isChecked ?? this.isChecked,
     );
   }
+}
+
+double? _doubleFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
 }
