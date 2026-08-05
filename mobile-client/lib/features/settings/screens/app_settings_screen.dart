@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -71,6 +72,7 @@ class AppSettingsScreen extends ConsumerWidget {
     final displayName = currentUser?.displayName ?? '';
     final email = currentUser?.email ?? '';
     final initials = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+    final avatarUrl = currentUser?.profile.avatar;
 
     return InkWell(
       onTap: () => context.push('/profile/edit'),
@@ -91,12 +93,32 @@ class AppSettingsScreen extends ConsumerWidget {
                 color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
-              child: Center(
-                child: Text(
-                  initials,
-                  style: AppTypography.headline3.copyWith(color: AppColors.white),
-                ),
-              ),
+              clipBehavior: Clip.antiAlias,
+              child: avatarUrl != null && avatarUrl.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: avatarUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => Center(
+                        child: Text(
+                          initials,
+                          style: AppTypography.headline3
+                              .copyWith(color: AppColors.white),
+                        ),
+                      ),
+                      errorWidget: (_, _, _) => Center(
+                        child: Text(
+                          initials,
+                          style: AppTypography.headline3
+                              .copyWith(color: AppColors.white),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        initials,
+                        style: AppTypography.headline3.copyWith(color: AppColors.white),
+                      ),
+                    ),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(

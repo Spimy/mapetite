@@ -64,6 +64,12 @@
 	<string>Mapetite uses your location to show nearby restaurants and grocery stores.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Mapetite uses your location to show nearby restaurants and grocery stores.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Mapetite uses your camera to take photos of recipes and your profile picture.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Mapetite lets you choose recipe and profile photos from your library.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Mapetite connects to a development server on your local network.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -83,5 +89,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

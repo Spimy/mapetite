@@ -58,30 +58,6 @@ abstract class HomeFeedMocks {
     ),
   ];
 
-  // Legacy fields retained for backward compatibility with other screens
-  static const List<RecipeSummary> cookInRecipes = [
-    RecipeSummary(
-      id: 'rc1',
-      name: 'Nasi Goreng Kampung',
-      cuisine: 'Malaysian',
-      prepMinutes: 25,
-      calories: 450,
-      isHalal: true,
-      isVegan: false,
-      authorName: 'Chef Hafiz',
-    ),
-    RecipeSummary(
-      id: 'rc2',
-      name: 'Mee Goreng Mamak',
-      cuisine: 'Malaysian',
-      prepMinutes: 20,
-      calories: 380,
-      isHalal: true,
-      isVegan: true,
-      authorName: 'Ramesh K.',
-    ),
-  ];
-
   static const List<RestaurantSummary> nearbyRestaurants = nearbyOptions;
 
   static const List<GrocerySummary> nearbyGroceries = [

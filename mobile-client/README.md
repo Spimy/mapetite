@@ -98,6 +98,8 @@ For the backend side (Web OAuth client, Django `SocialApp`), see the **🔐 Goog
 flutter run --dart-define=GOOGLE_WEB_CLIENT_ID=your-client-id.apps.googleusercontent.com
 ```
 
+**The iOS demo build workflow** (`.github/workflows/ios-demo-build.yml`) requires `google_web_client_id` as an explicit `workflow_dispatch` input — it does not fall back to the checked-in default. When dispatching that workflow, pass the Web client ID registered against whichever backend `base_url` points at, or Google sign-in in the built `.ipa` will fail with `invalid_id_token`.
+
 **For staging/prod:**
 - If reusing the same Web client as dev, add the prod domain to its **Authorized JavaScript origins** in Console — Google's Identity Services library enforces this for web sign-in, so a domain not listed there fails even with a valid client ID.
 - The iOS client doesn't need to change per environment — it's tied to the bundle ID, not a domain.

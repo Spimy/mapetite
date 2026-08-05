@@ -13,8 +13,8 @@ import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/store_providers.dart';
 import '../../../shared/widgets/app_empty_state.dart';
 import '../../../shared/widgets/dietary_chip.dart';
-import '../../../shared/widgets/food_card.dart';
-import '../models/mocks/home_feed_mocks.dart';
+import '../../recipes/providers/recipe_provider.dart';
+import '../../recipes/widgets/recipe_card.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -58,6 +58,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.initState();
     _searchController.addListener(() {
       setState(() => _searchQuery = _searchController.text.trim());
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recipeListProvider.notifier).loadRecipes();
     });
   }
 
@@ -470,6 +473,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   // ─── Section 3: Recipes to Try ──────────────────────────────────────────────
 
   Widget _buildRecipesSection() {
+    final recipes = ref.watch(recipeListProvider);
+    final isLoading = ref.watch(recipeLoadingProvider);
+    // Watched (not rendered) so this section rebuilds when a fetch fails —
+    // a failed fetch just leaves `teaser` empty, so the section quietly
+    // disappears rather than showing an error UI.
+    ref.watch(recipeErrorProvider);
+    final teaser = recipes.take(5).toList();
+
+    if (teaser.isEmpty && !isLoading) {
+      // A failed or genuinely-empty fetch must not block the rest of the
+      // Explore page — the section simply disappears rather than erroring.
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -506,25 +523,51 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
         ),
         SizedBox(
-          height: 224,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            itemCount: HomeFeedMocks.cookInRecipes.length,
-            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
-            itemBuilder: (_, i) {
-              final recipe = HomeFeedMocks.cookInRecipes[i];
-              return SizedBox(
-                width: 160,
-                child: RecipeHorizontalCard(
-                  recipe: recipe,
-                  onTap: () => context.go('/cook-in'),
+          height: 280,
+          child: isLoading && teaser.isEmpty
+              ? _buildRecipesShimmerRow()
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  itemCount: teaser.length,
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(width: AppSpacing.md),
+                  itemBuilder: (_, i) {
+                    final recipe = teaser[i];
+                    return SizedBox(
+                      width: 180,
+                      child: RecipeCard(
+                        recipe: recipe,
+                        onTap: () =>
+                            context.push('${AppRoutes.recipes}/${recipe.id}'),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         ),
       ],
+    );
+  }
+
+  Widget _buildRecipesShimmerRow() {
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      itemCount: 3,
+      separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
+      itemBuilder: (_, _) => SizedBox(
+        width: 180,
+        child: Shimmer.fromColors(
+          baseColor: AppColors.neutral100,
+          highlightColor: AppColors.neutral200,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.neutral100,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
